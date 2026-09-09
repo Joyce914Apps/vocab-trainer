@@ -115,6 +115,11 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
 .crow .ct{margin-left:auto;font-family:ui-monospace,monospace;font-size:.82rem}
 .crow.over{border-left:3px solid var(--no)}
 .crow.rest{opacity:.4;background:transparent}
+.crow.rest.has{opacity:.75}
+.ptab{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:6px}
+.ptab td{padding:5px 8px;border-top:1px solid var(--line);vertical-align:top}
+.ptab td:first-child{color:var(--soft);white-space:nowrap;width:9em}
+.ptab .big{font-size:1.05rem;font-weight:600}
 .crow.today{border-left:3px solid var(--ok)}
 .crow.heavy .ct{color:var(--no)}
 .cw{padding:2px 13px 12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem}
@@ -317,7 +322,12 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
   <p class="hint" style="margin-top:18px"><b>要練哪些字組</b>　關掉的不會排進今日練習。想先專心準備週三的英檢課，就只留英檢那幾組。</p>
   <div id="deckToggles"></div>
   <p class="hint" style="margin-top:18px">
-    每天上限 <input type="number" id="goal" min="5" max="200" step="5"> 字。到期複習的先排，剩下的額度才補新字。<br><br>
+    <b>每日新字</b> <input type="number" id="goal" min="3" max="60" step="1"> 字（3–60 任意整數）。到期複習先排，新字有自己的額度。<br>
+    <b>目標完成日</b> <input type="date" id="targetDate" class="tbtn" style="padding:5px 8px">（選填。填了會反推每日新字、建議方案）<br>
+    <b>排程方案</b> <select id="planSel" class="tbtn" style="padding:5px 8px"></select><br>
+    <label><input type="checkbox" id="strictEarly"> 新字前段不順延：前幾天照日曆天出現，休息日只做這些字（約 5 分鐘）</label><br>
+    <label><input type="checkbox" id="sameDay"> 答對的新字，當場最後再看一次</label>
+    <div id="planBox" style="margin:12px 0 4px"></div><br>
     <b>讀書日</b>　<span id="dayPick"></span><br>
     只在勾選的日子練習。到期日落在其他天會自動順延到下一個讀書日 ——
     這樣連續四天的前段才不會被休息日打斷。<br>
@@ -339,11 +349,7 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
     拼寫留給兩種字：熟到第 4 階以上要確認的，和退步兩次以上的頑固字。<br>
     「只求認得」最快，適合跳完舞真的撐不住的日子。但不要整學期都用它 —— 認得的練習只會養出認得的能力，
     而且很容易產生「我好像會」的錯覺。<br><br>
-    <b>排程規則（前段連續，後段自適應）</b><br>
-    間隔是 <span class="mono">1 → 1 → 1 → 1 → 7 → 15 → 30 → 60</span> 天。
-    也就是一個新字<b>前四天每天都會出現</b>，第五次才隔一週。前段照固定遍數的遞減背誦法6~8 遍版的做法 ——
-    遺忘曲線最陡的就是頭四天，那幾天不補，後面補再多次也是白費。<br>
-    △ 退兩階（通常會直接掉回「每天出現」那一段），× 直接歸零重來。<br>
+    <span id="planWhy"></span>
     後段沒有照抄那套的 7,7,7,7,7 / 10,10 —— 固定 16 遍不分難易，會把大量次數浪費在你早就會的字上。
     這裡改由每個字自己的難度係數決定。<br><br>
         <b>同場回籠</b>　× 的字會在幾題後立刻再考一次，△ 的字排到今天最後再考一次（每個字每場最多回籠兩次）。
@@ -1170,8 +1176,12 @@ async function save(s){
   if(hasWS()){try{await window.storage.set(KEY,str);}catch(e){}}
   if(hasLS()){try{localStorage.setItem(KEY,str);}catch(e){}}
 }
-const today=()=>new Date().toISOString().slice(0,10);
-const plus=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+/* 日期一律用本地年月日；原本 toISOString 是 UTC，在台灣（UTC+8）午夜到早上 8 點會差一天，snap 也因此把到期日提早一天 */
+const isoLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>isoLocal(new Date());
+const plus=n=>{const d=new Date();d.setDate(d.getDate()+n);return isoLocal(d);};
+const addDays=(k,n)=>{const d=new Date(k+'T00:00:00');d.setDate(d.getDate()+n);return isoLocal(d);};
+const daysBetween=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5);
 /* 讀書日：0=日 1=一 … 6=六。預設二三四五。
    到期日若落在休息日，自動順延到下一個讀書日 ——
    這樣「前四天連續」才會是「連續四個讀書日」，不會被週末沖掉。 */
@@ -1181,11 +1191,21 @@ function isStudy(k){return studyDays().includes(new Date(k+'T00:00:00').getDay()
 function snap(k){
   let d=new Date(k+'T00:00:00');
   for(let i=0;i<14;i++){
-    if(studyDays().includes(d.getDay()))return d.toISOString().slice(0,10);
+    if(studyDays().includes(d.getDay()))return isoLocal(d);
     d.setDate(d.getDate()+1);
   }
   return k;
 }
+/* 從 from 起算（含 from），第 n 個讀書日的日期 */
+function nthStudyDay(n,from){
+  let d=new Date((from||today())+'T00:00:00'),c=0;
+  for(let i=0;i<3660;i++){if(studyDays().includes(d.getDay())){c++;if(c>=n)return isoLocal(d);}d.setDate(d.getDate()+1);}
+  return isoLocal(d);
+}
+function studyDaysBetween(a,b){let d=new Date(a+'T00:00:00'),e=new Date(b+'T00:00:00'),c=0;
+  while(d<=e){if(studyDays().includes(d.getDay()))c++;d.setDate(d.getDate()+1);}return c;}
+/* k 之前最近的一個讀書日（不含 k） */
+function prevStudyDay(k){let d=new Date(k+'T00:00:00');for(let i=0;i<14;i++){d.setDate(d.getDate()-1);if(studyDays().includes(d.getDay()))return isoLocal(d);}return plus(-1);}
 const plusS=n=>snap(plus(n));
 /* 讀書日勾選框：至少要留一天 */
 function renderDayPick(){
@@ -1203,13 +1223,58 @@ function renderDayPick(){
 /* 間隔階梯（天）：1,1,1,1 → 7 → 15 → 30 → 60
    前四天連續，取自固定遍數的遞減背誦法6~8 遍版的前段 —— 遺忘曲線最陡的就是這四天。
    後段交給自適應（難度係數），不像固定 16 遍那樣不分難易一律走完。*/
-const LADDER=[1,1,1,1,7,15,30,60];
-const LV=['未學','剛認識','第2天','第3天','第4天','一週後','半個月','一個月','已畢業'];
-const GRAD=7;
-function levelOf(r){return !r.seen?0:Math.min((r.box||0)+1,8);}
-function nextGap(r){const b=Math.min(r.box||0,LADDER.length-1);
-  return Math.max(1,Math.round(LADDER[b]*((r.ease||2.5)/2.5)));}
-let repeats={};
+/* ═══ 排程方案 ═══
+   間隔階梯不再是固定常數，而是可選的方案。固定遍數法三個版本取自《遞減背誦法》講義：
+   16 遍（起步者）、10 遍（英檢初級／多益 600）、6~8 遍（英檢中級／多益 700），固定遍數、不看對錯。
+   「考前混合」是原本的作法：固定遍數法前段 + 艾賓浩斯式自適應後段。兩個衝刺版給區間短的人。 */
+const PLANS={
+ mix: {name:'考前混合',   ladder:[1,1,1,1,7,15,30,60],             adaptive:true,  who:'學測、四個月以上'},
+ ch16:{name:'固定遍數法 16 遍', ladder:[1,1,1,1,1,2,2,3,3,7,7,7,7,7,10,10],adaptive:false, who:'起步者、國中小、三個月以上'},
+ ch10:{name:'固定遍數法 10 遍', ladder:[1,1,1,1,1,7,7,7,30,30],           adaptive:false, who:'英檢初級、多益 600'},
+ ch8: {name:'固定遍數法 6–8 遍',ladder:[1,1,1,1,7,7,30,30],               adaptive:false, who:'英檢中級、多益 700'},
+ s8:  {name:'衝刺 8 週',  ladder:[1,1,1,1,7,7,15],                  adaptive:true,  who:'剩兩到三個月'},
+ s4:  {name:'衝刺 4 週',  ladder:[1,1,1,1,7],                       adaptive:true,  who:'剩一個月內，只求認得'},
+};
+function plan(){return PLANS[(S&&S.plan)||'mix']||PLANS.mix;}
+function ladder(){return plan().ladder;}
+function GRADn(){return ladder().length-1;}                       // box 到這裡＝畢業（仍以最後一格間隔複習）
+function earlyLen(){const L=ladder();let n=0;while(n<L.length&&L[n]===1)n++;return Math.max(1,n);}  // 前段連續天數
+function spanOf(k){return PLANS[k].ladder.reduce((a,b)=>a+b,0);}
+function bestPlan(R){                                             // 剩 R 天：跨度不超過九成的最長方案（第一批字要能走完階梯）
+  const ks=Object.keys(PLANS).sort((a,b)=>spanOf(b)-spanOf(a));
+  return ks.find(k=>spanOf(k)<=R*0.9)||'s4';
+}
+function levelOf(r){return !r.seen?0:Math.min((r.box||0)+1,GRADn()+1);}
+function lvLabel(r){
+  if(!r.seen)return '未學';const b=r.box||0;
+  if(b>=GRADn())return '已畢業';if(b===0)return '剛認識';
+  return `第 ${b+1} 遍`;
+}
+function dotsHTML(r){const lv=levelOf(r),g=GRADn()+1,on=Math.round(lv/g*8);
+  return [1,2,3,4,5,6,7,8].map(i=>`<i class="${i<=on?'on':''}"></i>`).join('');}
+function nextGap(r){const L=ladder(),b=Math.min(r.box||0,L.length-1);
+  const e=plan().adaptive?((r.ease||2.5)/2.5):1;
+  return Math.max(1,Math.round(L[b]*e));}
+/* 一次作答對進度的影響。自適應：△ 退兩階、× 歸零、難度係數升降；固定遍數：△ 同格再走一次、× 退一格、係數不動 */
+function applyRule(r,m,isAgain){
+  const A=plan().adaptive,top=GRADn();
+  if(r.ease===undefined)r.ease=2.5;
+  if(m==='o'){r.streak=(r.streak||0)+1;r.box=Math.min((r.box||0)+1,top);if(A)r.ease=Math.min(2.9,r.ease+0.10);}
+  else if(m==='t'){r.streak=0;r.box=A?Math.max(0,(r.box||0)-2):(r.box||0);if(A)r.ease=Math.max(1.3,r.ease-0.15);
+    if(r.reps>1&&!isAgain)r.lapses=(r.lapses||0)+1;}
+  else{r.streak=0;r.box=A?0:Math.max(0,(r.box||0)-1);if(A)r.ease=Math.max(1.3,r.ease-0.30);
+    if(r.reps>1&&!isAgain)r.lapses=(r.lapses||0)+1;}
+}
+function previewGap(r,m){const c={box:r.box||0,ease:r.ease||2.5,reps:(r.reps||0)+1,streak:r.streak||0,lapses:r.lapses||0};applyRule(c,m,false);return nextGap(c);}
+function planWhy(){
+  const P=plan(),L=P.ladder,E=earlyLen();let c=0;const cum=L.map(g=>c+=g);
+  return `<b>排程規則：${P.name}</b>（${P.who}）<br>
+    間隔是 <span class="mono">${L.join(' → ')}</span> 天，共 ${L.length} 遍，一個字從第一次見到畢業約 ${c} 天。
+    新字會在第 ${cum.slice(0,E).join('、')} 天<b>連續出現 ${E} 次</b>，之後隔 ${L.slice(E).join('、')} 天各一次。
+    ${P.adaptive?'△ 退兩階（多半掉回連續那段）、× 歸零重來；每個字有自己的難度係數，一直答對會拉長間隔、答錯縮短。'
+                :'固定遍數（固定遍數）：△ 同一格再走一次、× 退一格，不用難度係數，重點是每天有業績。'}<br>`;
+}
+let repeats={},again={};
 const MODEWHY={
  auto:'自動：標「看得懂就好」的字只考選擇；標「要會拼寫」的字，爬到第 3 階起每三次考一次拼寫，退步兩次以上的一律拼寫。點卡片上的徽章可以隨時改。',
  choice:'選擇：挖空句子＋四個選項，和學測詞彙題、文意選填同一個形狀。約 20 秒一字。',
@@ -1220,7 +1285,7 @@ function quizType(r){
   if(m!=='auto')return m;
   if(r.kind!=='p')return 'choice';          // 標成「看得懂就好」的字永遠不考拼寫
   if((r.lapses||0)>=2)return 'spell';       // 退步兩次以上的頑固字一定要拼
-  if((r.box||0)>=4&&((r.reps||0)%3===0))return 'spell';
+  if((r.box||0)>=earlyLen()&&((r.reps||0)%3===0))return 'spell';
   return 'choice';
 }
 function distract(r,n){
@@ -1265,20 +1330,22 @@ function seedInto(recs){
 }
 function freshState(){
   const on={};allDecks().forEach(([n])=>on[n]=true);
-  return {recs:seedInto({}),sources:[],goal:8,revCap:60,artEvery:3,days:[2,3,4,5],theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
+  return {recs:seedInto({}),sources:[],goal:8,revCap:60,artEvery:3,days:[2,3,4,5],plan:'mix',strictEarly:true,sameDay:true,targetDate:'',doneDays:{},startDate:null,theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
 }
 function buildQueue(){
   const t=today();
   const all=Object.values(S.recs).filter(r=>S.on[r.deck||'我的']!==false);
   /* 到期複習優先，且和新字分開計額。
      前四天連續的字昨天才看過，重看很快（約 8 秒），不該和新字搶同一個額度。 */
-  const due=all.filter(r=>r.seen&&r.due&&r.due<=t)
-                .sort((a,b)=>((b.lapses||0)-(a.lapses||0))||(a.due<b.due?-1:1))
-                .slice(0,S.revCap||60);
-  const room=Math.max(0,(S.goal||12));
+  const rest=!isStudy(t);
+  let due=all.filter(r=>r.seen&&r.due&&r.due<=t);
+  if(rest)due=(S.strictEarly!==false)?due.filter(r=>(r.box||0)<earlyLen()):[];   // 休息日：只有前段新字露臉
+  due=due.sort((a,b)=>((b.lapses||0)-(a.lapses||0))||(a.due<b.due?-1:1))
+         .slice(0,S.revCap||60);
+  const room=rest?0:Math.max(0,(S.goal||12));
   const nw=all.filter(r=>!r.seen).slice(0,room);
   queue=due.concat(nw);
-  repeats={};idx=0;marks=new Array(queue.length).fill(null);
+  repeats={};again={};idx=0;marks=new Array(queue.length).fill(null);
 }
 /* 例句挖空：優先用例句裡實際出現的變化形 */
 const esc_re=x=>String(x).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -1356,9 +1423,9 @@ function renderGrid(){
 function renderStats(){
   const all=Object.values(S.recs),t=today();
   const seen=all.filter(r=>r.seen);
-  const grad=seen.filter(r=>(r.box||0)>=GRAD).length;
-  const solid=seen.filter(r=>(r.box||0)>=4&&(r.box||0)<GRAD).length;
-  const shaky=seen.filter(r=>(r.box||0)<4).length;
+  const grad=seen.filter(r=>(r.box||0)>=GRADn()).length;
+  const solid=seen.filter(r=>(r.box||0)>=earlyLen()&&(r.box||0)<GRADn()).length;
+  const shaky=seen.filter(r=>(r.box||0)<earlyLen()).length;
   const d1=plus(1),d7=plus(7);
   const soon=seen.filter(r=>r.due&&r.due>t&&r.due<=d1).length;
   const wk=seen.filter(r=>r.due&&r.due>t&&r.due<=d7).length;
@@ -1404,8 +1471,8 @@ function bindKind(){
 }
 function famBar(r){
   const lv=levelOf(r);
-  return `<div class="fam"><span class="lb">熟悉度　${LV[lv]}</span>
-    <span class="dots">${[1,2,3,4,5,6,7,8].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>
+  return `<div class="fam"><span class="lb">熟悉度　${lvLabel(r)}</span>
+    <span class="dots">${dotsHTML(r)}</span>
     ${r.seen?`<span class="mono meta2">已練 ${r.reps||0} 次${r.lapses?`　退步 ${r.lapses} 次`:''}　下次 ${r.due||'—'}</span>`:'<span class="meta2">第一次見面</span>'}</div>`;
 }
 function renderToday(){
@@ -1452,7 +1519,7 @@ function renderQuiz(){
   const r=cur,cl=cloze(r),ty=quizType(r);
   const head=repeats[r.id]&&r.last===today()
     ?'🔁 同場回籠，剛剛沒過的再來一次'
-    :(r.reps>0?`第 ${(r.reps||0)+1} 次抽查　上次 ${r.last||'—'}　熟悉度 ${LV[levelOf(r)]}`:'趁熱馬上考一次');
+    :(r.reps>0?`第 ${(r.reps||0)+1} 次抽查　上次 ${r.last||'—'}　熟悉度 ${lvLabel(r)}`:'趁熱馬上考一次');
 
   if(ty==='recog'){
     $('stage').innerHTML=`<div class="card">
@@ -1551,9 +1618,9 @@ function renderResult(){
     ${famBar(r)}
     <p class="prompt">${sug?'程式猜的是下面高亮那一個。你比它清楚剛剛是真的會還是矇到的，不同意就改。'+tip:'這一輪沒有自動判定，自己誠實選一個。'}</p>
     <div class="marks">
-      <button class="mark m-o" data-m="o" data-sug="${sug==='o'}"><span class="g">○</span><span class="lb">會了</span><span class="sub">7 天後再考</span></button>
-      <button class="mark m-t" data-m="t" data-sug="${sug==='t'}"><span class="g">△</span><span class="lb">有卡點</span><span class="sub">3 天後再考</span></button>
-      <button class="mark m-x" data-m="x" data-sug="${sug==='x'}"><span class="g">×</span><span class="lb">不會</span><span class="sub">明天立刻補</span></button>
+      <button class="mark m-o" data-m="o" data-sug="${sug==='o'}"><span class="g">○</span><span class="lb">會了</span><span class="sub">${previewGap(cur,'o')} 天後再考</span></button>
+      <button class="mark m-t" data-m="t" data-sug="${sug==='t'}"><span class="g">△</span><span class="lb">有卡點</span><span class="sub">${previewGap(cur,'t')} 天後再考</span></button>
+      <button class="mark m-x" data-m="x" data-sug="${sug==='x'}"><span class="g">×</span><span class="lb">不會</span><span class="sub">${previewGap(cur,'x')===1?'明天立刻補':previewGap(cur,'x')+' 天後補'}</span></button>
     </div>
   </div>`;
   $('sayB').onclick=()=>speak(r.en);bindKind();bindAudio(r,'R');
@@ -1564,24 +1631,16 @@ async function doMark(m){
   r.seen=true;r.stage=1;r.last=t;
   r.reps=(r.reps||0)+1;
   r.log=(r.log||[]).concat([[t,m]]).slice(-14);      // 保留最近 14 次作答
-  if(r.ease===undefined)r.ease=2.5;
-  if(m==='o'){
-    r.streak=(r.streak||0)+1;
-    r.box=Math.min((r.box||0)+1,LADDER.length-1);
-    r.ease=Math.min(2.9,r.ease+0.10);
-  }else if(m==='t'){
-    r.streak=0;
-    r.box=Math.max(0,(r.box||0)-2);        // 卡住就退兩階，多半會掉回「連續每天」那一段
-    r.ease=Math.max(1.3,r.ease-0.15);
-    if(r.reps>1)r.lapses=(r.lapses||0)+1;
-  }else{
-    r.streak=0;
-    r.box=0;
-    r.ease=Math.max(1.3,r.ease-0.30);
-    if(r.reps>1)r.lapses=(r.lapses||0)+1;
+  const isAgain=again[r.id]===1;          // 答對新字的「當場再看一次」
+  if(isAgain)again[r.id]=2;
+  const firstTime=r.reps===1;
+  if(!(isAgain&&m==='o')){                 // 同場複看又答對：只記錄，不推進階梯、不改到期日
+    applyRule(r,m,isAgain);
+    const gap=nextGap(r);
+    /* 前段不順延：遺忘曲線走的是日曆天，前幾天照日曆排（休息日也露臉）；後段複習才順延到讀書日 */
+    r.due=(S.strictEarly!==false&&(r.box||0)<earlyLen())?plus(gap):plusS(gap);
   }
-  r.due=plusS(nextGap(r));
-  marks[idx]=m;bumpDay();
+  marks[idx]=m;bumpDay(firstTime);
 
   /* 同場回籠：這是艾賓浩斯最關鍵、原本缺掉的一段。
      × 隔幾題就再考一次；△ 排到今天最後再考一次。每個字每場最多回籠 2 次。 */
@@ -1590,6 +1649,9 @@ async function doMark(m){
     repeats[r.id]=n+1;
     const at=(m==='x')?Math.min(queue.length,idx+4):queue.length;
     queue.splice(at,0,r);marks.splice(at,0,null);
+  }else if(m==='o'&&firstTime&&S.sameDay!==false&&!again[r.id]){
+    /* 答對的新字也在當場最後再看一次：對應艾賓浩斯的短間隔、固定遍數法「晚一點再背」 */
+    again[r.id]=1;queue.push(r);marks.push(null);
   }
 
   idx++;phase='pre';ans='';hinted=false;
@@ -1762,15 +1824,21 @@ function todayArts(){const p=artPlan(30),t=today();
   return late.concat(p[t]||[]);}
 
 /* ═══ 今日課表 ═══ */
-function bumpDay(){
+function bumpDay(isNew){
   const t=today();
   if(S.dayDate!==t){
-    if(S.dayDate&&S.dayDate===plus(-1))S.streak=(S.streak||0)+1;
-    else if(S.dayDate!==t)S.streak=1;
-    S.dayDate=t;S.dayDone=0;
+    /* 連續天數：昨天有做，或上一個讀書日有做，都算連續（休息日不斷鏈） */
+    if(S.dayDate&&(S.dayDate===plus(-1)||S.dayDate===prevStudyDay(t)))S.streak=(S.streak||0)+1;
+    else S.streak=1;
+    S.dayDate=t;S.dayDone=0;S.dayNew=0;S.dayRev=0;
   }
   S.dayDone=(S.dayDone||0)+1;
+  if(isNew)S.dayNew=(S.dayNew||0)+1;else S.dayRev=(S.dayRev||0)+1;
+  S.doneDays=S.doneDays||{};S.doneDays[t]=(S.doneDays[t]||0)+1;
+  if(!S.startDate||t<S.startDate)S.startDate=t;
 }
+function bizLine(){const n=Object.keys(S.doneDays||{}).length;
+  return `${n?`　·　第 ${n} 個讀書日`:''}${(S.streak||0)>1?`　·　連續 ${S.streak} 天`:''}`;}
 function todayCard(){
   if(!S)return '';
   const t=today();
@@ -1787,16 +1855,21 @@ function todayCard(){
         ${x.best?`　<span class="mono">上次最佳 ${x.best} wpm</span>`:''}
         <button class="tbtn" data-goart="${x.a.id}" style="margin-left:6px">去讀</button></li>`).join('')
     : '<li>📖 今天沒有排文章。想多讀就到「文章閱讀」自己挑一篇。</li>';
-  if(!isStudy(t))return `<div class="card today-card">
-    <div class="step">今天是休息日　${t}（${DAYNAME[new Date(t+'T00:00:00').getDay()]}）</div>
-    <p style="margin:8px 0 0;font-size:.92rem">🌙 今天沒有排進度。到期的字已經順延到下一個讀書日了，不用擔心欠著。</p>
-    <p class="hint" style="margin:8px 0 0">真的想動一下，就切「只求認得」跑 5 分鐘。做不到也不補。</p></div>`;
+  if(!isStudy(t)){
+    const early=S.strictEarly!==false?all.filter(r=>r.seen&&r.due&&r.due<=t&&(r.box||0)<earlyLen()).length:0;
+    return `<div class="card today-card">
+    <div class="step">今天是休息日　${t}（${DAYNAME[new Date(t+'T00:00:00').getDay()]}）${bizLine()}</div>
+    ${early?`<p style="margin:8px 0 0;font-size:.92rem">🌙 只有 <b>${early}</b> 個剛學的新字要露臉（前段照日曆天，不順延）。切「只求認得」約 ${Math.max(2,Math.ceil(early/6))} 分鐘。
+        <br><span class="mono" style="font-size:.78rem;color:var(--soft)">已完成 ${done} / ${early}${done>=early?'　✅ 今天的業績達成':''}</span></p>`
+      :`<p style="margin:8px 0 0;font-size:.92rem">🌙 今天沒有排進度。到期的字已經順延到下一個讀書日了，不用擔心欠著。</p>`}
+    <p class="hint" style="margin:8px 0 0">做不到也不補。</p></div>`;}
+  const revCap=Math.min(dueN,S.revCap||60);
   return `<div class="card today-card">
-    <div class="step">今天要做什麼　${t}${S.streak>1?`　·　連續 ${S.streak} 天`:''}</div>
+    <div class="step">今天要做什麼　${t}${bizLine()}</div>
     <ul class="todo">
-      <li>🔤 單字：<b>新字 ${newN}</b> ＋ <b>複習 ${Math.min(dueN,S.revCap||60)}</b>　＝ 共 ${target} 字
+      <li>🔤 單字：<b>新字 ${newN}</b> ＋ <b>複習 ${revCap}</b>　＝ 共 ${target} 字
         ${over?`　<span style="color:var(--no)">（其中 ${over} 字已逾期）</span>`:''}
-        <br><span class="mono" style="font-size:.78rem;color:var(--soft)">已完成 ${done} / ${target}</span></li>
+        <br><span class="mono" style="font-size:.78rem;color:var(--soft)">業績　新字 ${Math.min(S.dayDate===t?(S.dayNew||0):0,newN)} / ${newN}　複習 ${S.dayDate===t?(S.dayRev||0):0} / ${revCap}　已完成 ${done} / ${target}${done>=target&&target>0?'　✅ 今天的業績達成':''}</span></li>
       ${artLine}
       <li>🎧 跟讀：拿今天這篇文章按「逐句跟讀」，做 5 分鐘就好</li>
     </ul>
@@ -1830,7 +1903,7 @@ function bindReset(){
     window.scrollTo(0,0);
   });
   if($('rsAll'))arm($('rsAll'),'完全重置',async()=>{
-    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap};
+    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap,days:S.days,plan:S.plan,strictEarly:S.strictEarly,sameDay:S.sameDay,targetDate:S.targetDate};
     S=freshState();Object.assign(S,keep);
     await save(S);
     buildQueue();phase='pre';ans='';hinted=false;
@@ -1868,7 +1941,8 @@ function renderCal(){
   let wk=0,nx=0,i=0;
   rows.forEach(r=>{if(r.key==='over')return;if(i<7)wk+=r.list.length;else if(i<14)nx+=r.list.length;i++;});
 
-  $('calSum').innerHTML=`未來 7 天要複習 ${wk} 字　·　第 2 週 ${nx} 字　·　還沒學過 ${unlearned} 字`;
+  const nDone=Object.keys(S.doneDays||{}).length;
+  $('calSum').innerHTML=`未來 7 天要複習 ${wk} 字　·　第 2 週 ${nx} 字　·　還沒學過 ${unlearned} 字${nDone?`　·　累計 ${nDone} 個讀書日`:''}${(S.streak||0)>1?`，連續 ${S.streak} 天`:''}`;
 
   const note=`<div class="card" style="padding:16px 18px;margin:0 0 12px">
     <p style="margin:0 0 8px;font-size:.86rem"><b>這張表上的數字是「當天要複習的舊字」，不含新字。</b></p>
@@ -1881,8 +1955,9 @@ function renderCal(){
       一個月後每天約 ${Math.round(ng*9)} 字，之後會慢慢降下來。
       看到某幾天特別高，就把那幾天前一週的新字調低。<br><br>
       <b>🌙 休息日</b>：目前設定的讀書日是 <b>${studyDays().map(x=>DAYNAME[x]).join('、')}</b>，
-      每週 ${studyDays().length} 天。到期日如果落在休息日，會自動順延到下一個讀書日 ——
-      所以「前四天連續」實際上是「連續四個讀書日」，不會被週末沖掉。<br>
+      每週 ${studyDays().length} 天。${S.strictEarly!==false
+        ?`新字前 ${earlyLen()} 天<b>照日曆天</b>出現（休息日也會露臉，但只做這些字），之後的複習才順延到讀書日。遺忘曲線走的是日曆天，前段不能斷。`
+        :`到期日落在休息日會順延到下一個讀書日，所以「前 ${earlyLen()} 天連續」實際上是「連續 ${earlyLen()} 個讀書日」，中間隔了休息日。`}<br>
       也因為這樣，「每天新字 ${ng}」實際上是<b>每週 ${ng*studyDays().length} 個新字</b>。
       要算多久跑完字庫，用這個數字除。<br><br>
       <b>📖 文章</b>：每 ${artEvery()} 天排一篇新的，每篇讀完會再排 4 天後、14 天後各重讀一次。
@@ -1895,9 +1970,9 @@ function renderCal(){
     const total=n+newN;
     const heavy=n>cap;
     const label=r.key==='over'?'逾期未做':fmtD(r.d);
-    if(r.rest)return `<div class="crow rest"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline">
+    if(r.rest)return `<div class="crow rest ${n?'has':''}"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline">
       <span class="dt">${fmtD(r.d)}</span><span class="wk">${wdOf(r.d)}</span>
-      <span class="ct" style="margin-left:auto">🌙 休息日，不排進度</span></div></div>`;
+      <span class="ct" style="margin-left:auto">🌙 休息日${n?`，前段新字 ${n} 個露臉`:'，不排進度'}</span></div></div>`;
     const arts=(r.key==='over')?[]:(ap[r.d]||[]);
     const artHTML=arts.length?`<span class="calart">📖 ${arts.map(x=>
       `<b>${esc(x.a.t)}</b>${x.kind==='new'?'（第一次讀）':`（第 ${x.round} 次重讀）`}`).join('　')}</span>`:'';
@@ -1916,6 +1991,50 @@ function renderCal(){
         <span class="ct">複習 ${n} 字${newN?`　＋新字 ${newN}`:''}${newN?`　＝ ${total}`:''}${heavy?`　⚠ 超過複習上限 ${cap}`:''}</span>
       </summary>
       ${artHTML}<div class="cw">${words||'<span>—</span>'}</div></details>`;}).join('');
+  renderPlan();
+}
+/* ═══ 學習計畫試算（設定頁） ═══ */
+function renderPlan(){
+  const sel=$('planSel');if(!sel||!S)return;
+  if(!sel.options.length)Object.entries(PLANS).forEach(([k,p])=>{const o=document.createElement('option');o.value=k;o.textContent=`${p.name}　${p.who}（跨度 ${spanOf(k)} 天）`;sel.appendChild(o);});
+  sel.value=S.plan||'mix';
+  if($('strictEarly'))$('strictEarly').checked=S.strictEarly!==false;
+  if($('sameDay'))$('sameDay').checked=S.sameDay!==false;
+  if($('targetDate'))$('targetDate').value=S.targetDate||'';
+  const on=r=>S.on[r.deck||'我的']!==false,all=Object.values(S.recs).filter(on),t=today();
+  const unl=all.filter(r=>!r.seen).length,learning=all.filter(r=>r.seen&&(r.box||0)<GRADn()).length,grad=all.filter(r=>r.seen&&(r.box||0)>=GRADn()).length;
+  const ng=S.goal||8,sd=studyDays().length,wk=ng*sd,E=earlyLen();
+  const finish=unl?nthStudyDay(Math.ceil(unl/ng)):null;
+  const span=spanOf(S.plan||'mix');
+  const gradDate=finish?snap(addDays(finish,span)):null;
+  const rows=calData(14).filter(r=>r.key!=='over'&&!r.rest);
+  const avgRev=rows.length?Math.round(rows.reduce((a,r)=>a+r.list.length,0)/rows.length):0;
+  const start=S.startDate||null;
+  let advice='';
+  if(S.targetDate){
+    const R=daysBetween(t,S.targetDate),SD=studyDaysBetween(t,S.targetDate);
+    if(R<=0)advice='<span style="color:var(--no)">目標日已經過了，請重新設定。</span>';
+    else{
+      const need=SD>0?Math.ceil(unl/Math.max(1,SD)):null,best=bestPlan(R);
+      advice=`距離目標日 <b>${R}</b> 天（其中 ${SD} 個讀書日）。要在那之前把 ${unl} 個未學字都學過，每日新字至少 <b class="big">${need}</b>
+        ${need>60?'<span style="color:var(--no)">（超過 60 的上限，請延後目標日或關掉部分字組）</span>':need<=60&&need!==ng?`<button class="tbtn" id="applyNeed">套用每日 ${need}</button>`:'（目前設定剛好）'}<br>
+        建議方案：<b>${PLANS[best].name}</b>（跨度 ${spanOf(best)} 天，第一批字來得及走完整個階梯）
+        ${best!==(S.plan||'mix')?`<button class="tbtn" id="applyPlan" data-p="${best}">切換成 ${PLANS[best].name}</button>`:'，就是目前的方案'}`;
+    }
+  }
+  $('planBox').innerHTML=`<table class="ptab">
+    <tr><td>起始日</td><td>${start?`${start}（第 ${Object.keys(S.doneDays||{}).length} 個讀書日${(S.streak||0)>1?`，連續 ${S.streak} 天`:''}）`:'尚未開始 —— 第一次作答那天就是起始日'}</td></tr>
+    <tr><td>字庫（已開啟字組）</td><td>共 ${all.length} 字：未學 <b>${unl}</b>　學習中 ${learning}　已畢業 ${grad}</td></tr>
+    <tr><td>每週新字</td><td><b class="big">${wk}</b> ＝ 每日 ${ng} × 讀書日 ${sd} 天</td></tr>
+    <tr><td>新字學完日</td><td>${finish?`<b class="big">${finish}</b>（還要 ${Math.ceil(unl/ng)} 個讀書日，約 ${Math.ceil(daysBetween(t,finish)/7)} 週）`:'已全部學過'}</td></tr>
+    <tr><td>全部畢業預估</td><td>${gradDate?`${gradDate}（最後一個新字再走完 ${span} 天的階梯；假設都答對）`:'—'}</td></tr>
+    <tr><td>每日負擔</td><td>新字 ${ng} ＋ 複習約 ${avgRev}（未來兩週讀書日平均）＝ 約 <b>${ng+avgRev}</b> 字。${avgRev<ng*3?'剛起步，兩週後複習量會升到新字的 4～6 倍，再看要不要調。':''}</td></tr>
+    <tr><td>一個字的旅程</td><td>第 1 天學，之後在第 ${(()=>{let c=0;return ladder().map(g=>c+=g);})().slice(0,E).join('、')} 天連續出現，再隔 ${ladder().slice(E).join('、')} 天各一次，共 ${ladder().length} 遍。${S.sameDay!==false?'答對的新字當天還會再看一次。':''}</td></tr>
+    ${advice?`<tr><td>目標反推</td><td>${advice}</td></tr>`:''}
+  </table>`;
+  if($('planWhy'))$('planWhy').innerHTML=planWhy();
+  const an=$('applyNeed');if(an)an.onclick=async()=>{S.goal=+an.textContent.replace(/\D/g,'');$('goal').value=S.goal;await save(S);buildQueue();render();renderSheet();renderCal();};
+  const ap=$('applyPlan');if(ap)ap.onclick=async()=>{S.plan=ap.dataset.p;await save(S);buildQueue();render();renderSheet();renderLib();renderCal();};
 }
 function fmtD(k){if(k==='逾期')return '逾期';const[y,m,d]=k.split('-');return `${+m}/${+d}`;}
 function wdOf(k){if(k==='逾期')return '';const dt=new Date(k+'T00:00:00');return '週'+WD[dt.getDay()];}
@@ -2012,7 +2131,7 @@ function bindKW(){
     document.querySelectorAll('.pop').forEach(p=>p.remove());
     const p=document.createElement('div');p.className='pop';
     p.innerHTML=`<b>${esc(r.en)}</b>${r.syl&&r.syl!==r.en?` <span style="opacity:.7">${esc(r.syl)}</span>`:''}<br>${esc(r.zh)}<br>
-      <span style="opacity:.7;font-size:.9em">${LV[levelOf(r)]}${r.kind==='p'?' · 要會拼寫':''}</span>`;
+      <span style="opacity:.7;font-size:.9em">${lvLabel(r)}${r.kind==='p'?' · 要會拼寫':''}</span>`;
     document.body.appendChild(p);
     const b=el.getBoundingClientRect();
     p.style.left=Math.min(window.innerWidth-260,b.left)+'px';
@@ -2091,7 +2210,7 @@ function renderLib(){
   else if(f==='lapse')all=all.filter(r=>(r.lapses||0)>0);
   else if(f==='due')all=all.filter(r=>r.seen&&r.due&&r.due<=t);
   else if(f==='new')all=all.filter(r=>!r.seen);
-  else if(f==='grad')all=all.filter(r=>(r.box||0)>=GRAD);
+  else if(f==='grad')all=all.filter(r=>(r.box||0)>=GRADn());
   else if(f==='prod')all=all.filter(r=>r.kind==='p');
   else if(f==='recog')all=all.filter(r=>r.kind!=='p');
   all.sort((a,b)=>(b.lapses||0)-(a.lapses||0)||(a.box||0)-(b.box||0)||a.en.localeCompare(b.en));
@@ -2110,8 +2229,8 @@ function renderLib(){
     return `<div class="lrow ${(r.lapses||0)>0?'lap':''}">
       <span class="w">${esc(r.en)}${r.syl&&r.syl!==r.en?`<br><span style="font-size:.72rem;font-weight:400;color:var(--soft)">${esc(r.syl)}</span>`:''}</span>
       <span class="z">${esc(r.zh)}${r.kind==='p'?' <span class="n">·拼寫</span>':''}${r.fam&&r.fam.length?`<br><span class="n">同字族 ${esc(r.fam.join('／'))}</span>`:''}</span>
-      <span class="d">${[1,2,3,4,5,6,7,8].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>
-      <span class="n mono">${LV[lv]}${r.seen?`　練 ${r.reps||0}${r.lapses?`　退 ${r.lapses}`:''}　下次 ${r.due||'—'}`:''}</span>
+      <span class="d">${dotsHTML(r)}</span>
+      <span class="n mono">${lvLabel(r)}${r.seen?`　練 ${r.reps||0}${r.lapses?`　退 ${r.lapses}`:''}　下次 ${r.due||'—'}`:''}</span>
     </div>`;}).join('')||'<p class="hint">沒有符合的字。</p>';
 }
 /* ═══ 字組開關 ═══ */
@@ -2160,13 +2279,24 @@ function renderSheet(){
     if(!S.artEvery)S.artEvery=3;
     if(!S.sources)S.sources=[];
     if(!S.days||!S.days.length)S.days=[2,3,4,5];
-    if(!S.goal||S.goal>40)S.goal=12;
+    if(!PLANS[S.plan])S.plan='mix';
+    if(S.strictEarly===undefined)S.strictEarly=true;
+    if(S.sameDay===undefined)S.sameDay=true;
+    if(!S.doneDays){                          // 舊進度：從作答紀錄回推讀書日與起始日
+      S.doneDays={};Object.values(S.recs).forEach(r=>(r.log||[]).forEach(([d])=>{S.doneDays[d]=(S.doneDays[d]||0)+1;}));
+      const ds=Object.keys(S.doneDays).sort();if(ds.length)S.startDate=ds[0];
+    }
+    if(!S.goal||S.goal>60)S.goal=8;
     if(!S.rate)S.rate=0.85;
     if(S.autoSay===undefined)S.autoSay=true;
     if(!S.arts)S.arts={};
     if(!S.read)S.read={};
   }
   renderDeckToggles();renderDayPick();
+  if($('planSel'))$('planSel').onchange=async e=>{S.plan=e.target.value;await save(S);buildQueue();phase=queue.length&&queue[0].seen?'quiz':'pre';render();renderSheet();renderLib();renderCal();};
+  if($('targetDate'))$('targetDate').onchange=async e=>{S.targetDate=e.target.value||'';await save(S);renderPlan();};
+  if($('strictEarly'))$('strictEarly').onchange=async e=>{S.strictEarly=e.target.checked;await save(S);buildQueue();render();renderSheet();renderCal();};
+  if($('sameDay'))$('sameDay').onchange=async e=>{S.sameDay=e.target.checked;await save(S);renderPlan();};
   document.documentElement.dataset.theme=S.theme||'light';
   document.documentElement.style.setProperty('--fs',(S.fs||17)+'px');
   $('themeBtn').textContent=S.theme==='dark'?'淺色':'深色';
@@ -2217,7 +2347,7 @@ function renderSheet(){
     await save(S);renderRead();renderSrc();renderCal();
     document.querySelector('.tab[data-t=read]').click();window.scrollTo(0,0);};
   $('deckBtn').onclick=importDeck;
-  $('goal').onchange=async e=>{S.goal=Math.max(3,Math.min(60,+e.target.value||12));
+  $('goal').onchange=async e=>{S.goal=Math.max(3,Math.min(60,+e.target.value||8));
     await save(S);buildQueue();phase=queue.length&&queue[0].seen?'quiz':'pre';render();renderSheet();renderCal();};
   if($('revCap')){$('revCap').value=S.revCap||60;
     $('revCap').onchange=async e=>{S.revCap=Math.max(10,Math.min(200,+e.target.value||60));
