@@ -341,6 +341,9 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
       <option value="1">1.0 正常（英聽測驗的速度）</option>
     </select>
     <label style="margin-left:12px"><input type="checkbox" id="autoSay"> 進到新字時自動唸一次</label><br>
+    語音 <select id="voiceSel" class="tbtn" style="padding:5px 8px;max-width:70vw"></select>
+    <button class="tbtn" id="voiceTry">試聽</button>
+    <span class="hint">發音怪怪的就換一個。手機上通常是「Google」或「Samantha／Ava」這類最自然；名字後面有「網路」的要連線才會出聲。</span><br>
     「跟讀」會先唸一次、留一段空白讓你出聲跟著唸、再唸一次讓你對照。搭配「錄音／播我的」可以聽出自己哪裡不一樣 ——
     這也正好是英檢課的錄音作業在練的東西。<br><br>
     <b>作答方式：為什麼預設不是拼寫</b><br>
@@ -1370,10 +1373,40 @@ function lev(a,b){const m=[];for(let i=0;i<=b.length;i++)m[i]=[i];for(let j=0;j<
     m[i][j]=b[i-1]===a[j-1]?m[i-1][j-1]:Math.min(m[i-1][j-1]+1,m[i][j-1]+1,m[i-1][j]+1);
   return m[b.length][a.length];}
 function rate(){return (S&&S.rate)||0.85;}
+/* ═══ 語音挑選 ═══
+   只設 lang='en-US' 不夠：瀏覽器會拿系統預設語音（中文系統常是中文語音唸英文，macOS 還可能挑到音效類聲音）。
+   這裡列出所有英文語音，依品質評分自動挑一個，設定頁也可以手動選。 */
+let VOICES=[];
+function loadVoices(){try{VOICES=speechSynthesis.getVoices().filter(v=>/^en([-_]|$)/i.test(v.lang));}catch(e){VOICES=[];}}
+function voiceScore(v){
+  let sc=0;const n=v.name.toLowerCase();
+  if(/en[-_]us/i.test(v.lang))sc+=30;else if(/en[-_](gb|au|ie)/i.test(v.lang))sc+=20;else sc+=10;
+  if(/natural|neural|premium|enhanced|online/.test(n))sc+=25;                    // 高品質語音
+  if(/samantha|ava|allison|zoe|nicky|google us english|google uk english|aria|jenny|guy|davis|emma|libby|ryan|sonia|karen|daniel|moira|tessa|serena/.test(n))sc+=20;
+  if(/compact|eloquence|fred|albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|kathy|ralph|grandma|grandpa|rocko|shelley|eddy|flo|reed|sandy/.test(n))sc-=60;  // macOS 的老舊或搞怪聲音
+  if(!v.localService)sc+=5;                                                       // Android 的 Google 網路語音較自然
+  return sc;
+}
+function pickVoice(){
+  if(!VOICES.length)loadVoices();
+  if(S&&S.voice){const v=VOICES.find(x=>x.name===S.voice);if(v)return v;}
+  return VOICES.slice().sort((a,b)=>voiceScore(b)-voiceScore(a))[0]||null;
+}
+function renderVoiceSel(){
+  const el=$('voiceSel');if(!el)return;
+  loadVoices();
+  const auto=pickVoice();
+  el.innerHTML=`<option value="">自動${auto?`（目前：${esc(auto.name)}）`:'（此裝置沒有英文語音）'}</option>`+
+    VOICES.slice().sort((a,b)=>voiceScore(b)-voiceScore(a)).map(v=>`<option value="${esc(v.name)}">${esc(v.name)}　${v.lang}${v.localService?'':'　·網路'}</option>`).join('');
+  el.value=(S&&S.voice&&VOICES.some(v=>v.name===S.voice))?S.voice:'';
+}
+try{speechSynthesis.onvoiceschanged=()=>{loadVoices();renderVoiceSel();};}catch(e){}
 function speak(txt,opt){
   try{
     const u=new SpeechSynthesisUtterance(txt);
-    u.lang='en-US';u.rate=(opt&&opt.rate)||rate();
+    const v=pickVoice();
+    u.lang=v?v.lang:'en-US';if(v)u.voice=v;
+    u.rate=(opt&&opt.rate)||rate();
     if(opt&&opt.onend)u.onend=opt.onend;
     speechSynthesis.cancel();speechSynthesis.speak(u);
   }catch(e){if(opt&&opt.onend)opt.onend();}
@@ -1903,7 +1936,7 @@ function bindReset(){
     window.scrollTo(0,0);
   });
   if($('rsAll'))arm($('rsAll'),'完全重置',async()=>{
-    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap,days:S.days,plan:S.plan,strictEarly:S.strictEarly,sameDay:S.sameDay,targetDate:S.targetDate};
+    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap,voice:S.voice,days:S.days,plan:S.plan,strictEarly:S.strictEarly,sameDay:S.sameDay,targetDate:S.targetDate};
     S=freshState();Object.assign(S,keep);
     await save(S);
     buildQueue();phase='pre';ans='';hinted=false;
@@ -2324,6 +2357,9 @@ function renderSheet(){
   paintMode();
   if($('rateSel')){$('rateSel').value=String(S.rate||0.85);
     $('rateSel').onchange=async e=>{S.rate=parseFloat(e.target.value);await save(S);};}
+  renderVoiceSel();
+  if($('voiceSel'))$('voiceSel').onchange=async e=>{S.voice=e.target.value||'';await save(S);renderVoiceSel();};
+  if($('voiceTry'))$('voiceTry').onclick=()=>speak('Patience is a virtue. The victims received support.');
   if($('autoSay')){$('autoSay').checked=S.autoSay!==false;
     $('autoSay').onchange=async e=>{S.autoSay=e.target.checked;await save(S);};}
   if($('calAll'))$('calAll').onclick=e=>{const b=e.currentTarget;
