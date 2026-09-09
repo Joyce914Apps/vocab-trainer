@@ -114,6 +114,7 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
 .crow .wk{font-size:.72rem;color:var(--soft)}
 .crow .ct{margin-left:auto;font-family:ui-monospace,monospace;font-size:.82rem}
 .crow.over{border-left:3px solid var(--no)}
+.crow.rest{opacity:.4;background:transparent}
 .crow.today{border-left:3px solid var(--ok)}
 .crow.heavy .ct{color:var(--no)}
 .cw{padding:2px 13px 12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem}
@@ -172,7 +173,8 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
 .lrow .d i.on{background:var(--ok)}
 .lrow.lap{border-left:3px solid var(--no)}
 .lrow .n{color:var(--soft);font-size:.7rem}
- .dk{display:flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid var(--line);
+ .dchk{display:inline-flex;align-items:center;gap:4px;margin-right:9px;font-size:.85rem;cursor:pointer}
+.dk{display:flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid var(--line);
   border-radius:var(--r);background:var(--card);margin-bottom:5px;font-size:.85rem;cursor:pointer}
 .dk .num{margin-left:auto;color:var(--soft);font-size:.75rem}
 .hint code{background:var(--faint);padding:1px 5px;border-radius:2px;font-size:.92em}
@@ -316,6 +318,10 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
   <div id="deckToggles"></div>
   <p class="hint" style="margin-top:18px">
     每天上限 <input type="number" id="goal" min="5" max="200" step="5"> 字。到期複習的先排，剩下的額度才補新字。<br><br>
+    <b>讀書日</b>　<span id="dayPick"></span><br>
+    只在勾選的日子練習。到期日落在其他天會自動順延到下一個讀書日 ——
+    這樣連續四天的前段才不會被休息日打斷。<br>
+    <b>注意</b>：每週的新字量 = 每日新字 × 讀書日天數。四天的話，每天 8 個就是每週 32 個。<br><br>
     <b>文章</b>　每 <input type="number" id="artEvery" min="1" max="14" step="1" style="width:56px"> 天排一篇新文章。
     讀完會自動排 4 天後、14 天後各重讀一次，滿三次就畢業。<br><br>
     <b>聲音</b>　語速
@@ -1166,6 +1172,34 @@ async function save(s){
 }
 const today=()=>new Date().toISOString().slice(0,10);
 const plus=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+/* 讀書日：0=日 1=一 … 6=六。預設二三四五。
+   到期日若落在休息日，自動順延到下一個讀書日 ——
+   這樣「前四天連續」才會是「連續四個讀書日」，不會被週末沖掉。 */
+const DAYNAME=['日','一','二','三','四','五','六'];
+function studyDays(){return (S&&S.days&&S.days.length)?S.days:[2,3,4,5];}
+function isStudy(k){return studyDays().includes(new Date(k+'T00:00:00').getDay());}
+function snap(k){
+  let d=new Date(k+'T00:00:00');
+  for(let i=0;i<14;i++){
+    if(studyDays().includes(d.getDay()))return d.toISOString().slice(0,10);
+    d.setDate(d.getDate()+1);
+  }
+  return k;
+}
+const plusS=n=>snap(plus(n));
+/* 讀書日勾選框：至少要留一天 */
+function renderDayPick(){
+  const el=$('dayPick');if(!el)return;
+  const on=studyDays();
+  el.innerHTML=[1,2,3,4,5,6,0].map(d=>`<label class="dchk"><input type="checkbox" data-d="${d}"${on.includes(d)?' checked':''}>${DAYNAME[d]}</label>`).join('');
+  el.querySelectorAll('input').forEach(cb=>cb.onchange=async()=>{
+    const picked=[...el.querySelectorAll('input:checked')].map(x=>+x.dataset.d);
+    if(!picked.length){cb.checked=true;return;}          // 不允許一天都不選
+    S.days=picked;await save(S);
+    buildQueue();phase=queue.length&&queue[0].seen?'quiz':'pre';
+    render();renderSheet();renderCal();
+  });
+}
 /* 間隔階梯（天）：1,1,1,1 → 7 → 15 → 30 → 60
    前四天連續，取自固定遍數的遞減背誦法6~8 遍版的前段 —— 遺忘曲線最陡的就是這四天。
    後段交給自適應（難度係數），不像固定 16 遍那樣不分難易一律走完。*/
@@ -1231,7 +1265,7 @@ function seedInto(recs){
 }
 function freshState(){
   const on={};allDecks().forEach(([n])=>on[n]=true);
-  return {recs:seedInto({}),sources:[],goal:12,revCap:60,artEvery:3,theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
+  return {recs:seedInto({}),sources:[],goal:8,revCap:60,artEvery:3,days:[2,3,4,5],theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
 }
 function buildQueue(){
   const t=today();
@@ -1546,7 +1580,7 @@ async function doMark(m){
     r.ease=Math.max(1.3,r.ease-0.30);
     if(r.reps>1)r.lapses=(r.lapses||0)+1;
   }
-  r.due=plus(nextGap(r));
+  r.due=plusS(nextGap(r));
   marks[idx]=m;bumpDay();
 
   /* 同場回籠：這是艾賓浩斯最關鍵、原本缺掉的一段。
@@ -1720,7 +1754,7 @@ function artPlan(days){
   arts.forEach(a=>{const r=(S.read||{})[a.id];
     if(r&&r.due&&(r.round||0)<3)put(r.due,{a,kind:'re',round:(r.round||0)+1,best:r.best});});
   const unread=arts.filter(a=>{const r=(S.read||{})[a.id];return !r||!(r.times||[]).length;});
-  unread.forEach((a,i)=>put(plus(i*artEvery()),{a,kind:'new',round:1}));
+  unread.forEach((a,i)=>put(plusS(i*artEvery()),{a,kind:'new',round:1}));
   return plan;
 }
 function todayArts(){const p=artPlan(30),t=today();
@@ -1753,6 +1787,10 @@ function todayCard(){
         ${x.best?`　<span class="mono">上次最佳 ${x.best} wpm</span>`:''}
         <button class="tbtn" data-goart="${x.a.id}" style="margin-left:6px">去讀</button></li>`).join('')
     : '<li>📖 今天沒有排文章。想多讀就到「文章閱讀」自己挑一篇。</li>';
+  if(!isStudy(t))return `<div class="card today-card">
+    <div class="step">今天是休息日　${t}（${DAYNAME[new Date(t+'T00:00:00').getDay()]}）</div>
+    <p style="margin:8px 0 0;font-size:.92rem">🌙 今天沒有排進度。到期的字已經順延到下一個讀書日了，不用擔心欠著。</p>
+    <p class="hint" style="margin:8px 0 0">真的想動一下，就切「只求認得」跑 5 分鐘。做不到也不補。</p></div>`;
   return `<div class="card today-card">
     <div class="step">今天要做什麼　${t}${S.streak>1?`　·　連續 ${S.streak} 天`:''}</div>
     <ul class="todo">
@@ -1796,7 +1834,7 @@ function bindReset(){
     S=freshState();Object.assign(S,keep);
     await save(S);
     buildQueue();phase='pre';ans='';hinted=false;
-    renderDeckToggles();render();renderSheet();renderLib();renderCal();renderRead();
+    renderDeckToggles();renderDayPick();render();renderSheet();renderLib();renderCal();renderRead();
     $('rsMsg').innerHTML='<b style="color:var(--ok)">已完全重置。</b>自訂字卡、文章庫、閱讀紀錄都清掉了，只留下畫面與排程設定。';
     window.scrollTo(0,0);
   });
@@ -1815,7 +1853,8 @@ function calData(days){
   if(over.length)rows.push({d:'逾期',key:'over',list:over.sort((a,b)=>a.due<b.due?-1:1)});
   for(let i=0;i<days;i++){
     const k=plus(i);
-    rows.push({d:k,key:i===0?'today':'',list:(map[k]||[]).sort((a,b)=>(b.lapses||0)-(a.lapses||0))});
+    rows.push({d:k,key:i===0?'today':'',rest:!isStudy(k),
+      list:(map[k]||[]).sort((a,b)=>(b.lapses||0)-(a.lapses||0))});
   }
   return rows;
 }
@@ -1841,16 +1880,24 @@ function renderCal(){
       <b>照現在的設定推估</b>（新字 ${ng}／天）：第一週每天約 ${Math.round(ng*5)} 字，
       一個月後每天約 ${Math.round(ng*9)} 字，之後會慢慢降下來。
       看到某幾天特別高，就把那幾天前一週的新字調低。<br><br>
+      <b>🌙 休息日</b>：目前設定的讀書日是 <b>${studyDays().map(x=>DAYNAME[x]).join('、')}</b>，
+      每週 ${studyDays().length} 天。到期日如果落在休息日，會自動順延到下一個讀書日 ——
+      所以「前四天連續」實際上是「連續四個讀書日」，不會被週末沖掉。<br>
+      也因為這樣，「每天新字 ${ng}」實際上是<b>每週 ${ng*studyDays().length} 個新字</b>。
+      要算多久跑完字庫，用這個數字除。<br><br>
       <b>📖 文章</b>：每 ${artEvery()} 天排一篇新的，每篇讀完會再排 4 天後、14 天後各重讀一次。
       重讀不是浪費 —— 同一篇讀第二次的速度通常比第一次快三到四成，那個數字才是你真正的進步。
     </p></div>`;
 
   box.innerHTML=note+rows.map(r=>{
     const n=r.list.length, isFuture=r.key!=='over';
-    const newN=(isFuture&&unlearned>0)?ng:0;
+    const newN=(isFuture&&unlearned>0&&!r.rest)?ng:0;
     const total=n+newN;
     const heavy=n>cap;
     const label=r.key==='over'?'逾期未做':fmtD(r.d);
+    if(r.rest)return `<div class="crow rest"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline">
+      <span class="dt">${fmtD(r.d)}</span><span class="wk">${wdOf(r.d)}</span>
+      <span class="ct" style="margin-left:auto">🌙 休息日，不排進度</span></div></div>`;
     const arts=(r.key==='over')?[]:(ap[r.d]||[]);
     const artHTML=arts.length?`<span class="calart">📖 ${arts.map(x=>
       `<b>${esc(x.a.t)}</b>${x.kind==='new'?'（第一次讀）':`（第 ${x.round} 次重讀）`}`).join('　')}</span>`:'';
@@ -2010,7 +2057,7 @@ async function finishArt(){
     rec.times=(rec.times||[]).concat([{d:today(),sec,wpm}]).slice(-20);
     const prev=rec.best||0;rec.best=Math.max(prev,wpm);
     rec.round=(rec.round||0)+1;
-    rec.due=rec.round<3?plus(REREAD[rec.round-1]):null;
+    rec.due=rec.round<3?plusS(REREAD[rec.round-1]):null;
     S.read[a.id]=rec;await save(S);renderCal();renderToday();
     msg=`<div class="verdict v-o">用了 ${Math.floor(sec/60)} 分 ${sec%60} 秒　·　${wpm} wpm`
       +(prev?`　·　上次最佳 ${prev} wpm${wpm>prev?'　↑ 進步了':''}`:'')
@@ -2112,13 +2159,14 @@ function renderSheet(){
     if(!S.revCap)S.revCap=60;
     if(!S.artEvery)S.artEvery=3;
     if(!S.sources)S.sources=[];
+    if(!S.days||!S.days.length)S.days=[2,3,4,5];
     if(!S.goal||S.goal>40)S.goal=12;
     if(!S.rate)S.rate=0.85;
     if(S.autoSay===undefined)S.autoSay=true;
     if(!S.arts)S.arts={};
     if(!S.read)S.read={};
   }
-  renderDeckToggles();
+  renderDeckToggles();renderDayPick();
   document.documentElement.dataset.theme=S.theme||'light';
   document.documentElement.style.setProperty('--fs',(S.fs||17)+'px');
   $('themeBtn').textContent=S.theme==='dark'?'淺色':'深色';
@@ -2186,8 +2234,9 @@ function renderSheet(){
     try{const st=unpackBackup(txt);
       const keep=freshState();                      // 新版新增的字組要補進來，舊備份缺的欄位用預設值
       S=Object.assign(keep,st);S.recs=seedInto(S.recs);S.on=Object.assign(keep.on,st.on||{});
+      if(!S.days||!S.days.length)S.days=keep.days;
       await save(S);buildQueue();phase='pre';ans='';hinted=false;
-      renderDeckToggles();render();renderSheet();renderLib();renderCal();renderRead();renderSrc();
+      renderDeckToggles();renderDayPick();render();renderSheet();renderLib();renderCal();renderRead();renderSrc();
       const seen=Object.values(S.recs).filter(r=>r.seen).length;
       $('ioMsg').innerHTML=`<b style="color:var(--ok)">還原完成。</b>${seen} 個字有學習紀錄。`;return true;}
     catch(e){$('ioMsg').textContent='這份讀不出來，確認是這個網頁產生的備份。';return false;}};
