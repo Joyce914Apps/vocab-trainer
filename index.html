@@ -1,0 +1,2214 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>單字練習台｜從句子裡背，不是從卡片上背</title>
+<style>
+:root{
+  --paper:#E9EDEF;--card:#F6F8F9;--ink:#232A31;--soft:#5B6771;--line:#C9D2D7;--faint:#DDE4E8;
+  --ok:#3E7A5E;--mid:#9A7020;--no:#A0474A;
+  --okbg:#E2EDE7;--midbg:#F2E9D6;--nobg:#F1E1E1;--hl:#F5E3A8;
+  --fs:17px;--r:3px;
+}
+[data-theme=dark]{
+  --paper:#171D22;--card:#212930;--ink:#D9E0E5;--soft:#8E9AA3;--line:#333E46;--faint:#2A333A;
+  --ok:#7FB79A;--mid:#CBA55E;--no:#D08C8C;
+  --okbg:#22312B;--midbg:#332C1E;--nobg:#332325;--hl:#4A4223;
+}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-size:var(--fs);line-height:1.75;
+  font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:730px;margin:0 auto;padding:26px 20px 90px}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+.serif{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
+
+header{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:8px}
+h1{margin:0;font-size:1rem;font-weight:600;letter-spacing:.05em}
+h1 small{display:block;font-weight:400;font-size:.7rem;color:var(--soft);margin-top:2px;letter-spacing:0}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.tbtn{background:none;border:1px solid var(--line);color:var(--soft);font:inherit;font-size:.72rem;
+  padding:5px 10px;border-radius:var(--r);cursor:pointer}
+.tbtn:hover{border-color:var(--soft);color:var(--ink)}
+.tabs{display:flex;gap:2px;margin:14px 0 4px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:none;border-bottom:2px solid transparent;color:var(--soft);
+  font:inherit;font-size:.83rem;padding:8px 13px;cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+
+.bar{display:flex;justify-content:space-between;font-size:.71rem;color:var(--soft);letter-spacing:.07em;margin:18px 0 7px}
+.grid{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.cell{width:15px;height:15px;border:1px solid var(--line);border-radius:1px;font-size:10px;line-height:13px;text-align:center;color:var(--soft)}
+.cell.now{border:2px solid var(--ink)}
+.cell.o{color:var(--ok);background:var(--okbg);border-color:var(--ok)}
+.cell.t{color:var(--mid);background:var(--midbg);border-color:var(--mid)}
+.cell.x{color:var(--no);background:var(--nobg);border-color:var(--no)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:30px 28px;margin:16px 0}
+.step{font-size:.67rem;letter-spacing:.15em;color:var(--soft);margin-bottom:16px}
+.sent{font-size:1.12rem;line-height:1.85;margin:0 0 16px}
+.sent b{background:var(--hl);padding:1px 3px;border-radius:2px;font-weight:600}
+.blank{display:inline-block;min-width:110px;border-bottom:2px solid var(--ink);text-align:center;font-weight:600}
+.hw{font-size:2rem;font-weight:600;letter-spacing:-.01em;margin:0 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.say{background:none;border:1px solid var(--line);color:var(--soft);cursor:pointer;border-radius:50%;
+  width:28px;height:28px;font-size:.75rem;line-height:1;flex:none}
+.say:hover{color:var(--ink)}
+.meta{font-size:.78rem;color:var(--soft);font-style:italic;margin-bottom:14px}
+.gloss{font-size:1.15rem;font-weight:500;margin-bottom:6px}
+.exz{font-size:.85rem;color:var(--soft)}
+.note{font-size:.82rem;color:var(--soft);border-left:2px solid var(--line);padding-left:11px;margin-top:14px}
+.prompt{color:var(--soft);font-size:.85rem;margin:12px 0 0}
+@media(max-width:600px){.typebox{font-size:16px!important}}
+.typebox{width:100%;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:var(--r);
+  padding:12px 13px;font:inherit;font-size:1.05rem;margin-top:6px;font-family:"Iowan Old Style",Georgia,serif}
+.typebox:focus{outline:2px solid var(--soft);outline-offset:1px}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);padding:12px 20px;
+  font:inherit;font-size:.92rem;cursor:pointer;letter-spacing:.03em}
+.btn.ghost{background:none;color:var(--soft);border:1px solid var(--line)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--soft)}
+.verdict{font-size:.9rem;padding:11px 14px;border-radius:var(--r);margin-bottom:14px}
+.v-o{background:var(--okbg);color:var(--ok)}.v-t{background:var(--midbg);color:var(--mid)}.v-x{background:var(--nobg);color:var(--no)}
+.marks{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:6px}
+.mark{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 6px 10px;
+  cursor:pointer;font:inherit;color:var(--ink);text-align:center}
+.mark[data-sug=true]{border-color:currentColor;border-width:2px}
+.mark .g{display:block;font-size:1.35rem;line-height:1;margin-bottom:4px}
+.mark .lb{display:block;font-size:.83rem}
+.mark .sub{display:block;font-size:.66rem;color:var(--soft);margin-top:2px}
+.m-o{color:var(--ok)}.m-t{color:var(--mid)}.m-x{color:var(--no)}
+.mark:hover{background:var(--faint)}
+
+.stats{display:flex;gap:24px;flex-wrap:wrap;margin-top:24px;padding-top:15px;border-top:1px solid var(--line)}
+.stat b{display:block;font-size:1.25rem;font-weight:600}
+.stat span{font-size:.66rem;color:var(--soft);letter-spacing:.07em}
+textarea{width:100%;min-height:150px;background:var(--card);color:var(--ink);border:1px solid var(--line);
+  border-radius:var(--r);padding:11px;font:inherit;font-size:.85rem;line-height:1.6}
+input[type=text],input[type=number]{background:var(--card);color:var(--ink);border:1px solid var(--line);
+  border-radius:var(--r);padding:6px 8px;font:inherit;font-size:.85rem}
+.pick{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:10px 12px;margin-bottom:7px}
+.pick .top{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.pick .w{font-family:"Iowan Old Style",Georgia,serif;font-size:1.08rem;font-weight:600;min-width:130px}
+.pick .s{font-size:.76rem;color:var(--soft);margin-top:5px;font-family:"Iowan Old Style",Georgia,serif;line-height:1.5}
+.pick input[type=text]{flex:1;min-width:150px}
+.tag{font-size:.63rem;letter-spacing:.06em;border:1px solid var(--line);border-radius:2px;padding:1px 5px;color:var(--soft)}
+.hint{font-size:.8rem;color:var(--soft);line-height:1.7}
+.srow{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:13px 15px;margin-bottom:7px}
+.srow .s1{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;font-size:.95rem}
+.srow .s1 .n{font-size:.72rem;color:var(--soft)}
+.srow .s2{font-size:.78rem;color:var(--ok);margin:4px 0 6px}
+.srow .s3{font-size:.78rem;color:var(--soft);line-height:1.6}
+.today-card{padding:20px 22px;margin:14px 0 4px}
+.todo{list-style:none;padding:0;margin:8px 0 0}
+.todo li{padding:9px 0;border-bottom:1px solid var(--line);font-size:.92rem;line-height:1.65}
+.todo li:last-child{border-bottom:none}
+.calart{display:block;padding:2px 13px 10px;font-size:.8rem;color:var(--soft)}
+.calart b{font-family:"Iowan Old Style",Georgia,serif;color:var(--ink)}
+.danger{margin-top:26px;padding:15px 17px;border:1px solid var(--no);border-radius:var(--r);
+  background:var(--nobg)}
+.danger-b{border-color:var(--no);color:var(--no)}
+.danger-b:hover{background:var(--no);color:var(--paper);border-color:var(--no)}
+.danger-b[data-armed=true]{background:var(--no);color:var(--paper)}
+.crow{border:1px solid var(--line);border-radius:var(--r);background:var(--card);margin-bottom:5px;overflow:hidden}
+.crow>summary{padding:10px 13px;cursor:pointer;list-style:none;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.crow>summary::-webkit-details-marker{display:none}
+.crow>summary:hover{background:var(--faint)}
+.crow .dt{font-family:ui-monospace,monospace;font-size:.9rem;font-weight:600;min-width:96px}
+.crow .wk{font-size:.72rem;color:var(--soft)}
+.crow .ct{margin-left:auto;font-family:ui-monospace,monospace;font-size:.82rem}
+.crow.over{border-left:3px solid var(--no)}
+.crow.today{border-left:3px solid var(--ok)}
+.crow.heavy .ct{color:var(--no)}
+.cw{padding:2px 13px 12px;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem}
+.cw span{color:var(--soft)}
+.cw b{font-family:"Iowan Old Style",Georgia,serif;font-weight:600;color:var(--ink)}
+.arow{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--card);margin-bottom:6px;cursor:pointer}
+.arow:hover{border-color:var(--soft)}
+.arow .t{font-family:"Iowan Old Style",Georgia,serif;font-weight:600;font-size:1.02rem;flex:1;min-width:170px}
+.arow .m{font-size:.72rem;color:var(--soft)}
+.body{font-family:"Iowan Old Style",Georgia,serif;font-size:1.06rem;line-height:1.95;white-space:pre-wrap}
+.body .kw{border-bottom:1px dotted var(--soft);cursor:pointer}
+.body .kw.p{border-bottom-color:var(--ok)}
+.sen{display:block;padding:3px 4px;border-radius:2px;margin:0 -4px}
+.sen.cur{background:var(--hl)}
+.timer{font-family:ui-monospace,monospace;font-size:1.5rem;font-weight:600}
+.wpm{font-size:.78rem;color:var(--soft)}
+.pop{position:fixed;z-index:99;background:var(--ink);color:var(--paper);padding:7px 11px;border-radius:var(--r);
+  font-size:.82rem;max-width:250px;line-height:1.5}
+.audio{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:14px;
+  padding-top:12px;border-top:1px solid var(--line)}
+.abtn{background:none;border:1px solid var(--line);color:var(--soft);font:inherit;font-size:.74rem;
+  padding:5px 10px;border-radius:var(--r);cursor:pointer}
+.abtn:hover:not(:disabled){color:var(--ink);border-color:var(--soft)}
+.abtn:disabled{opacity:.4;cursor:default}
+.ast{font-size:.74rem;color:var(--ok);flex-basis:100%;margin-top:5px;min-height:1.2em}
+.opts{display:grid;gap:8px;margin-top:14px}
+.opt{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;
+  font:inherit;font-size:1.02rem;text-align:left;cursor:pointer;color:var(--ink);
+  font-family:"Iowan Old Style",Georgia,serif;display:flex;gap:11px;align-items:baseline}
+.opt:hover{border-color:var(--soft);background:var(--faint)}
+.opt .k{font-family:ui-monospace,monospace;font-size:.72rem;color:var(--soft);min-width:14px}
+.modebar{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin:10px 0 0;font-size:.72rem;color:var(--soft)}
+.mbtn{background:none;border:1px solid var(--line);color:var(--soft);font:inherit;font-size:.72rem;
+  padding:4px 9px;border-radius:var(--r);cursor:pointer}
+.mbtn[aria-pressed=true]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.syl{font-family:"Iowan Old Style",Georgia,serif;font-size:1.05rem;letter-spacing:.06em;
+  color:var(--soft);margin:-2px 0 6px}
+.badge{display:inline-block;font-size:.63rem;letter-spacing:.08em;padding:2px 7px;border-radius:2px;
+  border:1px solid var(--line);color:var(--soft);vertical-align:middle;margin-left:8px;cursor:pointer}
+.badge.p{border-color:var(--ok);color:var(--ok)}
+.famlist{font-size:.78rem;color:var(--soft);margin-top:10px}
+.famlist b{font-family:"Iowan Old Style",Georgia,serif;color:var(--ink);font-weight:600}
+.fam{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:.76rem;color:var(--soft)}
+.fam .lb{display:inline-block;min-width:104px}
+.fam .dots{display:inline-flex;gap:3px;vertical-align:middle;margin-right:10px}
+.fam .dots i{width:13px;height:6px;border-radius:1px;background:var(--faint);display:block}
+.fam .dots i.on{background:var(--ok)}
+.fam .meta2{display:block;margin-top:5px}
+.lrow{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:8px 11px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--card);margin-bottom:4px;font-size:.82rem}
+.lrow .w{font-family:"Iowan Old Style",Georgia,serif;font-weight:600;font-size:.98rem;min-width:120px}
+.lrow .z{color:var(--soft);flex:1;min-width:110px}
+.lrow .d{display:inline-flex;gap:2px}
+.lrow .d i{width:9px;height:5px;border-radius:1px;background:var(--faint);display:block}
+.lrow .d i.on{background:var(--ok)}
+.lrow.lap{border-left:3px solid var(--no)}
+.lrow .n{color:var(--soft);font-size:.7rem}
+ .dk{display:flex;align-items:center;gap:9px;padding:7px 11px;border:1px solid var(--line);
+  border-radius:var(--r);background:var(--card);margin-bottom:5px;font-size:.85rem;cursor:pointer}
+.dk .num{margin-left:auto;color:var(--soft);font-size:.75rem}
+.hint code{background:var(--faint);padding:1px 5px;border-radius:2px;font-size:.92em}
+.done{text-align:center;padding:40px 18px}
+.done .big{font-size:1.3rem;font-weight:600;margin-bottom:8px}
+.hide{display:none}
+#sheet{display:none}
+@media print{
+  body{background:#fff;color:#000;font-size:11.5pt}
+  .wrap>*:not(#sheet){display:none!important}
+  #sheet{display:block!important}
+  #sheet ol{padding-left:22px}
+  #sheet li{margin-bottom:11px;line-height:1.8;break-inside:avoid}
+  #sheet .bl{display:inline-block;min-width:105px;border-bottom:1px solid #000}
+  #sheet .zh{color:#444;font-size:10pt}
+  #sheet hr{margin:22px 0;border:none;border-top:1px dashed #999}
+  #sheet .ans{font-size:10pt;line-height:2}
+}
+@media (max-width:520px){.card{padding:22px 18px}.hw{font-size:1.6rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>單字練習台<small>先在句子裡認識它，再把它從空格裡拉出來</small></h1>
+  <div class="tools">
+    <button class="tbtn" id="themeBtn">深色</button>
+    <button class="tbtn" id="fsDown">A－</button>
+    <button class="tbtn" id="fsUp">A＋</button>
+    <button class="tbtn" id="printBtn">列印今日</button>
+  </div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" data-t="study" role="tab" aria-selected="true">今日練習</button>
+  <button class="tab" data-t="import" role="tab" aria-selected="false">匯入文章</button>
+  <button class="tab" data-t="deck" role="tab" aria-selected="false">貼上字卡</button>
+  <button class="tab" data-t="read" role="tab" aria-selected="false">文章閱讀</button>
+  <button class="tab" data-t="cal" role="tab" aria-selected="false">複習行事曆</button>
+  <button class="tab" data-t="src" role="tab" aria-selected="false">教材來源</button>
+  <button class="tab" data-t="lib" role="tab" aria-selected="false">字庫狀態</button>
+  <button class="tab" data-t="set" role="tab" aria-selected="false">設定與備份</button>
+</div>
+
+<!-- 今日練習 -->
+<section id="v-study">
+  <div id="todayBox"></div>
+  <div class="modebar">
+    <span>作答方式</span>
+    <button class="mbtn" data-md="auto">自動</button>
+    <button class="mbtn" data-md="choice">選擇</button>
+    <button class="mbtn" data-md="spell">拼寫</button>
+    <button class="mbtn" data-md="recog">只求認得</button>
+    <button class="mbtn" data-md="listen">聽寫</button>
+    <span id="mdWhy" style="flex-basis:100%;margin-top:3px"></span>
+  </div>
+  <div class="bar"><span>今日進度</span><span class="mono" id="prog">0 / 0</span></div>
+  <div class="grid" id="grid"></div>
+  <div id="stage"></div>
+  <div class="stats" id="stats"></div>
+</section>
+
+<!-- 匯入文章 -->
+<section id="v-import" class="hide">
+  <p class="hint" style="margin-top:18px">
+    把文章貼進來 —— 歷屆閱讀測驗、克漏字、Podcast 逐字稿、TED 字幕都可以。系統會挑出可能需要背的字，
+    並且<b>直接用文章裡那一句</b>當例句。這樣背到的字是有來歷的，不是憑空出現的。<br>
+    PDF 請先在閱讀器裡選取文字複製過來（掃描檔沒有文字層，複製不出來）。
+  </p>
+  <textarea id="src" placeholder="在這裡貼上英文文章⋯⋯"></textarea>
+  <div class="row">
+    <button class="btn" id="scanBtn">找出生字</button>
+    <button class="btn ghost" id="saveArtBtn">存進文章庫</button>
+    <button class="btn ghost" id="clrBtn">清空</button>
+  </div>
+  <div id="picks"></div>
+</section>
+
+<!-- 貼上字卡 -->
+<section id="v-deck" class="hide">
+  <p class="hint" style="margin-top:18px">
+    如果你把 PDF 或文章丟給我（Claude）整理，我會回一份現成的字卡，格式長這樣，一行一張，欄位之間用 <code>|</code> 隔開：<br><br>
+    <code>單字 | 中文 | 詞性 | 英文例句 | 例句中譯 | 用法筆記 | 音節拆解 | P或R</code><br><br>
+    第 7 欄放老師的拆解寫法（例如 <code>me-mo-ra-ble</code>），第 8 欄 P＝要會拼寫、R＝看得懂就好。第 3 欄之後都可以省略。整段複製貼進下面按「建立字卡」就好。
+  </p>
+  <p class="hint">這批字的來源（之後在「教材來源」看得到）：<input type="text" id="deckSrc" placeholder="例如：英檢中級 2-8 講義" style="min-width:220px"></p>
+  <textarea id="deckBox" placeholder="fluctuate | 波動、起伏 | v. | Prices fluctuate with the season. | 價格隨季節波動。 | 常與 wildly / sharply 連用"></textarea>
+  <div class="row"><button class="btn" id="deckBtn">建立字卡</button></div>
+  <p class="hint" id="deckMsg"></p>
+</section>
+
+<!-- 文章閱讀 -->
+<section id="v-read" class="hide">
+  <div id="readHome"></div>
+  <div id="readView" class="hide"></div>
+</section>
+
+<!-- 教材來源 -->
+<section id="v-src" class="hide">
+  <p class="hint" style="margin-top:18px">
+    哪些教材已經進來了、進來多少、消化到什麼程度。<b>「已穩」= 熟悉度爬到第 5 階（一週間隔）以上的字</b> ——
+    這個百分比才是這份講義真正吃下去的比例，不是匯入了就算。
+  </p>
+  <div id="srcList"></div>
+</section>
+
+<!-- 複習行事曆 -->
+<section id="v-cal" class="hide">
+  <div class="row" style="margin:18px 0 6px">
+    <button class="tbtn" id="calPrint">列印這份行事曆</button>
+    <button class="tbtn" id="calAll" aria-pressed="false">展開全部單字</button>
+    <span class="hint" id="calSum" style="align-self:center"></span>
+  </div>
+  <div id="calList"></div>
+</section>
+
+<!-- 字庫狀態 -->
+<section id="v-lib" class="hide">
+  <p class="hint" style="margin-top:18px">每個字的熟悉度、練過幾次、退步幾次、下次什麼時候回來。<b>退步次數多的字才是真正的弱點</b> —— 比「還沒背過」的字更值得花時間。</p>
+  <div class="row" style="margin-bottom:10px">
+    <input type="text" id="q" placeholder="搜尋單字或中文" style="flex:1;min-width:160px">
+    <select id="filt" class="tbtn" style="padding:6px 9px">
+      <option value="all">全部</option>
+      <option value="weak">生疏（熟悉度 1–3）</option>
+      <option value="lapse">曾經退步過</option>
+      <option value="due">今天到期</option>
+      <option value="new">還沒學過</option>
+      <option value="grad">已畢業</option>
+      <option value="prod">要會拼寫</option>
+      <option value="recog">看得懂就好</option>
+    </select>
+  </div>
+  <p class="hint">整組切換：<span id="bulk"></span></p>
+  <p class="hint" id="libMsg"></p>
+  <div id="libList"></div>
+</section>
+
+<!-- 設定 -->
+<section id="v-set" class="hide">
+  <p class="hint" style="margin-top:18px"><b>要練哪些字組</b>　關掉的不會排進今日練習。想先專心準備週三的英檢課，就只留英檢那幾組。</p>
+  <div id="deckToggles"></div>
+  <p class="hint" style="margin-top:18px">
+    每天上限 <input type="number" id="goal" min="5" max="200" step="5"> 字。到期複習的先排，剩下的額度才補新字。<br><br>
+    <b>文章</b>　每 <input type="number" id="artEvery" min="1" max="14" step="1" style="width:56px"> 天排一篇新文章。
+    讀完會自動排 4 天後、14 天後各重讀一次，滿三次就畢業。<br><br>
+    <b>聲音</b>　語速
+    <select id="rateSel" class="tbtn" style="padding:5px 8px">
+      <option value="0.6">0.6 慢速（剛開始建議）</option>
+      <option value="0.85">0.85 稍慢</option>
+      <option value="1">1.0 正常（英聽測驗的速度）</option>
+    </select>
+    <label style="margin-left:12px"><input type="checkbox" id="autoSay"> 進到新字時自動唸一次</label><br>
+    「跟讀」會先唸一次、留一段空白讓你出聲跟著唸、再唸一次讓你對照。搭配「錄音／播我的」可以聽出自己哪裡不一樣 ——
+    這也正好是英檢課的錄音作業在練的東西。<br><br>
+    <b>作答方式：為什麼預設不是拼寫</b><br>
+    學測英文 100 分裡，只有中譯英（8 分）和作文（20 分）真的需要「拼得出來」，其餘約 72 分都只要認得。
+    所以預設用<b>選擇題</b> —— 形狀跟學測詞彙題、文意選填一樣，而且仍然是主動回想，不是被動翻牌。<br>
+    拼寫留給兩種字：熟到第 4 階以上要確認的，和退步兩次以上的頑固字。<br>
+    「只求認得」最快，適合跳完舞真的撐不住的日子。但不要整學期都用它 —— 認得的練習只會養出認得的能力，
+    而且很容易產生「我好像會」的錯覺。<br><br>
+    <b>排程規則（前段連續，後段自適應）</b><br>
+    間隔是 <span class="mono">1 → 1 → 1 → 1 → 7 → 15 → 30 → 60</span> 天。
+    也就是一個新字<b>前四天每天都會出現</b>，第五次才隔一週。前段照固定遍數的遞減背誦法6~8 遍版的做法 ——
+    遺忘曲線最陡的就是頭四天，那幾天不補，後面補再多次也是白費。<br>
+    △ 退兩階（通常會直接掉回「每天出現」那一段），× 直接歸零重來。<br>
+    後段沒有照抄那套的 7,7,7,7,7 / 10,10 —— 固定 16 遍不分難易，會把大量次數浪費在你早就會的字上。
+    這裡改由每個字自己的難度係數決定。<br><br>
+        <b>同場回籠</b>　× 的字會在幾題後立刻再考一次，△ 的字排到今天最後再考一次（每個字每場最多回籠兩次）。
+    這是艾賓浩斯裡最重要、也最常被省略的一段 —— 剛忘掉的東西要在同一次就補回來，不能等到明天。<br><br>
+    <b>難度係數</b>　每個字都有自己的係數。一直答對會慢慢拉長間隔，答錯會縮短。所以同樣爬到第 4 階，
+    你一直錯的那個字回來得比別的字快。<br><br>
+        答完會自動判一個建議標記，但你可以自己改 —— 你比程式清楚剛剛是真的會，還是矇到的。
+  </p>
+  <p class="hint"><b>備份</b>　進度存在<b>這台裝置的這個瀏覽器</b>裡，換電腦、換手機、清瀏覽資料都不會自動帶過去。
+    換裝置前先「下載備份檔」，到新裝置按「從檔案還原」。建議每週下載一次留著。</p>
+  <div class="row">
+    <button class="tbtn" id="dlBtn">下載備份檔</button>
+    <button class="tbtn" id="fileBtn">從檔案還原</button>
+    <input type="file" id="fileIn" accept=".json,application/json" style="display:none">
+  </div>
+  <p class="hint" style="margin-top:10px">手機不方便存檔的話，也可以用文字版：</p>
+  <div class="row"><button class="tbtn" id="expBtn">產生備份文字</button><button class="tbtn" id="impBtn">貼上還原</button></div>
+  <textarea id="io" style="min-height:90px" placeholder="備份文字會出現在這裡；還原時把整段貼進來"></textarea>
+  <p class="hint" id="ioMsg"></p>
+
+  <div class="danger">
+    <p style="margin:0 0 6px;font-weight:600;font-size:.9rem">重新開始</p>
+    <p class="hint" style="margin:0 0 10px">
+      要按下去之前，先按上面的「下載備份檔」把備份留一份 —— 清掉就回不來了。<br>
+      兩個都會保留內建字組，只是把「學過的紀錄」歸零。
+    </p>
+    <div class="row">
+      <button class="tbtn danger-b" id="rsProg">清除練習進度</button>
+      <button class="tbtn danger-b" id="rsAll">完全重置</button>
+    </div>
+    <p class="hint" style="margin-top:8px" id="rsMsg">
+      <b>清除練習進度</b>：所有字回到「未學」，熟悉度、複習日期、退步紀錄全部歸零。
+      你自己加的字卡、存的文章、設定都保留。<br>
+      <b>完全重置</b>：連自訂字卡、文章庫、閱讀速度紀錄一起清掉，回到剛打開時的樣子。
+    </p>
+  </div>
+</section>
+
+<p class="hint" style="margin-top:26px">
+  鍵盤：<span class="mono">Enter</span> 送出／下一步 · <span class="mono">1</span> ○ · <span class="mono">2</span> △ · <span class="mono">3</span> ×<br>
+  眼睛累就按「列印今日」，會印出一張填空練習紙（答案在背面），通勤時用紙本做，回來再補點一遍。
+</p>
+
+<div id="sheet"></div>
+</div>
+
+<script>
+/* ═══ 內建字庫：學測 Level 3–4 高頻字（英文, 詞性, 中文, 例句, 例句中譯） ═══ */
+const W=[
+["abandon","v.","放棄；拋棄","She refused to abandon her dream of dancing.","她不願放棄跳舞的夢想。"],
+["absorb","v.","吸收；使全神貫注","Plants absorb water through their roots.","植物透過根部吸收水分。"],
+["abstract","adj.","抽象的","Freedom is an abstract concept.","自由是個抽象的概念。"],
+["accompany","v.","陪伴；伴隨","A teacher will accompany the students.","一位老師會陪同學生。"],
+["accomplish","v.","完成；達成","She accomplished the task in two hours.","她兩小時內完成了任務。"],
+["accurate","adj.","精確的","The report must be accurate.","這份報告必須精確。"],
+["adapt","v.","適應；改編","Animals adapt to their environment.","動物會適應環境。"],
+["adequate","adj.","足夠的；適當的","We need adequate sleep before the exam.","考試前我們需要足夠的睡眠。"],
+["adjust","v.","調整；適應","He adjusted the volume of the music.","他調整了音樂的音量。"],
+["adopt","v.","採用；收養","The school adopted a new policy.","學校採用了新政策。"],
+["affect","v.","影響","Weather can affect our mood.","天氣會影響我們的心情。"],
+["afford","v.","負擔得起","We cannot afford to waste time.","我們浪費不起時間。"],
+["aggressive","adj.","有攻擊性的；積極進取的","His aggressive attitude upset the team.","他咄咄逼人的態度惹惱了團隊。"],
+["alter","v.","改變","She altered her plan at the last minute.","她在最後一刻改變了計畫。"],
+["analyze","v.","分析","Let us analyze the data carefully.","我們仔細分析這些數據。"],
+["ancient","adj.","古代的","Ancient buildings attract many tourists.","古代建築吸引許多觀光客。"],
+["anticipate","v.","預期；期待","We anticipate a busy season ahead.","我們預期接下來會很忙。"],
+["anxiety","n.","焦慮","Exam anxiety is common among students.","考試焦慮在學生中很常見。"],
+["apparent","adj.","明顯的","It was apparent that he was tired.","他顯然累了。"],
+["appeal","v./n.","呼籲；吸引力","The design appeals to young people.","這個設計吸引年輕人。"],
+["appreciate","v.","感激；欣賞","I appreciate your help very much.","我非常感激你的幫忙。"],
+["approach","n./v.","方法；接近","We need a new approach to the problem.","我們需要新方法來處理這個問題。"],
+["appropriate","adj.","適當的","Wear appropriate clothes for the interview.","面試要穿合適的衣服。"],
+["approve","v.","贊成；批准","Her parents approved of the decision.","她父母贊成這個決定。"],
+["artificial","adj.","人造的；虛假的","The lake is artificial.","這座湖是人工的。"],
+["aspect","n.","方面","Every aspect of the plan was discussed.","計畫的每個方面都討論過了。"],
+["assign","v.","分配；指派","The teacher assigned us a project.","老師指派我們一個專題。"],
+["assist","v.","協助","Volunteers assisted the elderly.","志工協助長者。"],
+["assume","v.","假定；承擔","Do not assume everyone agrees with you.","別假定大家都同意你。"],
+["assure","v.","向…保證","I assure you the room is safe.","我向你保證這房間是安全的。"],
+["atmosphere","n.","氣氛；大氣層","The atmosphere in the studio was tense.","舞蹈教室的氣氛很緊繃。"],
+["attitude","n.","態度","A positive attitude makes a difference.","正面的態度會帶來改變。"],
+["authority","n.","權威；當局","The local authority approved the plan.","地方當局核准了這項計畫。"],
+["available","adj.","可得到的；有空的","Tickets are still available online.","線上還有票。"],
+["aware","adj.","察覺的；知道的","Be aware of your surroundings.","要注意你的周遭環境。"],
+["barrier","n.","障礙；屏障","Language can be a barrier to learning.","語言可能是學習的障礙。"],
+["benefit","n./v.","益處；有益於","Exercise benefits both body and mind.","運動對身心都有益。"],
+["boundary","n.","界線；邊界","She learned to set healthy boundaries.","她學會設立健康的界線。","boundaries"],
+["brief","adj.","簡短的","He gave a brief explanation.","他做了簡短的說明。"],
+["budget","n.","預算","The film was made on a small budget.","這部電影是以小預算拍成的。"],
+["calculate","v.","計算","Calculate the total cost first.","先計算總成本。"],
+["campaign","n.","活動；戰役","They launched a campaign against waste.","他們發起反浪費的活動。"],
+["capable","adj.","有能力的","She is capable of handling pressure.","她有能力應付壓力。"],
+["capacity","n.","容量；能力","The hall has a capacity of five hundred.","這個大廳可容納五百人。"],
+["category","n.","類別","Books are arranged by category.","書籍按類別排列。"],
+["cease","v.","停止","The noise finally ceased at midnight.","噪音終於在午夜停止。"],
+["challenge","n./v.","挑戰","Learning a new dance is a challenge.","學一支新舞是個挑戰。"],
+["characteristic","n./adj.","特徵；典型的","Patience is a characteristic of good teachers.","耐心是好老師的特質。"],
+["circumstance","n.","情況；環境","Under these circumstances, we must wait.","在這種情況下我們必須等待。"],
+["classify","v.","分類","Scientists classify plants into groups.","科學家把植物分成幾類。"],
+["colleague","n.","同事","She discussed the idea with a colleague.","她和同事討論這個想法。"],
+["combine","v.","結合","The dance combines ballet and hip-hop.","這支舞結合芭蕾與嘻哈。"],
+["commercial","adj.","商業的","The song became a commercial success.","這首歌在商業上大獲成功。"],
+["commit","v.","犯（罪）；投入","She committed herself to daily practice.","她投入每日的練習。","committed"],
+["complain","v.","抱怨","He complained about the noise.","他抱怨噪音。"],
+["complex","adj.","複雜的","The rules are more complex than they look.","規則比看起來複雜。"],
+["component","n.","組成部分","Trust is a key component of teamwork.","信任是團隊合作的關鍵要素。"],
+["compose","v.","組成；創作","The team is composed of six dancers.","這個團隊由六名舞者組成。"],
+["concentrate","v.","專注","It is hard to concentrate when tired.","累的時候很難專注。"],
+["concept","n.","概念","The concept is simple but powerful.","這個概念簡單卻有力。"],
+["conclude","v.","下結論；結束","The study concluded that sleep matters.","研究的結論是睡眠很重要。"],
+["conduct","v./n.","進行；行為","They conducted a survey last month.","他們上個月做了一項調查。"],
+["confident","adj.","有自信的","She felt confident before the audition.","甄選前她覺得很有自信。"],
+["confirm","v.","確認","Please confirm your attendance.","請確認你會出席。"],
+["conflict","n.","衝突","The conflict lasted for years.","這場衝突持續多年。"],
+["conscious","adj.","有意識的；察覺到的","He was conscious of the audience watching.","他意識到觀眾在看。"],
+["consequence","n.","後果","Every choice has consequences.","每個選擇都有後果。"],
+["conservative","adj.","保守的","His views are rather conservative.","他的觀點相當保守。"],
+["consist","v.","組成（of）","The course consists of ten lessons.","這門課由十堂課組成。"],
+["constant","adj.","持續的；不變的","Constant practice leads to progress.","持續的練習帶來進步。"],
+["construct","v.","建造","They constructed a new theater.","他們建了一座新劇院。"],
+["consume","v.","消耗；消費","Cars consume a lot of fuel.","汽車消耗大量燃料。"],
+["context","n.","上下文；情境","Guess the word from the context.","從上下文猜這個字。"],
+["contrast","n./v.","對比","There is a sharp contrast between them.","他們之間有強烈的對比。"],
+["contribute","v.","貢獻；促成","Everyone contributed to the show.","每個人都為這場演出付出。"],
+["convince","v.","說服","She convinced me to try again.","她說服我再試一次。"],
+["cooperate","v.","合作","The two schools cooperated on the project.","兩所學校合作這個計畫。"],
+["cope","v.","應付（with）","He learned to cope with stress.","他學會應付壓力。"],
+["crisis","n.","危機","The company faced a serious crisis.","公司面臨嚴重的危機。"],
+["criticize","v.","批評","Do not criticize without offering help.","不要只批評卻不幫忙。"],
+["crucial","adj.","關鍵的","Timing is crucial in dance.","時間點在舞蹈中是關鍵。"],
+["curious","adj.","好奇的","Children are naturally curious.","孩子天生好奇。"],
+["debate","n./v.","辯論","The class debated the new rule.","全班辯論這條新規定。"],
+["decade","n.","十年","She has danced for over a decade.","她跳舞超過十年了。"],
+["decline","v./n.","下降；婉拒","Sales declined last quarter.","上一季銷售下滑。"],
+["define","v.","定義","Can you define this term?","你能定義這個詞嗎？"],
+["delay","n./v.","延遲","The flight was delayed by fog.","班機因霧延誤。"],
+["demonstrate","v.","示範；證明","She demonstrated the correct posture.","她示範正確的姿勢。"],
+["deny","v.","否認","He denied taking the money.","他否認拿了錢。","denied"],
+["deserve","v.","應得","You deserve a proper rest.","你值得好好休息。"],
+["despite","prep.","儘管","Despite the pain, she kept dancing.","儘管疼痛，她仍繼續跳舞。"],
+["destroy","v.","破壞","The fire destroyed the building.","大火摧毀了那棟建築。"],
+["detect","v.","察覺；偵測","The machine detects small changes.","這台機器能偵測細微變化。"],
+["determine","v.","決定；確定","Practice determines the outcome.","練習決定結果。"],
+["device","n.","裝置","Turn off all electronic devices.","關掉所有電子裝置。"],
+["devote","v.","奉獻","She devoted her life to teaching.","她奉獻一生於教學。"],
+["discipline","n.","紀律；學科","Dance requires great discipline.","舞蹈需要極高的紀律。"],
+["discourage","v.","使氣餒；勸阻","Do not let one failure discourage you.","別讓一次失敗使你氣餒。"],
+["dismiss","v.","解散；不予考慮","He dismissed the idea too quickly.","他太快否定了這個想法。"],
+["distinct","adj.","獨特的；明顯的","Each style has a distinct rhythm.","每種風格都有獨特的節奏。"],
+["distribute","v.","分配；分發","Teachers distributed the handouts.","老師發下講義。"],
+["diverse","adj.","多樣的","Taiwan has a diverse culture.","臺灣有多元的文化。"],
+["domestic","adj.","國內的；家庭的","Domestic sales rose sharply.","國內銷售大幅上升。"],
+["dominate","v.","支配；主導","One team dominated the match.","一支隊伍主導了比賽。"],
+["donate","v.","捐贈","They donated books to the school.","他們捐書給學校。"],
+["eager","adj.","渴望的","She was eager to perform.","她渴望上台表演。"],
+["efficient","adj.","有效率的","This is a more efficient method.","這是更有效率的方法。"],
+["eliminate","v.","消除；淘汰","We must eliminate careless mistakes.","我們必須消除粗心的錯誤。"],
+["emerge","v.","浮現；出現","New problems emerged during rehearsal.","排練中出現了新問題。"],
+["emphasize","v.","強調","The teacher emphasized posture.","老師強調姿勢。"],
+["enable","v.","使能夠","The app enables you to track progress.","這個應用程式讓你能追蹤進度。"],
+["encounter","v./n.","遭遇","We encountered several difficulties.","我們遇到幾個困難。"],
+["endure","v.","忍受；持續","She endured months of training.","她忍受了幾個月的訓練。"],
+["enforce","v.","執行（法律）","Schools must enforce the rules fairly.","學校必須公平執行規定。"],
+["enhance","v.","提升；增強","Music enhances the performance.","音樂提升了表演效果。"],
+["enormous","adj.","巨大的","The effort required is enormous.","所需的努力非常巨大。"],
+["ensure","v.","確保","Ensure you arrive on time.","確保你準時抵達。"],
+["enthusiasm","n.","熱忱","Her enthusiasm inspired everyone.","她的熱忱激勵了每個人。"],
+["essential","adj.","必要的","Sleep is essential for memory.","睡眠對記憶是必要的。"],
+["establish","v.","建立","The school was established in 1950.","這所學校創立於一九五〇年。"],
+["estimate","v./n.","估計","Experts estimate the cost at ten million.","專家估計成本為一千萬。"],
+["evaluate","v.","評估","Teachers evaluate students' progress.","老師評估學生的進步。"],
+["eventually","adv.","最終","She eventually got the role.","她最終得到了那個角色。"],
+["evidence","n.","證據","There is no evidence for that claim.","那個說法沒有證據。"],
+["evolve","v.","演化；逐漸發展","The style evolved over time.","這種風格隨時間演變。"],
+["exaggerate","v.","誇大","He tends to exaggerate his stories.","他常誇大自己的故事。"],
+["exceed","v.","超過","The cost exceeded our budget.","成本超出了我們的預算。"],
+["exchange","n./v.","交換","They exchanged phone numbers.","他們交換了電話號碼。"],
+["exhausted","adj.","精疲力竭的","She was exhausted after the show.","演出結束後她精疲力竭。"],
+["exhibit","v./n.","展示；展覽","The museum exhibits local art.","博物館展出在地藝術。"],
+["expand","v.","擴大","The company plans to expand.","公司計畫擴張。"],
+["expense","n.","費用","Travel expenses will be covered.","旅費會被支付。"],
+["expose","v.","暴露；使接觸","Travel exposes you to new ideas.","旅行讓你接觸新想法。"],
+["extend","v.","延長；擴展","They extended the deadline.","他們延長了期限。"],
+["external","adj.","外部的","External factors affected the result.","外在因素影響了結果。"],
+["facility","n.","設施","The school has excellent facilities.","學校有極好的設施。","facilities"],
+["factor","n.","因素","Sleep is a key factor in performance.","睡眠是表現的關鍵因素。"],
+["fascinate","v.","使著迷","The story fascinated the audience.","這個故事使觀眾著迷。"],
+["feature","n./v.","特色；以…為特色","The show features young dancers.","這場演出以年輕舞者為主。"],
+["financial","adj.","財務的","They faced financial difficulties.","他們面臨財務困難。"],
+["flexible","adj.","有彈性的","We need a flexible schedule.","我們需要有彈性的時間表。"],
+["forecast","n./v.","預測","The forecast calls for rain.","預報說會下雨。"],
+["former","adj.","前任的；前者的","The former champion returned.","前任冠軍回來了。"],
+["foundation","n.","基礎；基金會","Vocabulary is the foundation of reading.","單字是閱讀的基礎。"],
+["frequent","adj.","頻繁的","Frequent review beats long cramming.","頻繁複習勝過長時間硬塞。"],
+["frustrate","v.","使受挫","Slow progress frustrated her.","進步緩慢使她受挫。"],
+["fundamental","adj.","基本的","Balance is fundamental in dance.","平衡是舞蹈的根本。"],
+["generate","v.","產生","The idea generated much discussion.","這個想法引發許多討論。"],
+["generous","adj.","慷慨的","She was generous with her time.","她慷慨地付出時間。"],
+["genuine","adj.","真誠的；真正的","His concern seemed genuine.","他的關心看起來很真誠。"],
+["gesture","n.","手勢；姿態","A small gesture can mean a lot.","一個小動作可能意義重大。"],
+["gradual","adj.","逐漸的","Improvement is usually gradual.","進步通常是逐漸的。"],
+["guarantee","v./n.","保證","Hard work does not guarantee success.","努力不保證成功。"],
+["hesitate","v.","猶豫","Do not hesitate to ask for help.","不要猶豫，儘管求助。"],
+["highlight","v./n.","強調；重點","The teacher highlighted the key points.","老師強調了重點。"],
+["hostile","adj.","有敵意的","The crowd turned hostile.","群眾變得有敵意。"],
+["identify","v.","辨認；確認","Can you identify the mistake?","你能找出錯誤嗎？"],
+["ignore","v.","忽視","He ignored the warning signs.","他忽視了警訊。"],
+["illustrate","v.","說明；舉例","Let me illustrate with an example.","讓我舉個例子說明。"],
+["imitate","v.","模仿","Beginners imitate the teacher's moves.","初學者模仿老師的動作。"],
+["impact","n./v.","衝擊；影響","The news had a huge impact.","這則消息造成巨大衝擊。"],
+["imply","v.","暗示","His silence implied disagreement.","他的沉默暗示不同意。","implied"],
+["impose","v.","強加；課徵","New rules were imposed on students.","新規定被強加在學生身上。"],
+["incident","n.","事件","No one was hurt in the incident.","事件中無人受傷。"],
+["independent","adj.","獨立的","She became financially independent.","她在經濟上獨立了。"],
+["indicate","v.","指出；顯示","The results indicate steady progress.","結果顯示穩定的進步。"],
+["inevitable","adj.","不可避免的","Some mistakes are inevitable.","有些錯誤是不可避免的。"],
+["influence","n./v.","影響","Her teacher had a lasting influence.","她的老師有長遠的影響。"],
+["ingredient","n.","成分；要素","Patience is a key ingredient of success.","耐心是成功的關鍵要素。"],
+["initial","adj.","最初的","My initial reaction was surprise.","我最初的反應是驚訝。"],
+["innocent","adj.","無辜的；天真的","The court found him innocent.","法院判他無罪。"],
+["insight","n.","洞見","The book offers useful insights.","這本書提供有用的洞見。"],
+["insist","v.","堅持","She insisted on paying.","她堅持要付錢。"],
+["inspire","v.","激勵","Her story inspired many students.","她的故事激勵了許多學生。"],
+["instance","n.","例子","For instance, take today's schedule.","舉例來說，看看今天的行程。"],
+["intelligent","adj.","聰明的","She is an intelligent and careful reader.","她是個聰明又細心的讀者。"],
+["intend","v.","打算","I intend to finish it tonight.","我打算今晚完成。"],
+["intense","adj.","強烈的；激烈的","The training was intense.","訓練非常密集。"],
+["interpret","v.","詮釋；口譯","Dancers interpret music through movement.","舞者用動作詮釋音樂。"],
+["investigate","v.","調查","Police investigated the accident.","警方調查了那起意外。"],
+["involve","v.","牽涉；使參與","The job involves a lot of travel.","這份工作牽涉大量出差。"],
+["isolate","v.","隔離；孤立","Illness isolated her from friends.","疾病使她與朋友隔離。"],
+["justify","v.","證明…正當","Nothing can justify such behavior.","沒有什麼能為這種行為辯護。"],
+["launch","v./n.","發起；發射","They launched a new program.","他們推出了新計畫。"],
+["legal","adj.","合法的","The contract is legal and binding.","這份合約合法且具約束力。"],
+["literature","n.","文學；文獻","She majored in English literature.","她主修英國文學。"],
+["locate","v.","找出位置；位於","The school is located downtown.","學校位於市中心。"],
+["maintain","v.","維持；主張","It is hard to maintain focus when tired.","累的時候很難維持專注。"],
+["manufacture","v.","製造","The factory manufactures shoes.","這家工廠製造鞋子。"],
+["mature","adj./v.","成熟的","She is mature for her age.","以她的年紀來說很成熟。"],
+["mental","adj.","心理的","Mental health matters as much as physical.","心理健康和身體一樣重要。"],
+["migrate","v.","遷徙","Birds migrate south in winter.","鳥類冬天往南遷徙。"],
+["modest","adj.","謙虛的；適度的","He is modest about his talent.","他對自己的才能很謙虛。"],
+["modify","v.","修改","We modified the plan slightly.","我們稍微修改了計畫。","modified"],
+["motivate","v.","激勵","Small wins motivate her to continue.","小小的成功激勵她繼續。"],
+["mutual","adj.","相互的","Trust must be mutual.","信任必須是相互的。"],
+["negative","adj.","負面的","Try to avoid negative self-talk.","盡量避免負面的自我對話。"],
+["neglect","v.","忽略；疏忽","Do not neglect your health.","不要忽略你的健康。"],
+["negotiate","v.","協商","They negotiated a better deal.","他們談成了更好的條件。"],
+["nevertheless","adv.","然而","She was tired; nevertheless, she practiced.","她很累，然而仍然練習。"],
+["notion","n.","觀念","The notion sounds strange at first.","這個觀念一開始聽起來很奇怪。"],
+["numerous","adj.","許多的","She has won numerous awards.","她贏得無數獎項。"],
+["obstacle","n.","障礙","Fear is the biggest obstacle.","恐懼是最大的障礙。"],
+["obtain","v.","獲得","You can obtain the form online.","你可以線上取得表格。"],
+["obvious","adj.","明顯的","The answer seems obvious now.","現在答案似乎很明顯。"],
+["occupy","v.","佔據；佔用","Rehearsals occupy her weekends.","排練佔據她的週末。"],
+["occur","v.","發生","The accident occurred at midnight.","意外發生在午夜。","occurred"],
+["opponent","n.","對手","She respected her opponent.","她尊重她的對手。"],
+["oppose","v.","反對","Many parents opposed the change.","許多家長反對這項改變。"],
+["optimistic","adj.","樂觀的","Stay optimistic but realistic.","保持樂觀但要實際。"],
+["origin","n.","起源","The origin of the dance is unclear.","這支舞的起源不明。"],
+["outcome","n.","結果","The outcome surprised everyone.","結果令所有人驚訝。"],
+["overcome","v.","克服","She overcame her stage fright.","她克服了怯場。","overcame"],
+["overlook","v.","忽略；俯瞰","Do not overlook the small details.","別忽略小細節。"],
+["participate","v.","參與","All students participate in the show.","所有學生都參與演出。"],
+["passive","adj.","被動的","Passive reading wastes time.","被動地讀書是浪費時間。"],
+["perceive","v.","察覺；認為","People perceive risk differently.","人們對風險的看法不同。"],
+["permanent","adj.","永久的","The injury left a permanent mark.","那次受傷留下永久的痕跡。"],
+["persist","v.","堅持；持續","The pain persisted for weeks.","疼痛持續了好幾週。"],
+["perspective","n.","觀點；角度","Try to see it from her perspective.","試著從她的角度看。"],
+["persuade","v.","說服","He persuaded her to rest.","他說服她休息。"],
+["phenomenon","n.","現象","This is a common phenomenon.","這是常見的現象。"],
+["policy","n.","政策","The new policy takes effect Monday.","新政策週一生效。"],
+["portion","n.","部分；份","A large portion of the class agreed.","班上很大一部分的人同意。"],
+["possess","v.","擁有","She possesses great natural talent.","她擁有極佳的天賦。"],
+["potential","n./adj.","潛力；潛在的","The student has great potential.","這名學生很有潛力。"],
+["poverty","n.","貧窮","The program helps families in poverty.","這個計畫幫助貧困家庭。"],
+["precise","adj.","精確的","Give me the precise number.","給我確切的數字。"],
+["predict","v.","預測","No one can predict the result.","沒有人能預測結果。"],
+["prejudice","n.","偏見","We must fight prejudice.","我們必須對抗偏見。"],
+["preserve","v.","保存；保護","We should preserve old buildings.","我們應該保存老建築。"],
+["previous","adj.","先前的","Her previous answer was correct.","她先前的答案是對的。"],
+["principle","n.","原則","He never breaks his principles.","他從不違背原則。"],
+["priority","n.","優先事項","Sleep should be a priority.","睡眠應該是優先事項。"],
+["procedure","n.","程序","Follow the standard procedure.","遵循標準程序。"],
+["profession","n.","職業","Teaching is a demanding profession.","教學是個吃力的職業。"],
+["prohibit","v.","禁止","Phones are prohibited during the test.","考試期間禁止使用手機。"],
+["promote","v.","促進；升遷","Exercise promotes good sleep.","運動促進良好的睡眠。"],
+["prompt","v./adj.","促使；迅速的","The result prompted a change of plan.","結果促成了計畫的改變。"],
+["propose","v.","提議","She proposed a different approach.","她提議另一種做法。"],
+["pursue","v.","追求","He decided to pursue his dream.","他決定追求夢想。"],
+["qualify","v.","取得資格","She qualified for the final round.","她取得決賽資格。","qualified"],
+["reasonable","adj.","合理的","That is a reasonable request.","那是個合理的要求。"],
+["recall","v.","回想起","I cannot recall his name.","我想不起他的名字。"],
+["recognize","v.","認出；承認","I did not recognize her at first.","我一開始沒認出她。"],
+["recommend","v.","推薦","The teacher recommended this book.","老師推薦這本書。"],
+["recover","v.","恢復","It took weeks to recover.","花了好幾週才恢復。"],
+["reflect","v.","反映；反省","The result reflects her effort.","結果反映了她的努力。"],
+["refuse","v.","拒絕","She refused to give up.","她拒絕放棄。"],
+["region","n.","地區","The region is famous for tea.","這個地區以茶聞名。"],
+["regret","v./n.","後悔","He regretted not practicing more.","他後悔沒有多練習。","regretted"],
+["relevant","adj.","相關的","Only include relevant details.","只放相關的細節。"],
+["reliable","adj.","可靠的","She is a reliable partner.","她是個可靠的夥伴。"],
+["relieve","v.","減輕；緩解","Music relieves her stress.","音樂緩解她的壓力。"],
+["reluctant","adj.","不情願的","He was reluctant to admit it.","他不情願承認。"],
+["rely","v.","依賴（on）","Do not rely on luck.","不要依賴運氣。"],
+["remark","n./v.","評論","Her remark surprised the class.","她的評論讓全班驚訝。"],
+["represent","v.","代表","She represented her school.","她代表她的學校。"],
+["reputation","n.","名聲","The school has a good reputation.","這所學校名聲很好。"],
+["resist","v.","抵抗","She could not resist the temptation.","她無法抵抗誘惑。"],
+["resolve","v.","解決；決心","They resolved the conflict peacefully.","他們和平解決了衝突。"],
+["respond","v.","回應","He responded to the question calmly.","他冷靜地回答問題。"],
+["restore","v.","恢復；修復","Rest restores your energy.","休息恢復你的體力。"],
+["restrict","v.","限制","The school restricted phone use.","學校限制手機使用。"],
+["retire","v.","退休","The dancer retired at forty.","那位舞者四十歲退休。"],
+["reveal","v.","揭露","The study revealed a clear pattern.","研究揭露了明顯的模式。"],
+["reverse","v./adj.","逆轉；相反的","The trend has reversed.","趨勢已經逆轉。"],
+["revise","v.","修訂；複習","Revise your essay before submitting.","交出去前先修改你的作文。"],
+["rigid","adj.","僵硬的；嚴格的","The schedule is too rigid.","這個時間表太僵硬了。"],
+["routine","n./adj.","例行公事","A steady routine reduces stress.","穩定的作息減少壓力。"],
+["rural","adj.","鄉村的","She grew up in a rural area.","她在鄉下長大。"],
+["sacrifice","n./v.","犧牲","She sacrificed weekends for training.","她犧牲週末去訓練。"],
+["satisfy","v.","滿足","The answer did not satisfy her.","那個答案無法讓她滿意。"],
+["scarce","adj.","稀少的","Time is scarce before the exam.","考試前時間很稀缺。"],
+["scatter","v.","分散；撒","Papers were scattered on the floor.","紙散落一地。"],
+["seek","v.","尋求","She sought advice from her teacher.","她向老師尋求建議。","sought"],
+["seize","v.","抓住","Seize the chance while it lasts.","趁機會還在時抓住它。"],
+["sensitive","adj.","敏感的","This is a sensitive topic.","這是個敏感的話題。"],
+["sequence","n.","順序；連續","Follow the sequence of steps.","按照步驟的順序來。"],
+["severe","adj.","嚴重的；嚴厲的","She suffered a severe injury.","她受了嚴重的傷。"],
+["shift","n./v.","轉變；輪班","There has been a shift in attitude.","態度上有了轉變。"],
+["shortage","n.","短缺","There is a shortage of teachers.","師資短缺。"],
+["significant","adj.","重大的；顯著的","There was a significant improvement.","有顯著的進步。"],
+["sincere","adj.","真誠的","Please accept my sincere apology.","請接受我誠摯的道歉。"],
+["slight","adj.","輕微的","There was a slight delay.","有輕微的延誤。"],
+["source","n.","來源","Check the source of the information.","查證資訊的來源。"],
+["specific","adj.","具體的；特定的","Be specific about what you need.","具體說出你需要什麼。"],
+["stable","adj.","穩定的","Her grades remained stable.","她的成績維持穩定。"],
+["strategy","n.","策略","We need a better strategy.","我們需要更好的策略。"],
+["strengthen","v.","加強","Reading strengthens vocabulary.","閱讀強化字彙。"],
+["structure","n.","結構","The essay lacks clear structure.","這篇作文缺乏清楚的結構。"],
+["struggle","v./n.","掙扎；奮鬥","He struggled with the reading section.","他在閱讀那部分很吃力。"],
+["submit","v.","提交；屈服","Submit your form by Friday.","週五前交出表格。"],
+["substitute","n./v.","替代品；代替","Nothing can substitute for practice.","沒有什麼能取代練習。"],
+["sufficient","adj.","足夠的","We have sufficient time.","我們有足夠的時間。"],
+["superior","adj.","較優越的","This method is superior to that one.","這個方法比那個好。"],
+["survive","v.","存活；倖免於","Few plants survive the cold.","很少植物能撐過寒冷。"],
+["suspect","v./n.","懷疑；嫌犯","I suspect she already knows.","我懷疑她早就知道了。"],
+["sustain","v.","維持；承受","She sustained the pose for a minute.","她維持那個姿勢一分鐘。"],
+["symbol","n.","象徵","The dove is a symbol of peace.","鴿子是和平的象徵。"],
+["tend","v.","傾向於","Students tend to underestimate time.","學生常低估時間。"],
+["tension","n.","緊張；張力","There was tension before the show.","演出前氣氛很緊張。"],
+["theory","n.","理論","The theory is easy to test.","這個理論容易檢驗。"],
+["thorough","adj.","徹底的","She made a thorough review.","她做了徹底的檢討。"],
+["threaten","v.","威脅","Pollution threatens the ocean.","汙染威脅海洋。"],
+["tolerate","v.","容忍","I cannot tolerate the noise.","我無法忍受這噪音。"],
+["tradition","n.","傳統","The festival is an old tradition.","這個節慶是古老的傳統。"],
+["transfer","v./n.","轉移；轉學","She transferred to another school.","她轉到另一所學校。","transferred"],
+["transform","v.","轉變","Training transformed her body.","訓練改變了她的身體。"],
+["tremendous","adj.","巨大的","She made tremendous progress.","她進步驚人。"],
+["ultimate","adj.","最終的","The ultimate goal is confidence.","最終目標是自信。"],
+["undergo","v.","經歷（變化、手術）","He underwent surgery last year.","他去年動了手術。","underwent"],
+["undertake","v.","著手進行","They undertook a major project.","他們著手一項大計畫。","undertook"],
+["unique","adj.","獨一無二的","Every dancer has a unique style.","每位舞者都有獨特的風格。"],
+["urban","adj.","都市的","Urban life can be stressful.","都市生活可能充滿壓力。"],
+["urge","v./n.","力勸；衝動","Doctors urge people to sleep more.","醫師力勸大家多睡。"],
+["utilize","v.","利用","Utilize your commuting time.","善用你的通勤時間。"],
+["vary","v.","變化；不同","Prices vary from store to store.","價格因店而異。"],
+["victim","n.","受害者","The victims received support.","受害者得到了支援。"],
+["violate","v.","違反","He violated the school rules.","他違反了校規。"],
+["virtue","n.","美德","Patience is a virtue.","耐心是一種美德。"],
+["vital","adj.","至關重要的","Rest is vital for recovery.","休息對恢復至關重要。"],
+["voluntary","adj.","自願的","Participation is entirely voluntary.","參加完全出於自願。"],
+["welfare","n.","福利；福祉","The law protects animal welfare.","法律保護動物福祉。"],
+["widespread","adj.","普遍的","The belief is widespread.","這種看法很普遍。"],
+["withdraw","v.","撤回；提款","She withdrew from the competition.","她退出了比賽。","withdrew"],
+["witness","n./v.","目擊者；目睹","She witnessed the whole accident.","她目睹了整起意外。"]
+];
+
+
+/* ═══ 由 PDF 教材建立的字組 ═══ */
+const EXTRA=[["英檢中級 · ca–cl 單字",[["canvas","n.","帆布；畫布","The artist painted a landscape on the canvas.","畫家在畫布上畫了一幅風景。","",""],
+["canyon","n.","峽谷","We hiked along the edge of the canyon.","我們沿著峽谷邊緣健行。","",""],
+["cape","n.","披肩；海角","She wore a red cape over her shoulders.","她肩上披著一件紅色披肩。","",""],
+["capital","n./adj.","首都；資金；大寫的","Taipei is the capital of Taiwan.","台北是台灣的首都。","","三個意思都常考：首都、資金、大寫字母"],
+["capitalism","n.","資本主義","Capitalism encourages private business.","資本主義鼓勵私人企業。","",""],
+["capitalist","n./adj.","資本家；投資者","The capitalist invested in a new factory.","那位資本家投資了一座新工廠。","",""],
+["caption","n.","標題；圖說","Write a short caption under the photo.","在照片下面寫一句簡短的圖說。","",""],
+["capture","v./n.","捕獲；捕捉；記錄下","The photo captured her happiest moment.","這張照片捕捉到她最快樂的一刻。","captured",""],
+["carbon","n.","碳；複寫紙","Cars produce a lot of carbon dioxide.","汽車產生大量二氧化碳。","",""],
+["cargo","n.","貨物","The ship carried cargo from Japan.","這艘船載著來自日本的貨物。","",""],
+["carpenter","n.","木匠","The carpenter built a wooden table.","木匠做了一張木桌。","",""],
+["carriage","n.","四輪馬車；車廂","A horse pulled the old carriage.","一匹馬拉著那輛舊馬車。","",""],
+["cart","n.","手推車；小車","She pushed the shopping cart down the aisle.","她推著購物車走過走道。","",""],
+["carve","v.","雕刻；切開","He carved a bird out of wood.","他用木頭雕了一隻鳥。","carved",""],
+["cashier","n.","出納員；收銀員","The cashier gave me the change.","收銀員找錢給我。","",""],
+["cement","n.","水泥","Workers mixed cement to build the wall.","工人攪拌水泥來砌牆。","",""],
+["ceremony","n.","儀式；典禮","The graduation ceremony lasted two hours.","畢業典禮持續了兩個小時。","",""],
+["certificate","n.","證書；證明","She received a certificate after the course.","課程結束後她拿到一張證書。","",""],
+["chain","n.","鏈；鍊子；連鎖店","He wore a silver chain around his neck.","他脖子上戴著一條銀鍊。","",""],
+["chamber","n.","室；房間","The old house has a hidden chamber.","那棟老屋有一間密室。","",""],
+["champion","n.","冠軍；支持者","She became the national champion last year.","她去年成為全國冠軍。","",""],
+["championship","n.","錦標賽","Our team won the championship.","我們隊贏得了錦標賽。","",""],
+["changeable","adj.","易變的；可改變的","The weather in spring is changeable.","春天的天氣多變。","",""],
+["cherish","v.","珍愛；懷抱","I cherish the memories of that summer.","我珍惜那年夏天的回憶。","",""],
+["cherry","n.","櫻桃","She picked a bowl of fresh cherries.","她摘了一碗新鮮櫻桃。","cherries",""],
+["chest","n.","胸；箱子","He felt a pain in his chest.","他覺得胸口疼痛。","",""],
+["chew","v.","嚼；咀嚼","Chew your food slowly.","慢慢咀嚼你的食物。","",""],
+["chick","n.","小雞；小鳥","The chick followed its mother.","小雞跟著牠的媽媽。","",""],
+["childbirth","n.","分娩；生產","She stayed in the hospital after childbirth.","生產後她住在醫院。","",""],
+["chill","n./v.","寒意；使變冷","A cold chill ran down her back.","一陣寒意從她背上竄過。","",""],
+["chilly","adj.","寒冷的","It was chilly outside this morning.","今天早上外面很冷。","",""],
+["chimney","n.","煙囪","Smoke rose from the chimney.","煙從煙囪冒出來。","",""],
+["china","n.","瓷器；陶瓷器","Her grandmother collects fine china.","她奶奶收藏精緻的瓷器。","","小寫 china 是瓷器，大寫 China 才是中國"],
+["cinema","n.","電影院；電影","We went to the cinema last night.","我們昨晚去了電影院。","",""],
+["circular","adj.","圓的；環形的","The table has a circular shape.","那張桌子是圓形的。","",""],
+["circulate","v.","循環；流通；傳播","Blood circulates through the body.","血液在體內循環。","circulates",""],
+["circulation","n.","循環；流通；發行量","Exercise improves blood circulation.","運動改善血液循環。","",""],
+["circus","n.","馬戲團；馬戲表演","The children loved the circus.","孩子們很喜歡那場馬戲表演。","",""],
+["civil","adj.","公民的；市民的","Voting is a civil right.","投票是一項公民權利。","",""],
+["civilian","n./adj.","平民；民用的","Many civilians left the city during the war.","戰爭期間許多平民離開了城市。","civilians",""],
+["civilization","n.","文明；文化","Ancient civilizations built great cities.","古文明建造了偉大的城市。","civilizations",""],
+["civilize","v.","使文明；教化","Education helps civilize society.","教育有助於使社會文明。","",""],
+["clarify","v.","澄清；闡明","Could you clarify your question?","你可以把問題說得清楚一點嗎？","",""],
+["clash","n./v.","衝突；碰撞聲；不協調","There was a clash between the two groups.","兩個團體之間發生了衝突。","",""],
+["classification","n.","分類；類別","The classification of animals is complex.","動物的分類很複雜。","",""],
+["claw","n./v.","爪；螯；用爪抓","The cat scratched me with its claws.","那隻貓用爪子抓我。","claws",""],
+["clay","n.","黏土","The students made bowls out of clay.","學生用黏土做碗。","",""],
+["cleaner","n.","清潔工；清潔劑","The cleaner comes every Friday.","清潔工每週五來。","",""],
+["click","n./v.","喀嚓聲；點擊","Click the button to continue.","點擊按鈕以繼續。","",""],
+["client","n.","客戶；委託人","The lawyer met his client at noon.","律師中午和他的客戶見面。","",""]]],
+["英檢中級 · 填空字群",[["calculating","adj.","精打細算的；工於心計的","He is a very calculating person who always thinks carefully.","他是個非常精打細算的人，總是仔細思考。","",""],
+["calculator","n.","計算機","The students used a calculator to solve the math problem quickly.","學生用計算機快速解出那道數學題。","",""],
+["camel","n.","駱駝","A camel can travel for days without water.","駱駝可以好幾天不喝水。","",""],
+["camping","n.","露營","We went camping in the mountains and slept in a small tent.","我們去山上露營，睡在小帳篷裡。","",""],
+["canal","n.","運河","Boats move slowly along the canal.","船隻沿著運河緩緩前行。","",""],
+["candidate","n.","候選人","A candidate is a person who wants to be chosen in an election.","候選人是想在選舉中被選上的人。","",""],
+["cane","n.","手杖；甘蔗","The old man walked slowly with a cane in his hand.","老先生手裡拄著拐杖慢慢地走。","",""],
+["canoe","n.","獨木舟","The tourists traveled on the river in a small canoe.","遊客乘著一艘小獨木舟在河上旅行。","",""],
+["cast","v./n.","投擲；鑄造；演員陣容","He cast a stone into the river.","他把一顆石頭丟進河裡。","","三態同形：cast–cast–cast"],
+["casual","adj.","非正式的；隨意的","They wore casual clothes because the party was not formal.","他們穿便服，因為那場派對不正式。","",""],
+["casualty","n.","傷亡人數；事故","There were no casualties in the accident.","這場意外沒有人傷亡。","casualties",""],
+["catalog","n.","目錄；索引","She looked through the catalog before ordering.","她在下訂前先翻過目錄。","",""],
+["caterpillar","n.","毛毛蟲","The little boy saw a green caterpillar moving on a leaf.","小男孩看見一隻綠色毛毛蟲在葉子上爬。","",""],
+["cattle","n.","牛隻","The farmer has many cattle on his farm.","那位農夫的農場上有很多牛。","","集合名詞，恆為複數，不加 s"],
+["cave","n.","洞穴","Tom found a small cave in the forest.","湯姆在森林裡發現一個小洞穴。","",""],
+["celebration","n.","慶典；慶祝活動","The school held a big celebration for the students' success.","學校為學生的成功辦了一場盛大的慶祝會。","",""],
+["charity","n.","慈善事業；施捨","The store donates money to charity to help poor people.","那家店捐錢給慈善機構幫助窮人。","",""],
+["charm","n.","魅力","Her charm made everyone want to talk to her.","她的魅力讓每個人都想跟她說話。","",""],
+["charming","adj.","迷人的；有魅力的","The little girl has a charming smile that makes everyone happy.","小女孩有個迷人的笑容，讓每個人都開心。","",""],
+["chat","n./v.","聊天；閒談","The students had a friendly chat with their teacher.","學生和老師愉快地聊了一下。","",""],
+["check","n.","支票","Tom wrote a check to pay for the books he bought.","湯姆開了一張支票支付他買的書。","",""],
+["checkout","n.","結帳；退房時間","Checkout is at eleven in the morning.","退房時間是早上十一點。","",""],
+["cheek","n.","臉頰；腮幫子","The baby has soft pink cheeks.","那個寶寶有柔軟粉紅的臉頰。","cheeks",""],
+["cheerful","adj.","愉快的；興高采烈的","She greeted us in a cheerful voice.","她用愉快的聲音跟我們打招呼。","",""],
+["chemist","n.","化學家；藥劑師","The chemist explained the experiment to us.","化學家向我們解釋那個實驗。","",""],
+["chemistry","n.","化學","The scientist works in a lab and studies chemistry.","那位科學家在實驗室裡研究化學。","",""],
+["chip","n.","洋芋片；晶片","The computer needs a new chip to work faster.","這台電腦需要新的晶片才能跑得更快。","",""],
+["choke","v.","使窒息；噎住","He choked on a piece of bread.","他被一塊麵包噎到。","choked",""],
+["chop","v.","砍；剁","He used a knife to chop the vegetables into small pieces.","他用刀把蔬菜切成小塊。","",""],
+["chore","n.","家事；雜務","My mother asked me to do some chores before watching TV.","我媽要我看電視前先做點家事。","chores",""],
+["chorus","n.","合唱團；副歌","The students joined the school chorus and practiced singing.","學生加入學校合唱團練唱。","",""],
+["Christian","n./adj.","基督徒；基督教的","She is a Christian and goes to church on Sundays.","她是基督徒，週日會上教堂。","",""],
+["cigar","n.","雪茄","Many people know that smoking a cigar is bad for health.","大家都知道抽雪茄有害健康。","",""],
+["cigarette","n.","香菸","He decided to quit smoking cigarettes.","他決定戒菸。","cigarettes",""],
+["comedian","n.","喜劇演員","A person who tells jokes and makes people laugh is called a comedian.","說笑話逗人笑的人叫做喜劇演員。","",""],
+["comedy","n.","喜劇","Tom watched a funny comedy on TV last night.","湯姆昨晚在電視上看了一齣好笑的喜劇。","",""],
+["comfort","n./v.","安慰；舒適","My mother gave me some comfort when I was sad.","我難過的時候媽媽安慰了我。","",""],
+["comfortably","adv.","舒適地","The old man lives comfortably in his new house.","老先生在新房子裡住得很舒適。","",""],
+["commander","n.","司令官；指揮官","The commander gave orders to his soldiers.","指揮官對士兵下令。","",""],
+["commerce","n.","商業","The city is a center of trade and commerce.","這座城市是貿易與商業的中心。","",""],
+["commission","n.","佣金；委員會","She earns a commission on every sale.","她每筆銷售都能抽佣金。","",""],
+["commitment","n.","承諾；投入","She made a commitment to finish the project before Friday.","她承諾週五前完成這個專案。","","make a commitment to + V"],
+["committee","n.","委員會","The school formed a committee to plan the sports day.","學校組成委員會來籌辦運動會。","",""],
+["communication","n.","溝通；通訊","Good communication is important when people work together.","大家一起工作時，良好的溝通很重要。","","動詞是 communicate，名詞是 communication"],
+["communist","n./adj.","共產主義者","The book explains communist ideas.","這本書解釋共產主義的思想。","",""],
+["companion","n.","同伴；夥伴","Her companion, Tom, joined her project.","她的夥伴湯姆加入了她的專案。","",""],
+["comparative","adj.","比較的；比較級的","We studied the comparative forms of adjectives.","我們學了形容詞的比較級。","",""],
+["compared","adj.","相比之下","This book is better when compared with the old one.","和舊版相比，這本書比較好。","","compared with 與 compared to 都可以"]]],
+["雜誌 · 米其林指南",[["publish","v.","出版；發表","The brothers published a guidebook listing hotels and restaurants.","兄弟倆出版了一本列出旅館與餐廳的指南。","published",""],
+["guidebook","n.","旅遊指南","They gave out free copies of the first-ever guidebook.","他們免費發送了史上第一本指南。","",""],
+["mechanic","n.","技工；修車工","The guide listed mechanics and gas stations.","那本指南列出了技工和加油站。","mechanics",""],
+["give out","v.phr.","分發","The brothers gave out 35,000 free copies.","兄弟倆發出了三萬五千本免費的書。","gave out",""],
+["hand out","v.phr.","發送；分送","They would publish and hand out similar guides for other countries.","他們後來陸續出版並發送其他國家的類似指南。","",""],
+["popularity","n.","知名度；受歡迎的程度","The popularity of the guide grew every year.","這本指南的知名度逐年上升。","",""],
+["charge","v./n.","收費；費用","They began charging a fee for their guidebook.","他們開始為指南收費。","charging",""],
+["edition","n.","版本","In the 1926 edition, good restaurants were awarded a star.","在一九二六年的版本裡，優良餐廳被授予一顆星。","",""],
+["award","v./n.","授予；獎項","Restaurants of good quality were awarded a single star.","品質好的餐廳被授予一顆星。","awarded",""],
+["associate","v.","聯想；把…聯繫在一起","Most people associate Michelin stars with high prices.","大多數人把米其林星級和高價聯想在一起。","","associate A with B"],
+["anonymous","adj.","匿名的","The process begins with anonymous inspectors.","這個流程從匿名評鑑員開始。","",""],
+["inspector","n.","檢查員；評鑑員","The inspectors may visit the same restaurant a few times.","評鑑員可能會造訪同一家餐廳好幾次。","inspectors",""],
+["presentation","n.","呈現；擺盤；簡報","They rate the presentation and taste of each meal.","他們評鑑每道菜的擺盤與味道。","",""],
+["overall","adj.","整體的","They review its overall quality together.","他們一起審視它的整體品質。","",""],
+["rating","n.","評等；評分","They give a rating of zero to three stars.","他們給出零到三顆星的評等。","",""],
+["establishment","n.","機構；（餐廳等）場所","It was simply to approve of an establishment as a very good restaurant.","那只是用來認可一家店是很好的餐廳。","",""],
+["detour","n.","繞道","Two stars means the restaurant is worth a detour.","兩顆星表示這家餐廳值得繞路前往。","",""],
+["worthy","adj.","值得的","The restaurant is excellent and worthy of a visit.","這家餐廳很出色，值得一訪。","","worthy of + 名詞或動名詞"],
+["exceptional","adj.","卓越的；異常的","Three stars means exceptional cooking.","三顆星代表卓越的廚藝。","",""],
+["cuisine","n.","菜餚；烹飪風格","The restaurant is famous for its French cuisine.","這家餐廳以法式料理聞名。","",""],
+["chef","n.","主廚","For chefs, a Michelin star is like winning an Oscar.","對主廚來說，一顆米其林星就像得到一座奧斯卡。","chefs",""],
+["stand for","v.phr.","代表；象徵","It stands for the highest level of success.","它代表最高層次的成功。","stands for",""],
+["culinary","adj.","烹飪的","A star is the highest honor in the culinary arts.","星星是烹飪藝術中最高的榮譽。","",""],
+["budget-friendly","adj.","價格親民的","The guide also offers more budget-friendly choices.","這本指南也提供價格較親民的選擇。","",""]]],
+["雜誌 · 電子垃圾",[["electronic","adj.","電子的","Think twice before throwing electronic devices away.","丟掉電子產品前先想一想。","",""],
+["refer","v.","指的是；提到","The term e-waste refers to electrical products that are thrown away.","e-waste 這個詞指的是被丟棄的電器產品。","refers","refer to = 指的是"],
+["battery","n.","電池","E-waste includes anything that runs on batteries.","電子垃圾包括任何靠電池運作的東西。","batteries",""],
+["separate","v./adj.","分離；分開的","It is difficult to separate metal and plastic from products.","要把金屬和塑膠從產品中分離出來很困難。","","separate A from B"],
+["toxic","adj.","有毒的","Many electronics contain toxic materials.","許多電子產品含有有毒物質。","",""],
+["landfill","n.","垃圾掩埋場","Toxic materials can pollute the environment if left in landfills.","有毒物質若留在掩埋場會汙染環境。","landfills",""],
+["advancement","n.","進步；進展","The problem has increased along with advancements in technology.","這個問題隨著科技進步而加劇。","advancements",""],
+["properly","adv.","妥善地；正確地","Only 17 percent of global e-waste is properly recycled.","全球只有百分之十七的電子垃圾被妥善回收。","",""],
+["recycle","v.","回收","These components can and should be recycled.","這些零件可以也應該被回收。","recycled",""],
+["pollute","v.","汙染","Harmful chemicals can pollute the soil and water.","有害化學物質會汙染土壤和水。","",""],
+["collection","n.","收集；收取","Cities should consider adding special collection boxes.","城市應該考慮增設專用回收箱。","",""],
+["delivery","n.","遞送；配送","There should also be delivery or pick-up services.","也應該要有遞送或到府收件的服務。","",""],
+["take apart","v.phr.","拆解","It is not easy to take apart an old computer.","要拆解一台舊電腦並不容易。","","可分開用：take it apart"],
+["mineral","n.","礦物","Old devices add up to a lot of metals and minerals.","舊裝置加起來含有大量金屬與礦物。","minerals",""],
+["profitable","adj.","有利可圖的","There is a lot to be done before e-waste recycling becomes profitable.","要讓電子垃圾回收有利可圖，還有很多事要做。","",""],
+["consumer","n.","消費者","As consumers, we should use our devices for as long as possible.","身為消費者，我們應該盡可能長時間使用裝置。","consumers",""],
+["replace","v.","取代；更換","If you must replace your phone, return it to the manufacturer.","如果你一定要換手機，把它交回給製造商。","",""],
+["manufacturer","n.","製造商","Try returning the device to the manufacturer.","試著把裝置退回給製造商。","",""],
+["drop off","v.phr.","送去；放下","You can drop off your old phone at a recycling center.","你可以把舊手機送到回收中心。","","可分開用：drop it off"],
+["harmful","adj.","有害的","It contains harmful materials such as lead and mercury.","它含有鉛和汞等有害物質。","",""],
+["valuable","adj.","有價值的；寶貴的","Recycling e-waste saves valuable resources.","回收電子垃圾能節省寶貴的資源。","",""],
+["repair","v./n.","修理","Repair electronic devices instead of replacing them.","修理電子產品，而不是換掉它們。","",""],
+["no longer","phr.","不再","Products are thrown away when they are no longer needed.","產品在不再被需要時就被丟棄。","",""]]],
+["雜誌 · 雨天與國花",[["drive away","v.phr.","趕走","Doing some exercise can drive away those rainy-day blues.","做點運動可以趕走雨天的憂鬱。","",""],
+["encouraging","adj.","鼓舞人心的","Watching an encouraging movie can raise one's spirit.","看一部鼓舞人心的電影可以提振精神。","",""],
+["spirit","n.","精神；心情","Playing a board game can raise one's spirit pretty quickly.","玩桌遊可以很快提振心情。","","raise one's spirit 提振精神"],
+["depression","n.","沮喪；憂鬱","For a lot of people, cloudy skies bring sadness and depression.","對許多人來說，陰天帶來悲傷與憂鬱。","",""],
+["constantly","adv.","不斷地","Their posts take on an angry tone on days when it rains constantly.","在連日下雨的日子，他們的貼文語氣會變得暴躁。","",""],
+["psychologist","n.","心理學家","A clinical psychologist says people should leave the lights on.","一位臨床心理學家說人們應該把燈留著。","",""],
+["chemical","n./adj.","化學物質；化學的","Serotonin is a chemical in the body that is key to feeling good.","血清素是體內一種讓人感覺良好的關鍵化學物質。","",""],
+["mood","n.","心情","Going for a walk can improve one's mood.","出去散步可以改善心情。","",""],
+["pour","v.","傾盆而下；倒","It can improve your mood even when it is pouring outside.","就算外面下著大雨，也能改善你的心情。","pouring",""],
+["meaningful","adj.","有意義的","National flowers are chosen because they are special or meaningful.","國花之所以被選出，是因為它們特別或有意義。","",""],
+["remind","v.","使想起；提醒","They remind people of their homeland.","它們讓人們想起自己的家鄉。","","remind A of B"],
+["homeland","n.","家鄉；祖國","The flower reminds people of their homeland.","這種花讓人想起家鄉。","",""],
+["bloom","v./n.","開花；綻放","Millions of cherry trees bloom across the country every spring.","每年春天，數百萬棵櫻花樹在全國綻放。","",""],
+["temporary","adj.","暫時的；短暫的","The flowers remind people that life is beautiful but temporary.","這些花提醒人們生命美麗卻短暫。","",""],
+["courage","n.","勇氣","The plum blossom represents courage and hope.","梅花代表勇氣與希望。","",""],
+["determination","n.","決心","It stands for courage, hope, and determination.","它象徵勇氣、希望與決心。","",""],
+["muddy","adj.","泥濘的","Although the lotus grows in muddy water, it produces clean flowers.","蓮花雖然長在泥水中，卻開出乾淨的花。","",""],
+["symbolize","v.","象徵","The lotus symbolizes purity and wisdom.","蓮花象徵純潔與智慧。","symbolizes",""],
+["purity","n.","純潔","The flower is a symbol of purity.","這種花是純潔的象徵。","",""],
+["wisdom","n.","智慧","The lotus symbolizes purity, wisdom, and spiritual growth.","蓮花象徵純潔、智慧與心靈成長。","",""],
+["spiritual","adj.","精神的；心靈的","The lotus stands for spiritual growth.","蓮花代表心靈的成長。","",""],
+["cluster","n.","串；群；叢","Its yellow flowers bloom in long clusters.","它的黃花成長串地綻放。","clusters",""],
+["unity","n.","團結","The flower represents honor, unity, and prosperity.","這種花代表榮譽、團結與繁榮。","",""],
+["prosperity","n.","繁榮","Yellow is connected with the royal family and prosperity.","黃色和皇室與繁榮有關。","",""],
+["honor","n./v.","榮譽；尊敬","This flower represents honor and unity.","這種花代表榮譽與團結。","",""],
+["royal","adj.","皇室的","The color yellow is closely connected with the Thai royal family.","黃色和泰國皇室關係密切。","",""],
+["attract","v.","吸引","Colorful tulip fields attract millions of visitors.","繽紛的鬱金香花海吸引數百萬遊客。","",""],
+["value","n.","價值；價值觀","National flowers tell stories about a country's values.","國花訴說著一個國家的價值觀。","values",""]]],
+["作文 · 因果文句型",[["due to","prep.phr.","由於","Due to the rain, I took my umbrella.","由於下雨，我帶了雨傘。","","due to 後面接名詞或動名詞，不能接句子"],
+["because of","prep.phr.","因為","Because of the bad weather, we decided to stay at home.","因為天氣不好，我們決定待在家。","","because of + 名詞；because + 完整句子"],
+["that is why","phr.","那就是為什麼","It was raining, and that is why we canceled the concert.","那時在下雨，那就是我們取消演唱會的原因。","",""],
+["for this reason","phr.","因為這個原因","It was getting dark. For this reason, we decided to go home.","天色漸暗，因此我們決定回家。","",""],
+["as a result","phr.","結果；因此","As a result, the Internet has become an important part of modern life.","結果，網路已成為現代生活的重要部分。","",""],
+["have an effect on","phr.","對…造成影響","Smoking has negative effects on people's health.","抽菸對人們的健康有負面影響。","effects on","effect 是名詞，affect 才是動詞"],
+["convenience","n.","便利","Due to the convenience of the Internet, people can find information quickly.","由於網路的便利，人們可以很快找到資訊。","",""]]],
+["學測 · Level 1–2 高頻字",[["ability","n.","能力","She has the ability to work under pressure.","她有在壓力下工作的能力。","","able 的名詞"],
+["accept","v.","接受","He accepted the invitation right away.","他馬上接受了邀請。","accepted","accept 接受／except 除外，別搞混"],
+["achieve","v.","達成","She achieved her goal in three months.","她三個月內達成目標。","achieved",""],
+["advice","n.","建議","My teacher gave me some useful advice.","老師給了我一些有用的建議。","","不可數；動詞是 advise"],
+["agree","v.","同意","I agree with you on this point.","這一點我同意你。","","agree with 人／agree to 提議"],
+["allow","v.","允許","My parents allow me to stay out late.","我父母允許我晚回家。","","allow sb. to V"],
+["appear","v.","出現；看起來","She appeared nervous before the show.","演出前她看起來很緊張。","appeared","反義 disappear"],
+["argue","v.","爭論；主張","They argued about who should pay.","他們爭論誰該付錢。","argued",""],
+["attend","v.","出席；上（學）","All students must attend the meeting.","所有學生都必須出席會議。",""," attend 後面直接接受詞，不加 to"],
+["average","n./adj.","平均；一般的","The average score was seventy.","平均分數是七十分。","",""],
+["avoid","v.","避免","Try to avoid careless mistakes.","盡量避免粗心的錯誤。","","avoid + V-ing，不接 to V"],
+["belong","v.","屬於","This notebook belongs to me.","這本筆記本是我的。","belongs","belong to，不用被動"],
+["borrow","v.","借入","May I borrow your pen?","我可以借你的筆嗎？","","borrow 借進來／lend 借出去"],
+["breathe","v.","呼吸","Take a moment and breathe slowly.","停一下，慢慢呼吸。","","動詞 breathe／名詞 breath"],
+["celebrate","v.","慶祝","We celebrated her birthday at home.","我們在家幫她慶生。","celebrated",""],
+["certain","adj.","確定的；某個","I am certain that she will come.","我確定她會來。","",""],
+["choice","n.","選擇","You have two choices here.","你在這裡有兩個選擇。","choices","名詞 choice／動詞 choose"],
+["common","adj.","常見的；共同的","This is a common mistake.","這是個常見的錯誤。","","have sth. in common 有共同點"],
+["compare","v.","比較","Compare the two answers carefully.","仔細比較這兩個答案。","","compare A with B"],
+["complete","v./adj.","完成；完整的","She completed the task on time.","她準時完成了任務。","completed",""],
+["condition","n.","狀況；條件","The car is in good condition.","這輛車狀況良好。","",""],
+["connect","v.","連接","This road connects the two towns.","這條路連接兩個城鎮。","connects","connect A with/to B"],
+["consider","v.","考慮；認為","We should consider all the options.","我們該考慮所有選項。","","consider + V-ing"],
+["contain","v.","包含","This box contains old photos.","這個盒子裡裝著舊照片。","contains",""],
+["continue","v.","繼續","She continued reading after dinner.","晚餐後她繼續讀書。","continued",""],
+["control","v./n.","控制","He could not control his temper.","他控制不住脾氣。","","out of control 失控"],
+["correct","adj./v.","正確的；訂正","Please correct your own mistakes.","請訂正你自己的錯誤。","",""],
+["create","v.","創造","The artist created a new style.","那位藝術家創造了新風格。","created",""],
+["custom","n.","習俗","Shaking hands is a common custom.","握手是常見的習俗。","","custom 習俗／customer 顧客"],
+["danger","n.","危險","The animals are in danger.","那些動物處於危險中。","","名詞 danger／形容詞 dangerous"],
+["decide","v.","決定","She decided to try again.","她決定再試一次。","decided","名詞是 decision"],
+["degree","n.","程度；度數；學位","The temperature dropped ten degrees.","氣溫降了十度。","degrees",""],
+["describe","v.","描述","Can you describe what you saw?","你能描述你看到的嗎？","","名詞是 description"],
+["design","n./v.","設計","The design is simple but clever.","這個設計簡單卻聰明。","",""],
+["develop","v.","發展；培養","He developed a habit of reading.","他養成了閱讀的習慣。","developed",""],
+["difference","n.","差別","There is a big difference between them.","他們之間有很大的差別。","","make a difference 帶來改變"],
+["discover","v.","發現","Scientists discovered a new species.","科學家發現了新物種。","discovered",""],
+["discuss","v.","討論","We discussed the plan yesterday.","我們昨天討論了那個計畫。","discussed","discuss 後面不加 about"],
+["disease","n.","疾病","This disease spreads quickly.","這種疾病傳播得很快。","",""],
+["divide","v.","分開；分割","Divide the class into four groups.","把全班分成四組。","","divide A into B"],
+["education","n.","教育","Education changes lives.","教育改變人生。","",""],
+["effort","n.","努力","She put a lot of effort into it.","她在這件事上花了很多心力。","","make an effort 努力"],
+["energy","n.","精力；能源","I have no energy left today.","我今天一點力氣都沒了。","",""],
+["especially","adv.","尤其","I like fruit, especially mangoes.","我喜歡水果，尤其是芒果。","",""],
+["event","n.","事件；活動","The school event was a success.","那場學校活動很成功。","",""],
+["exercise","n./v.","運動；練習","Regular exercise keeps you healthy.","規律運動讓你保持健康。","",""],
+["expect","v.","期待；預期","I did not expect to see you here.","我沒想到會在這裡看到你。","expect",""],
+["experience","n./v.","經驗；經歷","She has years of teaching experience.","她有多年的教學經驗。","",""],
+["explain","v.","解釋","Let me explain it again.","讓我再解釋一次。","","名詞是 explanation"],
+["familiar","adj.","熟悉的","That name sounds familiar.","那個名字聽起來很熟。","","be familiar with 熟悉某事"],
+["fear","n./v.","恐懼；害怕","Fear kept her from trying.","恐懼讓她不敢嘗試。","",""],
+["final","adj.","最後的","This is my final answer.","這是我最後的答案。","",""],
+["follow","v.","跟隨；遵守","Please follow the instructions.","請遵照指示。","",""],
+["force","n./v.","力量；強迫","Do not force yourself to finish.","不要強迫自己做完。","",""],
+["foreign","adj.","外國的","She studies foreign languages.","她學習外語。","","foreigner 外國人"],
+["forward","adv.","向前","Look forward, not back.","往前看，不要回頭。","","look forward to + V-ing 期待"],
+["freedom","n.","自由","Freedom comes with responsibility.","自由伴隨著責任。","",""],
+["gather","v.","聚集；收集","Students gathered in the hall.","學生聚集在大廳。","gathered",""],
+["general","adj.","一般的；總的","In general, the plan works.","大致上這個計畫可行。","","in general 一般而言"],
+["goal","n.","目標；進球","Set a goal you can reach.","設一個你達得到的目標。","",""],
+["government","n.","政府","The government made a new rule.","政府訂了新規定。","",""],
+["guess","v./n.","猜","I guess she is right.","我猜她是對的。","",""],
+["habit","n.","習慣","Reading is a good habit.","閱讀是個好習慣。","",""],
+["happen","v.","發生","What happened last night?","昨晚發生了什麼事？","happened","主詞是事情，不用被動"],
+["health","n.","健康","Sleep is important for health.","睡眠對健康很重要。","","名詞 health／形容詞 healthy"],
+["height","n.","高度；身高","What is your height?","你身高多少？","","形容詞是 high"],
+["hide","v.","藏","She hid her feelings well.","她把情緒藏得很好。","hid","hide-hid-hidden"],
+["honest","adj.","誠實的","Be honest with yourself.","對自己誠實。","","h 不發音"],
+["huge","adj.","巨大的","There was a huge crowd outside.","外面有一大群人。","",""],
+["humor","n.","幽默","His sense of humor saved the day.","他的幽默感救了場。","","sense of humor 幽默感"],
+["hurt","v.","傷害；疼痛","My legs hurt after the practice.","練習後我的腿很痛。","","三態同形 hurt-hurt-hurt"],
+["imagine","v.","想像","Imagine standing on that stage.","想像站在那個舞台上。","","imagine + V-ing"],
+["importance","n.","重要性","He explained the importance of rest.","他說明了休息的重要性。","",""],
+["increase","v./n.","增加","Prices increased last month.","上個月價格上漲了。","increased","反義 decrease"],
+["indeed","adv.","的確","It was indeed a long day.","這的確是漫長的一天。","",""],
+["instead","adv.","反而；作為替代","Walk instead of taking the bus.","走路，不要搭公車。","","instead of + N/V-ing"],
+["interest","n./v.","興趣；使感興趣","She showed interest in dance.","她對舞蹈表現出興趣。","","be interested in 對…有興趣"],
+["introduce","v.","介紹；引進","Let me introduce myself.","讓我自我介紹。","",""],
+["invent","v.","發明","He invented a simple tool.","他發明了一個簡單的工具。","invented","invent 發明／discover 發現"],
+["invite","v.","邀請","They invited us to dinner.","他們邀我們吃晚餐。","invited",""],
+["join","v.","加入","She joined the dance club.","她加入了舞蹈社。","joined",""],
+["journey","n.","旅程","It was a long journey home.","那是一段漫長的返家旅程。","",""],
+["judge","v./n.","判斷；法官","Do not judge people too quickly.","不要太快評斷別人。","",""],
+["knowledge","n.","知識","Knowledge grows with practice.","知識隨著練習增長。","","不可數"],
+["language","n.","語言","Body language matters in dance.","肢體語言在舞蹈裡很重要。","",""],
+["lead","v.","帶領；導致","Practice leads to progress.","練習帶來進步。","leads","lead to 導致"],
+["level","n.","程度；水平","She reached a higher level.","她到達了更高的層次。","",""],
+["lonely","adj.","寂寞的","He felt lonely in the new school.","他在新學校感到寂寞。","","lonely 寂寞／alone 獨自"],
+["machine","n.","機器","The machine stopped working.","機器停止運轉了。","",""],
+["marry","v.","結婚","They married last spring.","他們去年春天結婚。","married","be married to sb."],
+["meaning","n.","意義","Guess the meaning from the context.","從上下文猜意思。","",""],
+["medicine","n.","藥；醫學","Take the medicine after meals.","飯後吃藥。","",""],
+["member","n.","成員","She is a member of the team.","她是隊上的一員。","",""],
+["message","n.","訊息","I left a message for you.","我留了訊息給你。","",""],
+["mistake","n.","錯誤","Everyone makes mistakes.","每個人都會犯錯。","mistakes","make a mistake"],
+["moment","n.","片刻","Wait a moment, please.","請等一下。","",""],
+["movement","n.","動作；運動","Each movement must be precise.","每個動作都必須精準。","",""],
+["natural","adj.","自然的；天生的","She has natural talent.","她有天生的才能。","",""],
+["necessary","adj.","必要的","Sleep is necessary before a test.","考試前睡覺是必要的。","",""],
+["neighbor","n.","鄰居","Our neighbor is very kind.","我們的鄰居人很好。","",""],
+["nervous","adj.","緊張的","I get nervous before performing.","表演前我會緊張。","",""],
+["opinion","n.","意見","In my opinion, this is better.","依我看，這個比較好。","","in my opinion 我認為"],
+["pain","n.","疼痛","She danced through the pain.","她忍著痛跳完。","",""],
+["patient","n./adj.","病人；有耐心的","Be patient with yourself.","對自己有耐心。","",""],
+["peace","n.","和平；平靜","She finally found some peace.","她終於得到一點平靜。","",""],
+["perhaps","adv.","也許","Perhaps we should stop here.","也許我們該停在這裡。","",""],
+["period","n.","期間；時期","This was a difficult period.","這是段困難的時期。","",""],
+["plenty","n.","充足","There is plenty of time.","時間很充裕。","","plenty of + N"],
+["popular","adj.","受歡迎的","The song became popular quickly.","那首歌很快就紅了。","",""],
+["position","n.","位置；職位","Hold that position for ten seconds.","那個姿勢維持十秒。","",""],
+["power","n.","力量；電力","She has the power to change it.","她有能力改變它。","",""],
+["praise","v./n.","稱讚","The teacher praised her effort.","老師稱讚她的努力。","praised",""],
+["prepare","v.","準備","We prepared for the exam together.","我們一起準備考試。","prepared","prepare for 為…做準備"],
+["pretend","v.","假裝","Do not pretend to understand.","不要假裝聽懂了。","",""],
+["price","n.","價格","The price went up again.","價格又漲了。","",""],
+["pride","n.","驕傲；自豪","She took pride in her work.","她以自己的作品為傲。","","形容詞是 proud"],
+["probably","adv.","大概","She will probably be late.","她大概會遲到。","",""],
+["progress","n.","進步","You are making real progress.","你真的在進步。","","不可數；make progress"],
+["promise","v./n.","承諾","He promised to help us.","他答應要幫我們。","promised",""],
+["proud","adj.","驕傲的","I am proud of you.","我以你為傲。","","be proud of"],
+["public","adj./n.","公共的；大眾","This is a public library.","這是一間公立圖書館。","",""],
+["purpose","n.","目的","What is the purpose of this rule?","這條規定的目的是什麼？","","on purpose 故意地"],
+["quality","n.","品質","Quality matters more than quantity.","品質比數量重要。","",""],
+["quiet","adj.","安靜的","Please keep quiet in the library.","在圖書館請保持安靜。","","quiet 安靜／quite 相當，非常容易看錯"],
+["quite","adv.","相當；頗","The test was quite difficult.","那次考試相當難。","","quite 相當／quiet 安靜"],
+["rather","adv.","相當；寧願","I would rather stay home.","我寧願待在家。","","would rather + 原形動詞"],
+["reach","v.","到達；伸手","We reached the station at noon.","我們中午抵達車站。","reached","reach 後面不加 to"],
+["reason","n.","理由","Give me one good reason.","給我一個好理由。","","the reason why"],
+["receive","v.","收到","She received a letter yesterday.","她昨天收到一封信。","received","receive 收到／accept 接受並同意"],
+["recent","adj.","最近的","In recent years, things changed.","近年來情況變了。","","副詞是 recently"],
+["record","n./v.","紀錄；錄音","She broke her own record.","她打破了自己的紀錄。","",""],
+["remember","v.","記得","Remember to bring your ID.","記得帶身分證。","","remember to V 記得要做／remember V-ing 記得做過"],
+["repeat","v.","重複","Could you repeat that?","可以再說一次嗎？","",""],
+["reply","v./n.","回答；回覆","She replied with a smile.","她微笑著回答。","replied","reply to sb."],
+["report","n./v.","報告","He reported the accident to the police.","他向警方報告了那起意外。","reported",""],
+["return","v./n.","返回；歸還","Please return the book by Friday.","請在週五前還書。","",""],
+["rule","n./v.","規則；統治","Follow the rules of the game.","遵守遊戲規則。","rules",""],
+["safe","adj.","安全的","The streets are safe at night.","晚上街道很安全。","","名詞是 safety"],
+["scene","n.","場景","The last scene made me cry.","最後一幕讓我哭了。","",""],
+["schedule","n./v.","時間表；排定","My schedule is full this week.","我這週的行程滿了。","",""],
+["score","n./v.","分數；得分","Her score improved a lot.","她的分數進步很多。","",""],
+["search","v./n.","搜尋","They searched for the missing key.","他們找那把不見的鑰匙。","searched","search for 尋找"],
+["secret","n./adj.","祕密","She kept the secret for years.","她把這個祕密守了好幾年。","",""],
+["sense","n.","感覺；意義","That does not make sense.","那說不通。","","make sense 說得通"],
+["serious","adj.","嚴重的；認真的","This is a serious problem.","這是個嚴重的問題。","",""],
+["serve","v.","服務；提供","The restaurant serves good food.","那家餐廳提供好料理。","serves",""],
+["several","adj.","幾個的","I read several books this summer.","我這個夏天讀了好幾本書。","",""],
+["shape","n.","形狀；狀態","Stay in shape during the season.","賽季中保持體態。","","in shape 狀態良好"],
+["share","v./n.","分享；分擔","She shared her notes with me.","她把筆記分享給我。","shared",""],
+["shock","n./v.","震驚","The news came as a shock.","那消息令人震驚。","",""],
+["sign","n./v.","標誌；簽名","Do not forget to sign your name.","別忘了簽名。","","考卷務必簽名，這個字要記牢"],
+["silence","n.","沉默","There was a long silence.","出現了長長的沉默。","",""],
+["similar","adj.","相似的","Their styles are quite similar.","他們的風格相當相似。","","be similar to"],
+["simple","adj.","簡單的","Keep the answer simple.","答案保持簡單。","",""],
+["skill","n.","技能","Writing is a skill you can train.","寫作是可以訓練的技能。","",""],
+["smart","adj.","聰明的","That was a smart move.","那一步很聰明。","",""],
+["social","adj.","社會的；社交的","Social media affects our mood.","社群媒體影響我們的心情。","",""],
+["society","n.","社會","Education shapes society.","教育形塑社會。","",""],
+["solve","v.","解決","Let us solve this together.","我們一起解決這個問題。","",""],
+["speech","n.","演講","He gave a short speech.","他做了簡短的演講。","","動詞是 speak"],
+["speed","n.","速度","Reading speed can be trained.","閱讀速度是可以練的。","",""],
+["spread","v.","散布；蔓延","The news spread fast.","消息傳得很快。","","三態同形 spread"],
+["stage","n.","舞台；階段","She was calm on stage.","她在台上很鎮定。","",""],
+["standard","n./adj.","標準","The standard is high here.","這裡的標準很高。","",""],
+["stranger","n.","陌生人","A stranger helped her find the way.","一個陌生人幫她指路。","",""],
+["strength","n.","力量；優點","Know your own strengths.","了解你自己的強項。","strengths","形容詞是 strong"],
+["strict","adj.","嚴格的","Our teacher is strict but fair.","我們老師嚴格但公正。","","be strict with sb."],
+["subject","n.","科目；主題","English is my weakest subject.","英文是我最弱的科目。","",""],
+["succeed","v.","成功","She succeeded after many tries.","她試了很多次之後成功了。","succeeded","名詞 success／形容詞 successful"],
+["sudden","adj.","突然的","There was a sudden change of plan.","計畫突然改變。","","all of a sudden 突然"],
+["suffer","v.","受苦；罹患","He suffered from a knee injury.","他為膝傷所苦。","suffered","suffer from"],
+["suggest","v.","建議","She suggested taking a break.","她建議休息一下。","suggested","suggest + V-ing"],
+["support","v./n.","支持","My family supports my choice.","我的家人支持我的選擇。","supports",""],
+["suppose","v.","以為；假設","I suppose you are right.","我想你是對的。","","be supposed to 應該"],
+["surface","n.","表面","The lake surface was still.","湖面一片平靜。","",""],
+["surprise","n./v.","驚訝","Her answer surprised everyone.","她的回答讓大家驚訝。","surprised",""],
+["system","n.","系統；制度","The system works well.","這套系統運作良好。","",""],
+["talent","n.","才能","Talent needs practice to show.","才能需要練習才顯現。","",""],
+["thick","adj.","厚的；濃的","The fog was very thick.","霧非常濃。","","反義 thin"],
+["throughout","prep.","遍及；自始至終","It rained throughout the day.","整天都在下雨。","",""],
+["trust","v./n.","信任","Trust takes time to build.","信任需要時間建立。","",""],
+["truth","n.","真相","Tell me the truth.","告訴我實話。","","形容詞是 true"],
+["useful","adj.","有用的","This tip is really useful.","這個訣竅真的很有用。","",""],
+["usual","adj.","通常的","She arrived later than usual.","她比平常晚到。","","as usual 像往常一樣"],
+["weight","n.","重量","She lost some weight this year.","她今年瘦了一些。","","形容詞 heavy／動詞 weigh"],
+["whether","conj.","是否","I am not sure whether he will come.","我不確定他會不會來。","","whether or not"],
+["wonder","v./n.","想知道；驚奇","I wonder why she left early.","我想知道她為什麼早退。","",""]]],
+["學測 · L1–2 一字多義",[["bear","v./n.","忍受；熊","I cannot bear the noise.","我受不了這噪音。","","除了「熊」，更常考「忍受」"],
+["book","v./n.","預訂；書","We booked a table for six.","我們訂了六人的位子。","booked","動詞是「預訂」"],
+["close","v./adj.","關閉；接近的","She sat close to the window.","她坐在靠窗的地方。","","形容詞的 close 唸法和動詞不同"],
+["company","n.","公司；陪伴","I enjoy your company.","我喜歡有你作伴。","","「陪伴」是常考的第二義"],
+["count","v.","計算；重要","Every point counts.","每一分都重要。","counts","count = matter 重要"],
+["course","n.","課程；過程","Of course you can.","你當然可以。","","in the course of 在…過程中"],
+["draw","v.","畫；拉；吸引","The show drew a large crowd.","那場演出吸引了大批人潮。","drew","draw attention 吸引注意"],
+["even","adv./adj.","甚至；平坦的；偶數的","Even she was surprised.","連她都很驚訝。","",""],
+["fair","adj./n.","公平的；市集；淺色的","That is not fair.","那不公平。","",""],
+["fall","v./n.","落下；秋天","She fell during rehearsal.","她在排練時跌倒。","fell",""],
+["figure","n./v.","數字；身材；人物；認為","I cannot figure it out.","我想不出來。","","figure out 想通"],
+["fine","adj./n.","好的；罰款","He paid a fine for parking there.","他因為停在那裡被罰款。","","「罰款」是常考的第二義"],
+["firm","adj./n.","堅定的；公司","She was firm about her decision.","她對自己的決定很堅定。","",""],
+["free","adj.","免費的；自由的；空閒的","Are you free on Sunday?","你星期天有空嗎？","","三個意思都常考"],
+["hard","adj./adv.","困難的；努力地；硬的","She works hard every day.","她每天都很努力。","","hardly 是「幾乎不」，完全不同"],
+["hold","v.","握住；舉辦；容納","They will hold a meeting tomorrow.","他們明天要開會。","",""],
+["kind","n./adj.","種類；親切的","What kind of music do you like?","你喜歡哪種音樂？","",""],
+["land","n./v.","土地；降落","The plane landed safely.","飛機安全降落。","landed",""],
+["last","adj./v.","最後的；持續","The meeting lasted two hours.","會議持續了兩小時。","lasted","動詞是「持續」"],
+["leave","v./n.","離開；留下；休假","She left a note on the desk.","她在桌上留了張紙條。","left","「留下」比「離開」更常考"],
+["lie","v./n.","躺；說謊；謊言","Do not lie to me.","不要對我說謊。","","躺 lie-lay-lain／說謊 lie-lied-lied"],
+["light","n./adj./v.","光；輕的；點燃","Take a light jacket with you.","帶件薄外套。","","「輕的」是常考的第二義"],
+["matter","v./n.","要緊；事情；物質","It does not matter.","沒關係。","","動詞 matter = 重要"],
+["mean","v./adj.","意思是；刻薄的","Do not be mean to her.","不要對她刻薄。","","形容詞是「刻薄的」"],
+["mind","n./v.","心智；介意","Do you mind if I sit here?","你介意我坐這裡嗎？","","mind + V-ing"],
+["miss","v.","錯過；想念","I miss my old school.","我想念以前的學校。","",""],
+["note","n./v.","筆記；注意；紙鈔","Note the difference between them.","注意它們之間的差別。","","動詞是「注意」"],
+["order","n./v.","順序；命令；點餐","We ordered two coffees.","我們點了兩杯咖啡。","ordered","in order to 為了"],
+["part","n./v.","部分；角色；分開","She played a small part in the show.","她在演出中演了一個小角色。","",""],
+["pass","v.","經過；通過；傳遞","Pass me the salt, please.","請把鹽遞給我。","",""],
+["plant","n./v.","植物；工廠；種植","The plant was closed last year.","那座工廠去年關閉了。","","「工廠」是常考的第二義"],
+["play","v./n.","玩；播放；戲劇","We watched a play last night.","我們昨晚看了一齣戲。","","名詞是「戲劇」"],
+["point","n./v.","點；重點；指","What is your point?","你的重點是什麼？","","point out 指出"],
+["present","adj./n./v.","出席的；禮物；現在；呈現","All members were present.","所有成員都出席了。","","「出席的」常考"],
+["raise","v.","舉起；提高；養育","They raised three children.","他們養大了三個孩子。","raised","raise 及物／rise 不及物"],
+["rest","n./v.","休息；其餘","The rest of the class agreed.","班上其他人都同意。","","「其餘」是常考的第二義"],
+["right","adj./n./adv.","正確的；權利；右邊；就","Turn right at the corner.","在轉角右轉。","",""],
+["room","n.","房間；空間","There is room for one more.","還有位子可以再坐一個人。","","「空間」時不可數"],
+["run","v.","跑；經營；運作","She runs a small shop.","她經營一家小店。","runs","「經營」是常考的第二義"],
+["save","v.","拯救；節省；儲存","Saving time is the point.","重點是省時間。","saving","三個意思都常考"],
+["second","n./adj.","秒；第二","Wait a second.","等一下。","","「秒」是名詞"],
+["sound","n./v./adj.","聲音；聽起來；健全的","That sounds like a good idea.","那聽起來是個好主意。","sounds","動詞「聽起來」最常考"],
+["spring","n.","春天；泉水；彈簧","The spring water is cold.","泉水很冰。","",""],
+["stand","v.","站；忍受；代表","I cannot stand the heat.","我受不了這個熱。","","stand for 代表"],
+["state","n./v.","狀態；州；陳述","She stated her reasons clearly.","她清楚說明了理由。","stated","動詞是「陳述」"],
+["still","adv./adj.","仍然；靜止的","Keep still for a moment.","靜止一下不要動。","","形容詞是「靜止的」"],
+["store","n./v.","商店；儲存","The data is stored safely.","資料被安全地儲存著。","stored","動詞是「儲存」"],
+["train","n./v.","火車；訓練","He trains six hours a day.","他一天訓練六小時。","trains","動詞是「訓練」"],
+["treat","v./n.","對待；治療；請客","Treat others the way you want to be treated.","以你希望被對待的方式對待別人。","",""],
+["turn","v./n.","轉；輪到；變成","It is your turn now.","現在輪到你了。","","turn out 結果是"],
+["type","n./v.","類型；打字","She types very fast.","她打字很快。","types","動詞是「打字」"],
+["watch","v./n.","看；注意；手錶","Watch your step.","小心腳步。","","「注意」是常考的第二義"],
+["well","adv./adj./n.","好地；健康的；井","She is not well today.","她今天身體不舒服。","","形容詞是「健康的」"],
+["will","n./aux.","意志；遺囑；將要","Where there is a will, there is a way.","有志者事竟成。","","名詞是「意志」"],
+["work","v./n.","工作；奏效；作品","This method really works.","這個方法真的有效。","works","「奏效」是常考的第二義"]]]];
+
+/* 常見字停用表：這些不需要另外背 */
+const STOP=new Set(("a about above after again against all also am an and another any are around as at away back be because been before being below between both but by came can cannot come could day did do does doing done down during each even ever every few find first for found from get give go going good got great had has have having he her here hers him his how i if in into is it its just keep know last let life like little long look made make man many may me might more most much must my never new next no not now of off often old on once one only or other our out over own part people place put said same saw say see seem seen she should show since so some something still such take tell than that the their them then there these they thing think this those though three through time to today together too took two under until up upon us use used very want was way we well went were what when where which while who whole why will with within without work world would year yes yet you your").split(" "));
+
+/* ═══ 閱讀文章（原創，用你正在背的字寫的） ═══ */
+const ARTS=[{"id":"a1","t":"The Real Cost of a New Phone","lv":"英檢中級","tag":"電子垃圾","body":"Most of us replace our phones every two or three years. The old one goes into a drawer, and after a while it is thrown away. That is how electronic waste begins.\n\nE-waste is not a small problem. Every year the world produces tens of millions of tons of it, and only a small part is properly recycled. The rest ends up in landfills, where toxic materials such as lead and mercury can slowly pollute the soil and water.\n\nWhat makes this worse is that old devices are actually valuable. A single phone contains gold, silver, and copper, along with other minerals that are difficult and expensive to dig out of the ground. If these components were recovered instead of buried, we would need far less mining.\n\nSo what can a consumer do? The simplest answer is to keep your device longer. Repair it instead of replacing it. If it still works but you no longer want it, donate it. And when a phone finally dies, do not put it in the trash. Return it to the manufacturer, or drop it off at a proper recycling facility.\n\nNone of this is difficult. It only requires that we think twice before throwing something away.","q":[{"q":"What happens to most e-waste according to the passage?","o":["It is properly recycled.","It ends up in landfills.","It is returned to manufacturers.","It is sold to other countries."],"a":1,"why":"文章說只有一小部分被妥善回收，其餘進了掩埋場。"},{"q":"Why does the writer say old devices are valuable?","o":["They can still be used for many years.","They contain gold, silver, copper and other minerals.","They are worth a lot of money on the used market.","They remind people of the past."],"a":1,"why":"第三段直接列出手機裡的金、銀、銅與礦物。"},{"q":"What is the writer's main advice?","o":["Buy a better phone next time.","Recycle everything you own.","Keep and repair your device longer.","Stop using electronic devices."],"a":2,"why":"倒數第二段的第一個建議就是 keep your device longer、repair 而不是 replace。"}]},{"id":"a2","t":"Flowers That Carry Meaning","lv":"英檢中級","tag":"國花","body":"Almost every country has a national flower, and the choice is never random. A national flower is picked because it is common in that land, or because it stands for something the people care about.\n\nJapan chose the cherry blossom. Every spring, millions of trees bloom at once, and then the flowers fall within a week or two. That short life is exactly the point. The cherry blossom reminds people that beauty is real but temporary, and that this is not a sad thing.\n\nTaiwan chose the plum blossom, which opens in the middle of winter when almost nothing else does. Because it blooms in the cold, it has come to represent courage and determination.\n\nIndia chose the lotus. It grows in muddy water, yet the flower that rises above the surface is clean and bright. For this reason it symbolizes purity and spiritual growth.\n\nThese flowers are more than decoration. They tell us what a culture admires: patience in one place, endurance in another, and the ability to stay clean in difficult surroundings in a third. Learning about them is a quick way to learn about the people who chose them.","q":[{"q":"Why is the short life of the cherry blossom important?","o":["It makes the flower rare and expensive.","It shows that beauty is real but temporary.","It means the tree needs little care.","It allows farmers to plant twice a year."],"a":1,"why":"第二段結尾說得很明白：beauty is real but temporary。"},{"q":"What does the plum blossom represent?","o":["Purity and wisdom.","Wealth and honor.","Courage and determination.","Peace and unity."],"a":2,"why":"因為它在寒冬中開花，所以代表勇氣與決心。"},{"q":"What is the main idea of the last paragraph?","o":["National flowers are chosen by governments.","National flowers tell us what a culture values.","Flowers should be protected by law.","Every country should have three flowers."],"a":1,"why":"最後一段說這些花告訴我們一個文化欣賞什麼。"}]},{"id":"a3","t":"When It Rains for a Month","lv":"英檢中級","tag":"雨天憂鬱","body":"In some years the rain simply does not stop. There are months when it feels as if there were only one or two days of sunshine, and by the end of them a lot of people are tired, short-tempered, and low.\n\nThis is not just imagination. Cloudy skies really do affect mood. Social media posts take on an angry tone on days when it rains constantly, and doctors see more complaints about sadness and poor sleep during long wet seasons.\n\nOne clinical psychologist offers advice that sounds almost too simple. Instead of turning off the lights and staying in bed, leave the lights on. Bright light increases serotonin, a chemical in the body that is key to feeling good. Walking to a store to buy something small can improve your mood too, even when it is pouring outside.\n\nThe second method is to have fun on purpose. Playing a board game, watching an encouraging movie, or dancing along with a video can raise your spirit surprisingly quickly. None of these things stop the rain. What they do is stop you from sitting still in the dark, which is what makes a wet month feel so long.","q":[{"q":"What does the psychologist suggest doing?","o":["Sleeping more during rainy days.","Turning off the lights to rest the eyes.","Leaving the lights on to increase serotonin.","Taking medicine for low mood."],"a":2,"why":"第三段：leave the lights on，因為亮光會增加血清素。"},{"q":"What is serotonin described as?","o":["A kind of weather.","A chemical in the body linked to feeling good.","A type of exercise.","A medical treatment."],"a":1,"why":"文章直接定義它是體內一種與感覺良好有關的化學物質。"},{"q":"According to the last paragraph, why do these activities help?","o":["They make the rain stop sooner.","They keep you from sitting still in the dark.","They are cheaper than going outside.","They help you sleep longer."],"a":1,"why":"最後一句：它們阻止你在黑暗裡坐著不動。"}]},{"id":"a4","t":"Stars, Detours, and Dinner","lv":"學測","tag":"餐廳評鑑","body":"Restaurant guides look simple from the outside: a place gets one star, two stars, or three. The process behind those stars is stranger than most people imagine.\n\nIt begins with anonymous inspectors. They book a table like any other customer, pay like any other customer, and take no notes at the table. They may return to the same restaurant several times before deciding anything. What they rate is not decoration or service alone, but the quality of the ingredients, the cooking method, the presentation, and above all the taste.\n\nAfterwards, the inspectors who visited that restaurant review its overall quality together and agree on a rating. Each number carries a different meaning. One star means a very good restaurant in its category. Two stars means the cooking is excellent and the place is worthy of a detour. Three stars means the food is so exceptional that the meal alone is worth a special journey.\n\nFor a chef, receiving a star is like winning an Oscar. It stands for the highest level of success in the culinary arts. Yet the same guides also list cheap places that serve good food, which suggests that a star is not really about price at all.","q":[{"q":"What do the inspectors NOT do at the table?","o":["Pay for their meal.","Take notes.","Order food.","Visit more than once."],"a":1,"why":"第二段：without taking notes（原文說他們不做筆記）。"},{"q":"What does a two-star rating mean?","o":["The restaurant is good in its category.","The cooking is excellent and worth a detour.","The meal is worth a special journey.","The restaurant is affordable."],"a":1,"why":"二星＝excellent，值得繞路前往（worthy of a detour）。"},{"q":"What does the last sentence suggest?","o":["Stars are given only to expensive restaurants.","Stars have nothing to do with price.","Cheap restaurants never get stars.","Chefs care more about money than food."],"a":1,"why":"因為指南也收錄便宜但好吃的店，代表星等與價格無關。"}]},{"id":"a5","t":"Learning by Failing","lv":"學測","tag":"練習與挫折","body":"Anyone who has trained seriously in a physical art knows a particular kind of frustration. You watch someone perform a movement, you understand exactly what they are doing, and then your own body refuses to do it. Understanding and being able are not the same thing.\n\nThis gap is where most people quit. It feels like evidence that they lack talent. In fact it is evidence of nothing except that the skill has not been practiced enough. Progress in any discipline is gradual and mostly invisible from the inside. You do not feel yourself improving; you only notice, weeks later, that something which used to be impossible has become ordinary.\n\nWhat separates those who continue is not confidence. It is a routine. A person who practices for forty minutes on a bad day will pass a person who waits for a good day and then practices for three hours. Constant, unexciting repetition beats occasional enthusiasm.\n\nThere is also a smaller lesson hidden here. When you fail at something, resist the urge to explain why. Just note what went wrong in one short sentence and try again. Long explanations are a comfortable way of avoiding the next attempt.","q":[{"q":"According to the writer, what does the gap between understanding and ability show?","o":["That the person lacks talent.","That the skill has not been practiced enough.","That the teacher explained it badly.","That the movement is impossible."],"a":1,"why":"第二段：它只證明這項技能練得不夠，跟天分無關。"},{"q":"What separates people who keep going?","o":["Natural confidence.","A regular routine.","Better teachers.","More free time."],"a":1,"why":"第三段開頭直接說：不是自信，是規律。"},{"q":"What is the writer's advice about failure?","o":["Explain carefully why it happened.","Take a long break afterwards.","Note the problem briefly and try again.","Ask someone else to do it for you."],"a":2,"why":"最後一段：用一個短句記下哪裡錯了就再試一次，長篇解釋只是逃避。"}]}];
+
+/* ═══ 音節拆解、同字族、產出/辨識標記 ═══ */
+const META={"abandon":["aban·don",[],"p"],"absorb":["ab·sorb",[],"p"],"abstract":["ab·stract",[],"p"],"accompany":["ac·com·pa·ny",[],"p"],"accomplish":["ac·com·plish",[],"p"],"accurate":["ac·cu·rate",[],"p"],"adapt":["adapt",[],"p"],"adequate":["ad·e·quate",[],"p"],"adjust":["ad·just",[],"p"],"adopt":["adopt",[],"p"],"affect":["af·fect",[],"p"],"afford":["af·ford",[],"p"],"aggressive":["ag·gres·sive",[],"p"],"alter":["al·ter",[],"p"],"analyze":["an·a·lyze",[],"p"],"ancient":["an·cient",[],"p"],"anticipate":["an·tic·i·pate",[],"p"],"anxiety":["anx·i·ety",[],"p"],"apparent":["ap·par·ent",[],"p"],"appeal":["ap·peal",[],"p"],"appreciate":["ap·pre·ci·ate",[],"p"],"approach":["ap·proach",[],"p"],"appropriate":["ap·pro·pri·ate",[],"p"],"approve":["ap·prove",[],"p"],"artificial":["ar·ti·fi·cial",[],"p"],"aspect":["as·pect",[],"p"],"assign":["as·sign",[],"p"],"assist":["as·sist",[],"p"],"assume":["as·sume",[],"p"],"assure":["as·sure",[],"p"],"atmosphere":["at·mos·phere",[],"p"],"attitude":["at·ti·tude",[],"p"],"authority":["au·thor·i·ty",[],"p"],"available":["avail·a·ble",[],"p"],"aware":["aware",[],"p"],"barrier":["bar·ri·er",[],"p"],"benefit":["ben·e·fit",[],"p"],"boundary":["bound·ary",[],"p"],"brief":["brief",[],"p"],"budget":["bud·get",[],"p"],"calculate":["cal·cu·late",["calculating","calculator"],"p"],"campaign":["cam·paign",[],"p"],"capable":["ca·pa·ble",[],"p"],"capacity":["ca·pac·i·ty",[],"p"],"category":["cat·e·go·ry",[],"p"],"cease":["cease",[],"p"],"challenge":["chal·lenge",[],"p"],"characteristic":["char·ac·ter·is·tic",[],"p"],"circumstance":["cir·cum·stance",[],"p"],"classify":["clas·si·fy",[],"p"],"colleague":["col·league",[],"p"],"combine":["com·bine",[],"p"],"commercial":["com·mer·cial",["commerce"],"p"],"commit":["com·mit",["commitment"],"p"],"complain":["com·plain",[],"p"],"complex":["com·plex",[],"p"],"component":["com·po·nent",[],"p"],"compose":["com·pose",[],"p"],"concentrate":["con·cen·trate",[],"p"],"concept":["con·cept",[],"p"],"conclude":["con·clude",[],"p"],"conduct":["con·duct",[],"p"],"confident":["con·fi·dent",[],"p"],"confirm":["con·firm",[],"p"],"conflict":["con·flict",[],"p"],"conscious":["con·scious",[],"p"],"consequence":["con·se·quence",[],"p"],"conservative":["con·ser·va·tive",[],"p"],"consist":["con·sist",[],"p"],"constant":["con·stant",["constantly"],"p"],"construct":["con·struct",[],"p"],"consume":["con·sume",["consumer"],"p"],"context":["con·text",[],"p"],"contrast":["con·trast",[],"p"],"contribute":["con·trib·ute",[],"p"],"convince":["con·vince",[],"p"],"cooperate":["co·op·er·ate",[],"p"],"cope":["cope",[],"p"],"crisis":["cri·sis",[],"p"],"criticize":["crit·i·cize",[],"p"],"crucial":["cru·cial",[],"p"],"curious":["cu·ri·ous",[],"p"],"debate":["de·bate",[],"p"],"decade":["decade",[],"p"],"decline":["de·cline",[],"p"],"define":["de·fine",[],"p"],"delay":["de·lay",[],"p"],"demonstrate":["demon·strate",[],"p"],"deny":["de·ny",[],"p"],"deserve":["de·serve",[],"p"],"despite":["de·spite",[],"p"],"destroy":["de·stroy",[],"p"],"detect":["de·tect",[],"p"],"determine":["de·ter·mine",["determination"],"p"],"device":["de·vice",[],"p"],"devote":["de·vote",[],"p"],"discipline":["dis·ci·pline",[],"p"],"discourage":["dis·cour·age",[],"p"],"dismiss":["dis·miss",[],"p"],"distinct":["dis·tinct",[],"p"],"distribute":["dis·trib·ute",[],"p"],"diverse":["di·verse",[],"p"],"domestic":["do·mes·tic",[],"p"],"dominate":["dom·i·nate",[],"p"],"donate":["do·nate",[],"p"],"eager":["ea·ger",[],"p"],"efficient":["ef·fi·cient",[],"p"],"eliminate":["elim·i·nate",[],"p"],"emerge":["emerge",[],"p"],"emphasize":["em·pha·size",[],"p"],"enable":["en·a·ble",[],"p"],"encounter":["en·counter",[],"p"],"endure":["en·dure",[],"p"],"enforce":["en·force",[],"p"],"enhance":["en·hance",[],"p"],"enormous":["enor·mous",[],"p"],"ensure":["en·sure",[],"p"],"enthusiasm":["en·thu·si·asm",[],"p"],"essential":["es·sen·tial",[],"p"],"establish":["es·tab·lish",["establishment"],"p"],"estimate":["es·ti·mate",[],"p"],"evaluate":["eval·u·ate",[],"p"],"eventually":["even·tu·al·ly",[],"p"],"evidence":["ev·i·dence",[],"p"],"evolve":["evolve",[],"p"],"exaggerate":["ex·ag·ger·ate",[],"p"],"exceed":["ex·ceed",[],"p"],"exchange":["ex·change",[],"p"],"exhausted":["ex·haust·ed",[],"p"],"exhibit":["ex·hib·it",[],"p"],"expand":["ex·pand",[],"p"],"expense":["ex·pense",[],"p"],"expose":["ex·pose",[],"p"],"extend":["ex·tend",[],"p"],"external":["ex·ter·nal",[],"p"],"facility":["fa·cil·i·ty",[],"p"],"factor":["fac·tor",[],"p"],"fascinate":["fas·ci·nate",[],"p"],"feature":["fea·ture",[],"p"],"financial":["fi·nan·cial",[],"p"],"flexible":["flex·i·ble",[],"p"],"forecast":["fore·cast",[],"p"],"former":["for·mer",[],"p"],"foundation":["foun·da·tion",[],"p"],"frequent":["fre·quent",[],"p"],"frustrate":["frus·trate",[],"p"],"fundamental":["fun·da·men·tal",[],"p"],"generate":["gen·er·ate",[],"p"],"generous":["gen·er·ous",["general"],"p"],"genuine":["gen·uine",[],"p"],"gesture":["ges·ture",[],"p"],"gradual":["grad·u·al",[],"p"],"guarantee":["guar·an·tee",[],"p"],"hesitate":["hes·i·tate",[],"p"],"highlight":["high·light",[],"p"],"hostile":["hos·tile",[],"p"],"identify":["iden·ti·fy",[],"p"],"ignore":["ig·nore",[],"p"],"illustrate":["il·lus·trate",[],"p"],"imitate":["im·i·tate",[],"p"],"impact":["im·pact",[],"p"],"imply":["im·ply",[],"p"],"impose":["im·pose",[],"p"],"incident":["in·ci·dent",[],"p"],"independent":["in·de·pen·dent",[],"p"],"indicate":["in·di·cate",[],"p"],"inevitable":["in·evita·ble",[],"p"],"influence":["in·flu·ence",[],"p"],"ingredient":["in·gre·di·ent",[],"p"],"initial":["ini·tial",[],"p"],"innocent":["in·no·cent",[],"p"],"insight":["in·sight",[],"p"],"insist":["in·sist",[],"p"],"inspire":["in·spire",[],"p"],"instance":["in·stance",[],"p"],"intelligent":["in·tel·li·gent",[],"p"],"intend":["in·tend",[],"p"],"intense":["in·tense",[],"p"],"interpret":["in·ter·pret",[],"p"],"investigate":["in·ves·ti·gate",[],"p"],"involve":["in·volve",[],"p"],"isolate":["iso·late",[],"p"],"justify":["jus·ti·fy",[],"p"],"launch":["launch",[],"p"],"legal":["le·gal",[],"p"],"literature":["lit·er·a·ture",[],"p"],"locate":["lo·cate",[],"p"],"maintain":["main·tain",[],"p"],"manufacture":["man·u·fac·ture",["manufacturer"],"p"],"mature":["ma·ture",[],"p"],"mental":["men·tal",[],"p"],"migrate":["mi·grate",[],"p"],"modest":["mod·est",[],"p"],"modify":["mod·i·fy",[],"p"],"motivate":["mo·ti·vate",[],"p"],"mutual":["mu·tu·al",[],"p"],"negative":["neg·a·tive",[],"p"],"neglect":["ne·glect",[],"p"],"negotiate":["ne·go·ti·ate",[],"p"],"nevertheless":["nev·er·the·less",[],"p"],"notion":["no·tion",[],"p"],"numerous":["nu·mer·ous",[],"p"],"obstacle":["ob·sta·cle",[],"p"],"obtain":["ob·tain",[],"p"],"obvious":["ob·vi·ous",[],"p"],"occupy":["oc·cu·py",[],"p"],"occur":["oc·cur",[],"p"],"opponent":["op·po·nent",[],"p"],"oppose":["op·pose",[],"p"],"optimistic":["op·ti·mistic",[],"p"],"origin":["ori·gin",[],"p"],"outcome":["out·come",[],"p"],"overcome":["over·come",[],"p"],"overlook":["over·look",[],"p"],"participate":["par·tic·i·pate",[],"p"],"passive":["pas·sive",["pass"],"p"],"perceive":["per·ceive",[],"p"],"permanent":["per·ma·nent",[],"p"],"persist":["per·sist",[],"p"],"perspective":["per·spec·tive",[],"p"],"persuade":["per·suade",[],"p"],"phenomenon":["phe·nom·e·non",[],"p"],"policy":["pol·i·cy",[],"p"],"portion":["por·tion",[],"p"],"possess":["pos·sess",[],"p"],"potential":["po·ten·tial",[],"p"],"poverty":["pover·ty",[],"p"],"precise":["pre·cise",[],"p"],"predict":["pre·dict",[],"p"],"prejudice":["prej·u·dice",[],"p"],"preserve":["pre·serve",[],"p"],"previous":["pre·vi·ous",[],"p"],"principle":["prin·ci·ple",[],"p"],"priority":["pri·or·i·ty",[],"p"],"procedure":["pro·ce·dure",[],"p"],"profession":["pro·fes·sion",[],"p"],"prohibit":["pro·hib·it",[],"p"],"promote":["pro·mote",[],"p"],"prompt":["prompt",[],"p"],"propose":["pro·pose",[],"p"],"pursue":["pur·sue",[],"p"],"qualify":["qual·i·fy",["quality"],"p"],"reasonable":["rea·son·a·ble",["reason"],"p"],"recall":["re·call",[],"p"],"recognize":["rec·og·nize",[],"p"],"recommend":["rec·om·mend",[],"p"],"recover":["re·cov·er",[],"p"],"reflect":["re·flect",[],"p"],"refuse":["refuse",[],"p"],"region":["re·gion",[],"p"],"regret":["re·gret",[],"p"],"relevant":["rel·e·vant",[],"p"],"reliable":["re·li·a·ble",[],"p"],"relieve":["re·lieve",[],"p"],"reluctant":["re·luc·tant",[],"p"],"rely":["re·ly",[],"p"],"remark":["re·mark",[],"p"],"represent":["rep·re·sent",[],"p"],"reputation":["rep·u·ta·tion",[],"p"],"resist":["re·sist",[],"p"],"resolve":["re·solve",[],"p"],"respond":["re·spond",[],"p"],"restore":["re·store",["rest"],"p"],"restrict":["re·strict",[],"p"],"retire":["re·tire",[],"p"],"reveal":["re·veal",[],"p"],"reverse":["re·verse",[],"p"],"revise":["re·vise",[],"p"],"rigid":["rigid",[],"p"],"routine":["rou·tine",[],"p"],"rural":["ru·ral",[],"p"],"sacrifice":["sac·ri·fice",[],"p"],"satisfy":["sat·is·fy",[],"p"],"scarce":["scarce",[],"p"],"scatter":["scat·ter",[],"p"],"seek":["seek",[],"p"],"seize":["seize",[],"p"],"sensitive":["sen·si·tive",[],"p"],"sequence":["se·quence",[],"p"],"severe":["se·vere",["several"],"p"],"shift":["shift",[],"p"],"shortage":["short·age",[],"p"],"significant":["sig·nif·i·cant",[],"p"],"sincere":["sin·cere",[],"p"],"slight":["slight",[],"p"],"source":["source",[],"p"],"specific":["spe·cif·ic",[],"p"],"stable":["sta·ble",[],"p"],"strategy":["strat·e·gy",[],"p"],"strengthen":["strength·en",[],"p"],"structure":["struc·ture",[],"p"],"struggle":["strug·gle",[],"p"],"submit":["sub·mit",[],"p"],"substitute":["sub·sti·tute",[],"p"],"sufficient":["suf·fi·cient",[],"p"],"superior":["su·pe·ri·or",[],"p"],"survive":["sur·vive",[],"p"],"suspect":["sus·pect",[],"p"],"sustain":["sus·tain",[],"p"],"symbol":["sym·bol",["symbolize"],"p"],"tend":["tend",[],"p"],"tension":["ten·sion",[],"p"],"theory":["the·o·ry",[],"p"],"thorough":["thor·ough",[],"p"],"threaten":["threat·en",[],"p"],"tolerate":["tol·er·ate",[],"p"],"tradition":["tra·di·tion",[],"p"],"transfer":["trans·fer",[],"p"],"transform":["trans·form",[],"p"],"tremendous":["tremen·dous",[],"p"],"ultimate":["ul·ti·mate",[],"p"],"undergo":["un·der·go",[],"p"],"undertake":["un·der·take",[],"p"],"unique":["unique",[],"p"],"urban":["ur·ban",[],"p"],"urge":["urge",[],"p"],"utilize":["uti·lize",[],"p"],"vary":["vary",[],"p"],"victim":["vic·tim",[],"p"],"violate":["vi·o·late",[],"p"],"virtue":["virtue",[],"p"],"vital":["vi·tal",[],"p"],"voluntary":["vol·un·tary",[],"p"],"welfare":["wel·fare",[],"p"],"widespread":["wide·spread",[],"p"],"withdraw":["with·draw",[],"p"],"witness":["wit·ness",[],"p"],"canvas":["can·vas",[],"r"],"canyon":["canyon",[],"r"],"cape":["cape",[],"r"],"capital":["cap·i·tal",[],"r"],"capitalism":["cap·i·tal·ism",[],"r"],"capitalist":["cap·i·tal·ist",[],"r"],"caption":["cap·tion",[],"r"],"capture":["cap·ture",[],"r"],"carbon":["car·bon",[],"r"],"cargo":["car·go",[],"r"],"carpenter":["car·pen·ter",[],"r"],"carriage":["car·riage",[],"r"],"cart":["cart",[],"r"],"carve":["carve",[],"r"],"cashier":["cashier",[],"r"],"cement":["ce·ment",[],"r"],"ceremony":["cer·e·mo·ny",[],"r"],"certificate":["cer·tifi·cate",[],"r"],"chain":["chain",[],"r"],"chamber":["cham·ber",[],"r"],"champion":["cham·pi·on",[],"r"],"championship":["cham·pi·onship",[],"r"],"changeable":["change·a·ble",[],"r"],"cherish":["cher·ish",[],"r"],"cherry":["cher·ry",[],"r"],"chest":["chest",[],"r"],"chew":["chew",[],"r"],"chick":["chick",[],"r"],"childbirth":["child·birth",[],"r"],"chill":["chill",[],"r"],"chilly":["chilly",[],"r"],"chimney":["chim·ney",[],"r"],"china":["chi·na",[],"r"],"cinema":["cin·e·ma",[],"r"],"circular":["cir·cu·lar",[],"r"],"circulate":["cir·cu·late",[],"r"],"circulation":["cir·cu·la·tion",[],"r"],"circus":["cir·cus",[],"r"],"civil":["civ·il",["civilization","civilize"],"r"],"civilian":["civil·ian",[],"r"],"civilization":["civ·i·liza·tion",["civil","civilize"],"r"],"civilize":["civ·i·lize",["civil","civilization"],"r"],"clarify":["clar·i·fy",[],"r"],"clash":["clash",[],"r"],"classification":["clas·si·fi·ca·tion",[],"r"],"claw":["claw",[],"r"],"clay":["clay",[],"r"],"cleaner":["clean·er",[],"r"],"click":["click",[],"r"],"client":["client",[],"r"],"calculating":["cal·cu·lat·ing",["calculate","calculator"],"p"],"calculator":["cal·cu·la·tor",["calculate","calculating"],"p"],"camel":["camel",[],"p"],"camping":["camp·ing",[],"p"],"canal":["canal",[],"p"],"candidate":["can·di·date",[],"p"],"cane":["cane",[],"p"],"canoe":["ca·noe",[],"p"],"cast":["cast",[],"p"],"casual":["ca·su·al",[],"p"],"casualty":["ca·su·al·ty",[],"p"],"catalog":["cat·a·log",[],"p"],"caterpillar":["cater·pil·lar",[],"p"],"cattle":["cat·tle",[],"p"],"cave":["cave",[],"p"],"celebration":["cel·e·bra·tion",[],"p"],"charity":["char·i·ty",[],"p"],"charm":["charm",["charming"],"p"],"charming":["charm·ing",["charm"],"p"],"chat":["chat",[],"p"],"check":["check",[],"p"],"checkout":["check·out",[],"p"],"cheek":["cheek",[],"p"],"cheerful":["cheer·ful",[],"p"],"chemist":["chemist",[],"p"],"chemistry":["chem·istry",[],"p"],"chip":["chip",[],"p"],"choke":["choke",[],"p"],"chop":["chop",[],"p"],"chore":["chore",[],"p"],"chorus":["cho·rus",[],"p"],"Christian":["Chris·tian",[],"p"],"cigar":["cigar",[],"p"],"cigarette":["cig·a·rette",[],"p"],"comedian":["co·me·di·an",[],"p"],"comedy":["com·e·dy",[],"p"],"comfort":["com·fort",["comfortably"],"p"],"comfortably":["com·fort·ably",["comfort"],"p"],"commander":["com·man·der",[],"p"],"commerce":["com·merce",["commercial"],"p"],"commission":["com·mis·sion",[],"p"],"commitment":["com·mit·ment",["commit"],"p"],"committee":["com·mit·tee",[],"p"],"communication":["com·mu·ni·ca·tion",[],"p"],"communist":["com·mu·nist",[],"p"],"companion":["com·pan·ion",[],"p"],"comparative":["com·par·a·tive",[],"p"],"compared":["com·pared",["compare"],"p"],"publish":["pub·lish",[],"r"],"guidebook":["guide·book",[],"r"],"mechanic":["me·chan·ic",[],"r"],"give out":["give out",[],"r"],"hand out":["hand out",[],"r"],"popularity":["pop·u·lar·i·ty",["popular"],"r"],"charge":["charge",[],"r"],"edition":["edi·tion",[],"r"],"award":["award",[],"r"],"associate":["as·so·ciate",[],"r"],"anonymous":["anony·mous",[],"r"],"inspector":["in·spec·tor",[],"r"],"presentation":["pre·sen·ta·tion",["present"],"r"],"overall":["over·all",[],"r"],"rating":["rat·ing",[],"r"],"establishment":["es·tab·lish·ment",["establish"],"r"],"detour":["de·tour",[],"r"],"worthy":["wor·thy",[],"r"],"exceptional":["ex·cep·tion·al",[],"r"],"cuisine":["cui·sine",[],"r"],"chef":["chef",[],"r"],"stand for":["stand for",[],"r"],"culinary":["culi·nary",[],"r"],"budget-friendly":["bud·get-friend·ly",[],"r"],"electronic":["elec·tron·ic",[],"r"],"refer":["re·fer",[],"r"],"battery":["bat·tery",[],"r"],"separate":["sep·a·rate",[],"r"],"toxic":["tox·ic",[],"r"],"landfill":["land·fill",[],"r"],"advancement":["ad·vance·ment",[],"r"],"properly":["prop·er·ly",[],"r"],"recycle":["re·cy·cle",[],"r"],"pollute":["pol·lute",[],"r"],"collection":["col·lec·tion",[],"r"],"delivery":["de·liv·ery",[],"r"],"take apart":["take apart",[],"r"],"mineral":["min·er·al",[],"r"],"profitable":["prof·ita·ble",[],"r"],"consumer":["con·sumer",["consume"],"r"],"replace":["re·place",[],"r"],"manufacturer":["man·u·fac·tur·er",["manufacture"],"r"],"drop off":["drop off",[],"r"],"harmful":["harm·ful",[],"r"],"valuable":["valu·a·ble",["value"],"r"],"repair":["re·pair",[],"r"],"no longer":["no longer",[],"r"],"drive away":["drive away",[],"r"],"encouraging":["en·cour·ag·ing",[],"r"],"spirit":["spir·it",[],"r"],"depression":["de·pres·sion",[],"r"],"constantly":["con·stant·ly",["constant"],"r"],"psychologist":["psy·chol·o·gist",[],"r"],"chemical":["chem·i·cal",[],"r"],"mood":["mood",[],"r"],"pour":["pour",[],"r"],"meaningful":["mean·ing·ful",["mean","meaning"],"r"],"remind":["re·mind",[],"r"],"homeland":["home·land",[],"r"],"bloom":["bloom",[],"r"],"temporary":["tem·po·rary",[],"r"],"courage":["courage",[],"r"],"determination":["de·ter·mi·na·tion",["determine"],"r"],"muddy":["mud·dy",[],"r"],"symbolize":["sym·bol·ize",["symbol"],"r"],"purity":["pu·ri·ty",[],"r"],"wisdom":["wis·dom",[],"r"],"spiritual":["spir·i·tu·al",[],"r"],"cluster":["clus·ter",[],"r"],"unity":["uni·ty",[],"r"],"prosperity":["pros·per·i·ty",[],"r"],"honor":["hon·or",[],"r"],"royal":["roy·al",[],"r"],"attract":["at·tract",[],"r"],"value":["val·ue",["valuable"],"r"],"due to":["due to",[],"p"],"because of":["be·cause of",[],"p"],"that is why":["that is why",[],"p"],"for this reason":["for this rea·son",[],"p"],"as a result":["as a re·sult",[],"p"],"have an effect on":["have an ef·fect on",[],"p"],"convenience":["con·ve·nience",[],"p"],"ability":["abil·i·ty",[],"p"],"accept":["ac·cept",[],"p"],"achieve":["achieve",[],"p"],"advice":["ad·vice",[],"p"],"agree":["agree",[],"p"],"allow":["al·low",[],"p"],"appear":["ap·pear",[],"p"],"argue":["ar·gue",[],"p"],"attend":["at·tend",[],"p"],"average":["av·er·age",[],"p"],"avoid":["avoid",[],"p"],"belong":["be·long",[],"p"],"borrow":["bor·row",[],"p"],"breathe":["breathe",[],"p"],"celebrate":["cel·e·brate",[],"p"],"certain":["cer·tain",[],"p"],"choice":["choice",[],"p"],"common":["com·mon",[],"p"],"compare":["com·pare",["compared"],"p"],"complete":["com·plete",[],"p"],"condition":["con·di·tion",[],"p"],"connect":["con·nect",[],"p"],"consider":["con·sid·er",[],"p"],"contain":["con·tain",[],"p"],"continue":["con·tin·ue",[],"p"],"control":["con·trol",[],"p"],"correct":["cor·rect",[],"p"],"create":["cre·ate",[],"p"],"custom":["cus·tom",[],"p"],"danger":["dan·ger",[],"p"],"decide":["de·cide",[],"p"],"degree":["de·gree",[],"p"],"describe":["de·scribe",[],"p"],"design":["de·sign",[],"p"],"develop":["de·vel·op",[],"p"],"difference":["dif·fer·ence",[],"p"],"discover":["dis·cov·er",[],"p"],"discuss":["dis·cuss",[],"p"],"disease":["dis·ease",[],"p"],"divide":["di·vide",[],"p"],"education":["ed·u·ca·tion",[],"p"],"effort":["ef·fort",[],"p"],"energy":["en·er·gy",[],"p"],"especially":["es·pe·cial·ly",[],"p"],"event":["event",[],"p"],"exercise":["ex·er·cise",[],"p"],"expect":["ex·pect",[],"p"],"experience":["ex·pe·ri·ence",[],"p"],"explain":["ex·plain",[],"p"],"familiar":["fa·mil·iar",[],"p"],"fear":["fear",[],"p"],"final":["fi·nal",[],"p"],"follow":["fol·low",[],"p"],"force":["force",[],"p"],"foreign":["for·eign",[],"p"],"forward":["for·ward",[],"p"],"freedom":["free·dom",[],"p"],"gather":["gath·er",[],"p"],"general":["gen·er·al",["generous"],"p"],"goal":["goal",[],"p"],"government":["gov·ern·ment",[],"p"],"guess":["guess",[],"p"],"habit":["habit",[],"p"],"happen":["hap·pen",[],"p"],"health":["health",[],"p"],"height":["height",[],"p"],"hide":["hide",[],"p"],"honest":["hon·est",[],"p"],"huge":["huge",[],"p"],"humor":["hu·mor",[],"p"],"hurt":["hurt",[],"p"],"imagine":["imag·ine",[],"p"],"importance":["im·por·tance",[],"p"],"increase":["in·crease",[],"p"],"indeed":["in·deed",[],"p"],"instead":["in·stead",[],"p"],"interest":["in·ter·est",[],"p"],"introduce":["in·tro·duce",[],"p"],"invent":["in·vent",[],"p"],"invite":["in·vite",[],"p"],"join":["join",[],"p"],"journey":["jour·ney",[],"p"],"judge":["judge",[],"p"],"knowledge":["knowl·edge",[],"p"],"language":["lan·guage",[],"p"],"lead":["lead",[],"p"],"level":["lev·el",[],"p"],"lonely":["lone·ly",[],"p"],"machine":["ma·chine",[],"p"],"marry":["mar·ry",[],"p"],"meaning":["mean·ing",["mean","meaningful"],"p"],"medicine":["medicine",[],"p"],"member":["mem·ber",[],"p"],"message":["mes·sage",[],"p"],"mistake":["mis·take",[],"p"],"moment":["mo·ment",[],"p"],"movement":["move·ment",[],"p"],"natural":["nat·u·ral",[],"p"],"necessary":["nec·es·sary",[],"p"],"neighbor":["neigh·bor",[],"p"],"nervous":["ner·vous",[],"p"],"opinion":["opin·ion",[],"p"],"pain":["pain",[],"p"],"patient":["pa·tient",[],"p"],"peace":["peace",[],"p"],"perhaps":["per·haps",[],"p"],"period":["pe·ri·od",[],"p"],"plenty":["plen·ty",[],"p"],"popular":["pop·u·lar",["popularity"],"p"],"position":["po·si·tion",[],"p"],"power":["pow·er",[],"p"],"praise":["praise",[],"p"],"prepare":["pre·pare",[],"p"],"pretend":["pre·tend",[],"p"],"price":["price",[],"p"],"pride":["pride",[],"p"],"probably":["prob·a·bly",[],"p"],"progress":["progress",[],"p"],"promise":["prom·ise",[],"p"],"proud":["proud",[],"p"],"public":["pub·lic",[],"p"],"purpose":["pur·pose",[],"p"],"quality":["qual·i·ty",["qualify"],"p"],"quiet":["qui·et",[],"p"],"quite":["quite",[],"p"],"rather":["rather",[],"p"],"reach":["reach",[],"p"],"reason":["rea·son",["reasonable"],"p"],"receive":["re·ceive",[],"p"],"recent":["re·cent",[],"p"],"record":["record",[],"p"],"remember":["re·mem·ber",[],"p"],"repeat":["re·peat",[],"p"],"reply":["re·ply",[],"p"],"report":["re·port",[],"p"],"return":["re·turn",[],"p"],"rule":["rule",[],"p"],"safe":["safe",[],"p"],"scene":["scene",[],"p"],"schedule":["sched·ule",[],"p"],"score":["score",[],"p"],"search":["search",[],"p"],"secret":["se·cret",[],"p"],"sense":["sense",[],"p"],"serious":["se·ri·ous",[],"p"],"serve":["serve",[],"p"],"several":["sev·er·al",["severe"],"p"],"shape":["shape",[],"p"],"share":["share",[],"p"],"shock":["shock",[],"p"],"sign":["sign",[],"p"],"silence":["si·lence",[],"p"],"similar":["sim·i·lar",[],"p"],"simple":["sim·ple",[],"p"],"skill":["skill",[],"p"],"smart":["smart",[],"p"],"social":["so·cial",[],"p"],"society":["so·ci·ety",[],"p"],"solve":["solve",[],"p"],"speech":["speech",[],"p"],"speed":["speed",[],"p"],"spread":["spread",[],"p"],"stage":["stage",[],"p"],"standard":["stan·dard",[],"p"],"stranger":["stranger",[],"p"],"strength":["strength",[],"p"],"strict":["strict",[],"p"],"subject":["sub·ject",[],"p"],"succeed":["suc·ceed",[],"p"],"sudden":["sud·den",[],"p"],"suffer":["suf·fer",[],"p"],"suggest":["sug·gest",[],"p"],"support":["sup·port",[],"p"],"suppose":["sup·pose",[],"p"],"surface":["sur·face",[],"p"],"surprise":["sur·prise",[],"p"],"system":["sys·tem",[],"p"],"talent":["tal·ent",[],"p"],"thick":["thick",[],"p"],"throughout":["through·out",[],"p"],"trust":["trust",[],"p"],"truth":["truth",[],"p"],"useful":["use·ful",[],"p"],"usual":["usu·al",[],"p"],"weight":["weight",[],"p"],"whether":["whether",[],"p"],"wonder":["won·der",[],"p"],"bear":["bear",[],"r"],"book":["book",[],"r"],"close":["close",[],"r"],"company":["com·pa·ny",[],"r"],"count":["count",[],"r"],"course":["course",[],"r"],"draw":["draw",[],"r"],"even":["even",[],"r"],"fair":["fair",[],"r"],"fall":["fall",[],"r"],"figure":["fig·ure",[],"r"],"fine":["fine",[],"r"],"firm":["firm",[],"r"],"free":["free",[],"r"],"hard":["hard",[],"r"],"hold":["hold",[],"r"],"kind":["kind",[],"r"],"land":["land",[],"r"],"last":["last",[],"r"],"leave":["leave",[],"r"],"lie":["lie",[],"r"],"light":["light",[],"r"],"matter":["mat·ter",[],"r"],"mean":["mean",["meaning","meaningful"],"r"],"mind":["mind",[],"r"],"miss":["miss",[],"r"],"note":["note",[],"r"],"order":["or·der",[],"r"],"part":["part",[],"r"],"pass":["pass",["passive"],"r"],"plant":["plant",[],"r"],"play":["play",[],"r"],"point":["point",[],"r"],"present":["present",["presentation"],"r"],"raise":["raise",[],"r"],"rest":["rest",["restore"],"r"],"right":["right",[],"r"],"room":["room",[],"r"],"run":["run",[],"r"],"save":["save",[],"r"],"second":["sec·ond",[],"r"],"sound":["sound",[],"r"],"spring":["spring",[],"r"],"stand":["stand",[],"r"],"state":["state",[],"r"],"still":["still",[],"r"],"store":["store",[],"r"],"train":["train",[],"r"],"treat":["treat",[],"r"],"turn":["turn",[],"r"],"type":["type",[],"r"],"watch":["watch",[],"r"],"well":["well",[],"r"],"will":["will",[],"r"],"work":["work",[],"r"]};
+
+/* ═══ 儲存：Claude 內用 window.storage，放到網路上時自動改用瀏覽器本機儲存 ═══ */
+const KEY='vocab_ctx_v1';let mem=null;
+const hasWS=()=>typeof window!=='undefined'&&window.storage&&typeof window.storage.get==='function';
+const hasLS=()=>{try{const k='__t';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}catch(e){return false;}};
+async function load(){
+  if(hasWS()){try{const r=await window.storage.get(KEY);if(r&&r.value)return JSON.parse(r.value);}catch(e){}}
+  if(hasLS()){try{const v=localStorage.getItem(KEY);if(v)return JSON.parse(v);}catch(e){}}
+  return mem;
+}
+async function save(s){
+  mem=s;const str=JSON.stringify(s);
+  if(hasWS()){try{await window.storage.set(KEY,str);}catch(e){}}
+  if(hasLS()){try{localStorage.setItem(KEY,str);}catch(e){}}
+}
+const today=()=>new Date().toISOString().slice(0,10);
+const plus=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);};
+/* 間隔階梯（天）：1,1,1,1 → 7 → 15 → 30 → 60
+   前四天連續，取自固定遍數的遞減背誦法6~8 遍版的前段 —— 遺忘曲線最陡的就是這四天。
+   後段交給自適應（難度係數），不像固定 16 遍那樣不分難易一律走完。*/
+const LADDER=[1,1,1,1,7,15,30,60];
+const LV=['未學','剛認識','第2天','第3天','第4天','一週後','半個月','一個月','已畢業'];
+const GRAD=7;
+function levelOf(r){return !r.seen?0:Math.min((r.box||0)+1,8);}
+function nextGap(r){const b=Math.min(r.box||0,LADDER.length-1);
+  return Math.max(1,Math.round(LADDER[b]*((r.ease||2.5)/2.5)));}
+let repeats={};
+const MODEWHY={
+ auto:'自動：標「看得懂就好」的字只考選擇；標「要會拼寫」的字，爬到第 3 階起每三次考一次拼寫，退步兩次以上的一律拼寫。點卡片上的徽章可以隨時改。',
+ choice:'選擇：挖空句子＋四個選項，和學測詞彙題、文意選填同一個形狀。約 20 秒一字。',
+ spell:'拼寫：要自己把字打出來。最慢也最紮實，中譯英與作文靠這個。約 40 秒一字。',
+ recog:'只求認得：看句子想中文，翻面自評。最快，約 10 秒一字。跳完舞太累的日子用這個，不要整學期都用。'};
+function quizType(r){
+  const m=(S&&S.mode)||'auto';
+  if(m!=='auto')return m;
+  if(r.kind!=='p')return 'choice';          // 標成「看得懂就好」的字永遠不考拼寫
+  if((r.lapses||0)>=2)return 'spell';       // 退步兩次以上的頑固字一定要拼
+  if((r.box||0)>=4&&((r.reps||0)%3===0))return 'spell';
+  return 'choice';
+}
+function distract(r,n){
+  let pool=Object.values(S.recs).filter(x=>x.id!==r.id&&x.en!==r.en);
+  const same=pool.filter(x=>x.deck===r.deck&&x.pos===r.pos);
+  const near=pool.filter(x=>x.deck===r.deck);
+  const spell=pool.filter(x=>x.en[0]===r.en[0]&&Math.abs(x.en.length-r.en.length)<=3);
+  let src=same.length>=n?same:(near.length>=n?near:(spell.length>=n?spell:pool));
+  src=src.slice();
+  const out=[];
+  while(out.length<n&&src.length){out.push(src.splice(Math.floor(Math.random()*src.length),1)[0].en);}
+  return out;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let choices=[];
+
+let S=null,queue=[],idx=0,marks=[],phase='pre',ans='',hinted=false,sug='o',cur=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+function mkRec(id,w,deck){return {id,en:w[0],pos:w[1],zh:w[2],ex:w[3],exz:w[4],form:w[5]||'',note:w[6]||'',
+  src:deck,deck,stage:0,seen:false,due:null,streak:0,last:null,
+  box:0,ease:2.5,reps:0,lapses:0,log:[],
+  syl:(META[w[0]]&&META[w[0]][0])||autoSyl(w[0]),
+  fam:(META[w[0]]&&META[w[0]][1])||[],
+  kind:(META[w[0]]&&META[w[0]][2])||'p'};}
+/* 自建字卡沒有預先算好的拆解時，用簡易規則現算 */
+function autoSyl(w){
+  if(!w||/[ -]/.test(w))return w;
+  let out=w.replace(/([^aeiouy])([^aeiouy])/gi,(m,a,b,i)=>
+      (i>0&&i+2<w.length)?a+'·'+b:m)
+    .replace(/([aeiouy])([^aeiouy])([aeiouy])/gi,(m,a,b,c)=>a+'·'+b+c)
+    .replace(/·+/g,'·').replace(/^·|·$/g,'');
+  return out.split('·').length>1?out:w;
+}
+function allDecks(){return [['內建 · 學測 L3–4',W]].concat(EXTRA);}
+function seedInto(recs){
+  W.forEach((w,i)=>{if(!recs['b'+i])recs['b'+i]=mkRec('b'+i,w,'內建 · 學測 L3–4');});
+  EXTRA.forEach(([name,rows],di)=>rows.forEach((w,i)=>{
+    const id='d'+di+'_'+i;if(!recs[id])recs[id]=mkRec(id,w,name);}));
+  return recs;
+}
+function freshState(){
+  const on={};allDecks().forEach(([n])=>on[n]=true);
+  return {recs:seedInto({}),sources:[],goal:12,revCap:60,artEvery:3,theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
+}
+function buildQueue(){
+  const t=today();
+  const all=Object.values(S.recs).filter(r=>S.on[r.deck||'我的']!==false);
+  /* 到期複習優先，且和新字分開計額。
+     前四天連續的字昨天才看過，重看很快（約 8 秒），不該和新字搶同一個額度。 */
+  const due=all.filter(r=>r.seen&&r.due&&r.due<=t)
+                .sort((a,b)=>((b.lapses||0)-(a.lapses||0))||(a.due<b.due?-1:1))
+                .slice(0,S.revCap||60);
+  const room=Math.max(0,(S.goal||12));
+  const nw=all.filter(r=>!r.seen).slice(0,room);
+  queue=due.concat(nw);
+  repeats={};idx=0;marks=new Array(queue.length).fill(null);
+}
+/* 例句挖空：優先用例句裡實際出現的變化形 */
+const esc_re=x=>String(x).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function reOf(r){
+  const parts=[];
+  if(r.form)parts.push(esc_re(r.form));
+  parts.push(esc_re(r.en)+'(?:s|es|ed|ing|d|ly)?');
+  return new RegExp('\\b('+parts.join('|')+')\\b','i');
+}
+function cloze(r){
+  if(!r.ex)return null;
+  const re=reOf(r);
+  if(!re.test(r.ex))return null;
+  return esc(r.ex).replace(re,'<span class="blank">　　　　</span>');
+}
+function markup(r){
+  if(!r.ex)return '';
+  return esc(r.ex).replace(reOf(r),'<b>$1</b>');
+}
+function lev(a,b){const m=[];for(let i=0;i<=b.length;i++)m[i]=[i];for(let j=0;j<=a.length;j++)m[0][j]=j;
+  for(let i=1;i<=b.length;i++)for(let j=1;j<=a.length;j++)
+    m[i][j]=b[i-1]===a[j-1]?m[i-1][j-1]:Math.min(m[i-1][j-1]+1,m[i][j-1]+1,m[i-1][j]+1);
+  return m[b.length][a.length];}
+function rate(){return (S&&S.rate)||0.85;}
+function speak(txt,opt){
+  try{
+    const u=new SpeechSynthesisUtterance(txt);
+    u.lang='en-US';u.rate=(opt&&opt.rate)||rate();
+    if(opt&&opt.onend)u.onend=opt.onend;
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+  }catch(e){if(opt&&opt.onend)opt.onend();}
+}
+/* 跟讀：唸一次 → 留一段等長的空白讓你跟著唸 → 再唸一次 */
+let shadowStop=false;
+function shadow(txt,el){
+  shadowStop=false;
+  const mark=t=>{if(el)el.textContent=t;};
+  mark('① 先聽');
+  speak(txt,{onend:()=>{
+    if(shadowStop)return;
+    mark('② 換你唸（跟著唸出聲，不要只在心裡）');
+    const wait=Math.max(1800,txt.split(/\s+/).length*420);
+    setTimeout(()=>{
+      if(shadowStop)return;
+      mark('③ 再聽一次，對照哪裡不一樣');
+      speak(txt,{onend:()=>{if(!shadowStop)mark('跟讀完成');}});
+    },wait);
+  }});
+}
+/* 錄自己的聲音，播回來對照 */
+let recorder=null,recChunks=[],recURL=null;
+async function recToggle(btn,playBtn,st){
+  try{
+    if(recorder&&recorder.state==='recording'){recorder.stop();return;}
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    recChunks=[];recorder=new MediaRecorder(stream);
+    recorder.ondataavailable=e=>recChunks.push(e.data);
+    recorder.onstop=()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      if(recURL)URL.revokeObjectURL(recURL);
+      recURL=URL.createObjectURL(new Blob(recChunks,{type:recorder.mimeType||'audio/webm'}));
+      btn.textContent='● 錄音';playBtn.disabled=false;if(st)st.textContent='錄好了，按「播我的」對照一次';
+    };
+    recorder.start();btn.textContent='■ 停止';if(st)st.textContent='錄音中⋯⋯把整句唸出來';
+  }catch(e){if(st)st.textContent='沒有拿到麥克風權限。瀏覽器網址列左邊可以開啟。';}
+}
+function playMine(){if(recURL)new Audio(recURL).play();}
+
+/* ═══ 練習畫面 ═══ */
+function renderGrid(){
+  $('grid').innerHTML=queue.map((_,i)=>{const m=marks[i];
+    return `<div class="cell ${m||''} ${i===idx&&!m?'now':''}">${m?({o:'○',t:'△',x:'×'})[m]:''}</div>`;}).join('');
+  $('prog').textContent=`${marks.filter(Boolean).length} / ${queue.length}`;
+}
+function renderStats(){
+  const all=Object.values(S.recs),t=today();
+  const seen=all.filter(r=>r.seen);
+  const grad=seen.filter(r=>(r.box||0)>=GRAD).length;
+  const solid=seen.filter(r=>(r.box||0)>=4&&(r.box||0)<GRAD).length;
+  const shaky=seen.filter(r=>(r.box||0)<4).length;
+  const d1=plus(1),d7=plus(7);
+  const soon=seen.filter(r=>r.due&&r.due>t&&r.due<=d1).length;
+  const wk=seen.filter(r=>r.due&&r.due>t&&r.due<=d7).length;
+  const st=[[seen.length,'學過'],[shaky,'生疏'],[solid,'穩定'],[grad,'已畢業'],
+            [soon,'明天到期'],[wk,'7 天內到期'],[all.length,'字庫']];
+  $('stats').innerHTML=st.map(([n,l])=>`<div class="stat"><b class="mono">${n}</b><span>${l}</span></div>`).join('');
+}
+function audioBar(r,id){
+  if(!r.ex)return '';
+  return `<div class="audio">
+    <button class="abtn" data-a="word">🔊 單字</button>
+    <button class="abtn" data-a="sent">🔊 整句</button>
+    <button class="abtn" data-a="shadow">🎧 跟讀</button>
+    <button class="abtn" data-a="rec">● 錄音</button>
+    <button class="abtn" data-a="play" disabled>▶ 播我的</button>
+    <span class="ast" id="ast${id}"></span>
+  </div>`;
+}
+function bindAudio(r,id){
+  const box=document.querySelector('.audio');if(!box)return;
+  const st=$('ast'+id);
+  const recB=box.querySelector('[data-a=rec]'),playB=box.querySelector('[data-a=play]');
+  box.querySelectorAll('.abtn').forEach(b=>b.onclick=()=>{
+    const a=b.dataset.a;
+    if(a==='word')speak(r.en);
+    else if(a==='sent'){shadowStop=true;speak(r.ex);}
+    else if(a==='shadow')shadow(r.ex,st);
+    else if(a==='rec')recToggle(recB,playB,st);
+    else if(a==='play')playMine();
+  });
+}
+function famHTML(r){
+  if(!r.fam||!r.fam.length)return '';
+  const items=r.fam.map(w=>{
+    const o=Object.values(S.recs).find(x=>x.en===w);
+    return `<b>${esc(w)}</b>${o&&o.zh?` ${esc(o.zh.split('；')[0])}`:''}`;}).join('　');
+  return `<p class="famlist">同字族：${items}<br><span style="font-size:.72rem">一起記，一個字根換三個字。</span></p>`;
+}
+function bindKind(){
+  const b=$('kindB');if(!b||!cur)return;
+  b.title='點一下切換：要會拼寫 ↔ 看得懂就好';
+  b.onclick=async()=>{cur.kind=cur.kind==='p'?'r':'p';await save(S);render();renderLib();};
+}
+function famBar(r){
+  const lv=levelOf(r);
+  return `<div class="fam"><span class="lb">熟悉度　${LV[lv]}</span>
+    <span class="dots">${[1,2,3,4,5,6,7,8].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>
+    ${r.seen?`<span class="mono meta2">已練 ${r.reps||0} 次${r.lapses?`　退步 ${r.lapses} 次`:''}　下次 ${r.due||'—'}</span>`:'<span class="meta2">第一次見面</span>'}</div>`;
+}
+function renderToday(){
+  const b=$('todayBox');if(!b)return;
+  b.innerHTML=todayCard();
+  b.querySelectorAll('[data-goart]').forEach(el=>el.onclick=()=>{
+    document.querySelector('.tab[data-t=read]').click();openArt(el.dataset.goart);window.scrollTo(0,0);});
+}
+function render(){
+  renderToday();renderGrid();renderStats();
+  if(idx>=queue.length){
+    $('stage').innerHTML=`<div class="card done"><div class="big">今天這 ${queue.length} 字跑完了</div>
+      <p class="hint">明天回來，該複習的會自己排進來。<br>眼睛累就按右上角「列印今日」，印一張填空紙帶著走。</p></div>`;
+    return;}
+  cur=queue[idx];
+  if(phase==='pre')renderPre();else if(phase==='quiz')renderQuiz();else renderResult();
+}
+/* ① 預習：先在句子裡認識它 */
+function renderPre(){
+  const r=cur;
+  $('stage').innerHTML=`<div class="card">
+    <div class="step">① 建立印象 · 第一次見到這個字</div>
+    <div class="hw">${esc(r.en)}<button class="say" id="sayB">🔊</button></div>
+    ${r.syl&&r.syl!==r.en?`<div class="syl">${esc(r.syl)}</div>`:''}
+    <div class="meta">${esc(r.pos)}　·　${esc(r.src)}<span class="badge ${r.kind==='p'?'p':''}" id="kindB">${r.kind==='p'?'要會拼寫':'看得懂就好'}</span></div>
+    <div class="gloss">${esc(r.zh)}</div>
+    ${r.ex?`<p class="sent serif">${markup(r)}</p><p class="exz">${esc(r.exz)}</p>`:''}
+    ${r.note?`<p class="note">${esc(r.note)}</p>`:''}
+    ${famHTML(r)}
+    ${audioBar(r,'P')}
+    <p class="prompt">照著把它打一次 —— 手打過的字，等一下比較拉得出來。</p>
+    <input class="typebox" id="echo" autocomplete="off" spellcheck="false" placeholder="${esc(r.en)}">
+    <div class="row"><button class="btn" id="nextB">記住了，考我</button></div>
+  </div>`;
+  $('sayB').onclick=()=>speak(r.en);bindKind();bindAudio(r,'P');
+  if(S.autoSay!==false)speak(r.en);
+  $('echo').focus();
+  $('echo').onkeydown=e=>{if(e.key==='Enter')go();};
+  $('nextB').onclick=go;
+  function go(){phase='quiz';ans='';hinted=false;render();}
+}
+/* ② 回想：依模式決定要怎麼考 */
+function renderQuiz(){
+  const r=cur,cl=cloze(r),ty=quizType(r);
+  const head=repeats[r.id]&&r.last===today()
+    ?'🔁 同場回籠，剛剛沒過的再來一次'
+    :(r.reps>0?`第 ${(r.reps||0)+1} 次抽查　上次 ${r.last||'—'}　熟悉度 ${LV[levelOf(r)]}`:'趁熱馬上考一次');
+
+  if(ty==='recog'){
+    $('stage').innerHTML=`<div class="card">
+      <div class="step">② 回想 · 只求認得 · ${head}</div>
+      <div class="hw">${esc(r.en)}<button class="say" id="sayB">🔊</button></div>
+      <div class="meta">${esc(r.pos)}</div>
+      ${r.ex?`<p class="sent serif">${markup(r)}</p>`:''}
+      <p class="prompt">在心裡把中文說出來 —— 真的說出來，不要只覺得「好像知道」。</p>
+      <div class="row"><button class="btn" id="okB">說好了，看答案</button></div>
+    </div>`;
+    $('sayB').onclick=()=>speak(r.en);
+    $('okB').onclick=()=>{ans='';sug='';phase='res';render();};
+    return;
+  }
+
+  if(ty==='listen'){
+    choices=shuffle([r.en].concat(distract(r,3)));
+    $('stage').innerHTML=`<div class="card">
+      <div class="step">② 回想 · 聽寫 · ${head}</div>
+      <p class="prompt">只有聲音，沒有文字。聽完選出是哪一個字。</p>
+      <div class="row"><button class="btn" id="playB">🔊 再播一次</button>
+        <button class="btn ghost" id="slowB">🐢 放慢</button></div>
+      <div class="opts">${choices.map((c,i)=>
+        `<button class="opt" data-c="${esc(c)}"><span class="k">${i+1}</span>${esc(c)}</button>`).join('')}</div>
+    </div>`;
+    speak(r.ex||r.en);
+    $('playB').onclick=()=>speak(r.ex||r.en);
+    $('slowB').onclick=()=>speak(r.ex||r.en,{rate:0.6});
+    document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      ans=b.dataset.c;sug=(ans.toLowerCase()===r.en.toLowerCase())?'o':'x';phase='res';render();});
+    return;
+  }
+  if(ty==='choice'){
+    choices=shuffle([r.en].concat(distract(r,3)));
+    $('stage').innerHTML=`<div class="card">
+      <div class="step">② 回想 · 選擇 · ${head}</div>
+      ${cl?`<p class="sent serif">${cl}</p>`:`<div class="gloss">${esc(r.zh)}</div><p class="prompt">這張沒有例句，直接選出對應的英文字。</p>`}
+      <div class="opts">${choices.map((c,i)=>
+        `<button class="opt" data-c="${esc(c)}"><span class="k">${i+1}</span>${esc(c)}</button>`).join('')}</div>
+      <div class="row"><button class="btn ghost" id="giveB">四個都不確定</button></div>
+    </div>`;
+    document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      ans=b.dataset.c;sug=(ans.toLowerCase()===r.en.toLowerCase())?'o':'x';phase='res';render();});
+    $('giveB').onclick=()=>{ans='';sug='x';phase='res';render();};
+    return;
+  }
+
+  /* 拼寫 */
+  $('stage').innerHTML=`<div class="card">
+    <div class="step">② 回想 · 拼寫 · ${head}</div>
+    <div class="gloss">${esc(r.zh)}</div>
+    <div class="meta">${esc(r.pos)}</div>
+    ${cl?`<p class="sent serif">${cl}</p>`:'<p class="prompt">這張沒有例句，直接想這個英文字。</p>'}
+    <input class="typebox" id="inp" autocomplete="off" spellcheck="false" placeholder="把英文拼出來">
+    <div class="row">
+      <button class="btn" id="okB">送出</button>
+      <button class="btn ghost" id="hintB">給我提示</button>
+      <button class="btn ghost" id="giveB">想不出來</button>
+    </div>
+    <p class="prompt" id="hintTxt"></p>
+  </div>`;
+  const inp=$('inp');inp.focus();
+  inp.onkeydown=e=>{if(e.key==='Enter')submit();};
+  $('okB').onclick=submit;
+  $('hintB').onclick=()=>{hinted=true;
+    $('hintTxt').textContent=`${r.en[0]}${'_'.repeat(Math.max(0,r.en.length-1))}　共 ${r.en.length} 個字母`;};
+  $('giveB').onclick=()=>{ans='';sug='x';phase='res';render();};
+  function submit(){
+    ans=inp.value.trim();
+    const a=ans.toLowerCase(),b=r.en.toLowerCase();
+    if(a===b)sug=hinted?'t':'o';
+    else if(a&&lev(a,b)<=2)sug='t';
+    else sug='x';
+    phase='res';render();
+  }
+}
+
+/* ③ 對答案並標記 */
+function renderResult(){
+  const r=cur;
+  const V={o:['v-o','答對了'],t:['v-t','差一點 —— 拼字或提示還是幫了忙'],x:['v-x','這次沒拉出來，正常，很快會再回來'],
+           '':['','對照一下：剛剛心裡想的中文，跟下面一樣嗎？']};
+  const v=V[sug]||V[''];
+  const tip=sug==='o'&&quizType(r)==='choice'?'　如果是用刪去法猜到的，請自己改成 △。':'';
+  $('stage').innerHTML=`<div class="card">
+    <div class="step">③ 對答案</div>
+    <div class="verdict ${v[0]}">${ans?`你寫的：<b class="serif">${esc(ans)}</b>　→　`:''}${v[1]}</div>
+    <div class="hw">${esc(r.en)}<button class="say" id="sayB">🔊</button></div>
+    ${r.syl&&r.syl!==r.en?`<div class="syl">${esc(r.syl)}</div>`:''}
+    <div class="meta">${esc(r.pos)}<span class="badge ${r.kind==='p'?'p':''}" id="kindB">${r.kind==='p'?'要會拼寫':'看得懂就好'}</span></div>
+    <div class="gloss">${esc(r.zh)}</div>
+    ${r.ex?`<p class="sent serif">${markup(r)}</p><p class="exz">${esc(r.exz)}</p>`:''}
+    ${r.note?`<p class="note">${esc(r.note)}</p>`:''}
+    ${famHTML(r)}
+    ${audioBar(r,'R')}
+    ${famBar(r)}
+    <p class="prompt">${sug?'程式猜的是下面高亮那一個。你比它清楚剛剛是真的會還是矇到的，不同意就改。'+tip:'這一輪沒有自動判定，自己誠實選一個。'}</p>
+    <div class="marks">
+      <button class="mark m-o" data-m="o" data-sug="${sug==='o'}"><span class="g">○</span><span class="lb">會了</span><span class="sub">7 天後再考</span></button>
+      <button class="mark m-t" data-m="t" data-sug="${sug==='t'}"><span class="g">△</span><span class="lb">有卡點</span><span class="sub">3 天後再考</span></button>
+      <button class="mark m-x" data-m="x" data-sug="${sug==='x'}"><span class="g">×</span><span class="lb">不會</span><span class="sub">明天立刻補</span></button>
+    </div>
+  </div>`;
+  $('sayB').onclick=()=>speak(r.en);bindKind();bindAudio(r,'R');
+  document.querySelectorAll('.mark').forEach(b=>b.onclick=()=>doMark(b.dataset.m));
+}
+async function doMark(m){
+  const r=cur,t=today();
+  r.seen=true;r.stage=1;r.last=t;
+  r.reps=(r.reps||0)+1;
+  r.log=(r.log||[]).concat([[t,m]]).slice(-14);      // 保留最近 14 次作答
+  if(r.ease===undefined)r.ease=2.5;
+  if(m==='o'){
+    r.streak=(r.streak||0)+1;
+    r.box=Math.min((r.box||0)+1,LADDER.length-1);
+    r.ease=Math.min(2.9,r.ease+0.10);
+  }else if(m==='t'){
+    r.streak=0;
+    r.box=Math.max(0,(r.box||0)-2);        // 卡住就退兩階，多半會掉回「連續每天」那一段
+    r.ease=Math.max(1.3,r.ease-0.15);
+    if(r.reps>1)r.lapses=(r.lapses||0)+1;
+  }else{
+    r.streak=0;
+    r.box=0;
+    r.ease=Math.max(1.3,r.ease-0.30);
+    if(r.reps>1)r.lapses=(r.lapses||0)+1;
+  }
+  r.due=plus(nextGap(r));
+  marks[idx]=m;bumpDay();
+
+  /* 同場回籠：這是艾賓浩斯最關鍵、原本缺掉的一段。
+     × 隔幾題就再考一次；△ 排到今天最後再考一次。每個字每場最多回籠 2 次。 */
+  const n=(repeats[r.id]||0);
+  if(m!=='o'&&n<2){
+    repeats[r.id]=n+1;
+    const at=(m==='x')?Math.min(queue.length,idx+4):queue.length;
+    queue.splice(at,0,r);marks.splice(at,0,null);
+  }
+
+  idx++;phase='pre';ans='';hinted=false;
+  if(idx<queue.length&&queue[idx].seen)phase='quiz';
+  await save(S);render();renderSheet();renderLib();renderCal();
+}
+
+/* ═══ 匯入文章 ═══ */
+const DICT={};W.forEach(w=>DICT[w[0]]=w);
+function base(w){
+  const t=[w];
+  if(/ies$/.test(w))t.push(w.slice(0,-3)+'y');
+  if(/(s|ed|ing)$/.test(w)){t.push(w.replace(/(s|ed|ing)$/,''));}
+  if(/ed$|ing$/.test(w))t.push(w.replace(/(ed|ing)$/,'e'));
+  if(/([bcdfglmnprstz])\1(ed|ing)$/.test(w))t.push(w.replace(/([bcdfglmnprstz])\1(ed|ing)$/,'$1'));
+  if(/ly$/.test(w))t.push(w.slice(0,-2));
+  return t;
+}
+function scan(){
+  const text=$('src').value.trim();
+  if(!text){$('picks').innerHTML='<p class="hint">先貼一段英文進來。</p>';return;}
+  const sents=text.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).filter(s=>s.length>12);
+  const seen={},out=[];
+  sents.forEach(s=>{
+    (s.toLowerCase().match(/[a-z][a-z'-]{2,}/g)||[]).forEach(w=>{
+      if(STOP.has(w)||seen[w])return;
+      let hit=null;for(const f of base(w)){if(DICT[f]){hit=DICT[f];break;}}
+      const key=hit?hit[0]:w;
+      if(seen[key])return;seen[key]=1;
+      if(Object.values(S.recs).some(r=>r.en.toLowerCase()===key))return;
+      out.push({en:key,form:w,zh:hit?hit[2]:'',pos:hit?hit[1]:'',sent:s.trim(),known:!!hit});
+    });
+  });
+  out.sort((a,b)=>(b.known-a.known));
+  const list=out.slice(0,60);
+  if(!list.length){$('picks').innerHTML='<p class="hint">沒挑出新字 —— 可能都已經在字庫裡了，或這段太短。</p>';return;}
+  $('picks').innerHTML=`<p class="hint" style="margin:18px 0 10px">
+    挑出 ${list.length} 個字。<b>只勾你真的不會的</b> —— 勾太多只會做不完。
+    標「內建」的已經幫你填好中文；沒標的請自己查一下打進去，這個查的動作本身就是在記。</p>`
+    +list.map((c,i)=>`<div class="pick">
+      <div class="top">
+        <input type="checkbox" id="c${i}" ${c.known?'':''}>
+        <label class="w" for="c${i}">${esc(c.en)}</label>
+        ${c.known?'<span class="tag">內建</span>':'<span class="tag">要填中文</span>'}
+        <input type="text" id="z${i}" value="${esc(c.zh)}" placeholder="中文意思">
+      </div>
+      <div class="s">${esc(c.sent)}</div>
+    </div>`).join('')
+    +`<div class="row"><button class="btn" id="mkBtn">把勾選的做成字卡</button>
+      <button class="btn ghost" id="allBtn">全部勾選</button></div><p class="hint" id="mkMsg"></p>`;
+  $('allBtn').onclick=()=>list.forEach((_,i)=>$('c'+i).checked=true);
+  $('mkBtn').onclick=async()=>{
+    let n=0;
+    list.forEach((c,i)=>{
+      if(!$('c'+i).checked)return;
+      const zh=$('z'+i).value.trim();
+      if(!zh)return;
+      const id='u'+(S.cid++);
+      S.recs[id]={id,en:c.en,form:c.form||'',pos:c.pos||'—',zh,ex:c.sent,exz:'',note:'',src:'我的文章',deck:'我的文章',syl:(META[c.en]&&META[c.en][0])||autoSyl(c.en),fam:(META[c.en]&&META[c.en][1])||[],kind:'r',srcId:'own',box:0,ease:2.5,reps:0,lapses:0,log:[],
+        stage:0,seen:false,due:null,streak:0,last:null};n++;
+    });
+    await save(S);renderStats();
+    $('mkMsg').textContent=n?`建了 ${n} 張卡，明天起會排進「今日練習」。沒填中文的那幾個略過了。`:'沒有勾到有填中文的字。';
+  };
+}
+
+/* ═══ 貼上字卡 ═══ */
+async function importDeck(){
+  const lines=$('deckBox').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const nm=($('deckSrc')?$('deckSrc').value.trim():'')||'手動匯入';
+  let sid=(S.sources||[]).find(x=>x.name===nm);
+  if(!sid){sid={id:'u'+Date.now(),name:nm,file:'貼上的字卡',date:today(),note:'',own:true};
+    S.sources=(S.sources||[]).concat([sid]);}
+  let n=0;
+  lines.forEach(l=>{
+    const p=l.split('|').map(s=>s.trim());
+    if(p.length<2||!p[0]||!p[1])return;
+    const id='u'+(S.cid++);
+    S.recs[id]={id,en:p[0],form:'',pos:p[2]||'—',zh:p[1],ex:p[3]||'',exz:p[4]||'',note:p[5]||'',
+      syl:p[6]||(META[p[0]]&&META[p[0]][0])||autoSyl(p[0]),
+      fam:(META[p[0]]&&META[p[0]][1])||[],
+      kind:(p[7]||'').toUpperCase().startsWith('R')?'r':'p',
+      src:nm,deck:'匯入字卡',srcId:sid.id,
+      box:0,ease:2.5,reps:0,lapses:0,log:[],
+      stage:0,seen:false,due:null,streak:0,last:null};n++;
+  });
+  if(n)sid.note=(sid.note?sid.note+'；':'')+`匯入 ${n} 張字卡`;
+  await save(S);renderStats();renderSrc();renderCal();
+  $('deckBox').value='';
+  $('deckMsg').textContent=n?`建了 ${n} 張卡，來源記成「${nm}」。`:'讀不到可用的行 —— 每行至少要有「單字 | 中文」，用直線隔開。';
+}
+
+/* ═══ 教材來源紀錄 ═══ */
+const SRC=[
+ {id:'s0',name:'學測 Level 3–4 高頻字',file:'（系統內建，非上傳檔案）',date:'2026-08-19',
+  note:'依大考中心參考詞彙表 Level 3–4 整理的核心字。學測英文的主戰場。'},
+ {id:'s1',name:'英檢中級 2-5 講義',file:'英檢中級2-5.pdf',date:'2026-08-19',
+  note:'勾選字 canvas–cashier；填空字群 calculate/cast 兩組；雜誌〈Drive away the rainy day blue〉與〈National Flowers Around the World〉'},
+ {id:'s2',name:'英檢中級 2-6 講義',file:'英檢中級2-6.pdf',date:'2026-08-19',
+  note:'勾選字 cement–china；填空字群 charity/chip 兩組；雜誌〈The Growing Problem of E-Waste〉；作文單元「因果文」句型'},
+ {id:'s3',name:'英檢中級 2-7 講義',file:'英檢中級2-7.pdf',date:'2026-08-19',
+  note:'勾選字 cinema–client；填空字群 comedian/commitment 兩組；雜誌〈Star-chasing with the Michelin Guides〉'},
+ {id:'s6',name:'學測 Level 1–2 高頻字',file:'（系統內建，非上傳檔案）',date:'2026-08-19',
+  note:'兩組：① 基礎但仍會失分的核心字 ② 一字多義 —— 看起來會、但考的是第二個意思的那批基礎字。'},
+ {id:'s4',name:'龍騰 1 上 L01 七格背誦版（截圖）',file:'1788841644284.jpg',date:'2026-08-19',
+  note:'沒有匯入單字。從這張表學到三件事並做進系統：音節拆解、同字族、Words for Production／Recognition 標記。'},
+ {id:'s5',name:'自學教材參考',file:'2 份 .doc ＋ 2 份 .ppt',date:'2026-08-19',
+  note:'沒有匯入單字。採用了它的「前四天連續」間隔前段；未採用固定 16 遍的後段。'},
+];
+function srcOf(r){
+  if(r.srcId)return r.srcId;
+  const d=r.deck||'';
+  if(d==='內建 · 學測 L3–4')return 's0';
+  if(d==='學測 · Level 1–2 高頻字'||d==='學測 · L1–2 一字多義')return 's6';
+  if(d==='雜誌 · 雨天與國花')return 's1';
+  if(d==='雜誌 · 電子垃圾'||d==='作文 · 因果文句型')return 's2';
+  if(d==='雜誌 · 米其林指南')return 's3';
+  if(d==='英檢中級 · ca–cl 單字'){
+    const L=EXTRA[0][1].map(x=>x[0]),i=L.indexOf(r.en);
+    return i<L.indexOf('cement')?'s1':(i<L.indexOf('cinema')?'s2':'s3');}
+  if(d==='英檢中級 · 填空字群'){
+    const L=EXTRA[1][1].map(x=>x[0]),i=L.indexOf(r.en);
+    return i<L.indexOf('charity')?'s1':(i<L.indexOf('comedian')?'s2':'s3');}
+  return 'own';
+}
+function srcList(){
+  const mine=(S.sources||[]);
+  return SRC.concat(mine);
+}
+function renderSrc(){
+  const box=$('srcList');if(!box||!S)return;
+  const recs=Object.values(S.recs);
+  const stat={};
+  recs.forEach(r=>{const k=srcOf(r);const o=stat[k]=stat[k]||{n:0,seen:0,solid:0};
+    o.n++;if(r.seen)o.seen++;if((r.box||0)>=4)o.solid++;});
+  const arts=allArts();
+  const rows=srcList().map(x=>{
+    const st=stat[x.id]||{n:0,seen:0,solid:0};
+    const na=arts.filter(a=>a.srcId===x.id).length;
+    const pct=st.n?Math.round(st.solid/st.n*100):0;
+    return `<div class="srow">
+      <div class="s1"><b>${esc(x.name)}</b>
+        <span class="n">${esc(x.file||'')}${x.date?'　·　'+esc(x.date):''}</span></div>
+      <div class="s2 mono">${st.n?`${st.n} 字　已學 ${st.seen}　已穩 ${st.solid}（${pct}%）`:'未匯入單字'}${na?`　·　${na} 篇文章`:''}</div>
+      <div class="s3">${esc(x.note||'')}</div>
+      ${x.own?`<button class="tbtn" data-delsrc="${x.id}" style="margin-top:6px">刪除這筆紀錄</button>`:''}
+    </div>`;}).join('');
+  const own=stat['own']||{n:0,seen:0,solid:0};
+  box.innerHTML=rows+(own.n?`<div class="srow"><div class="s1"><b>沒有標來源的字</b>
+    <span class="n">早期匯入或從文章挑的</span></div>
+    <div class="s2 mono">${own.n} 字　已學 ${own.seen}　已穩 ${own.solid}</div></div>`:'');
+  box.querySelectorAll('[data-delsrc]').forEach(b=>b.onclick=async()=>{
+    S.sources=(S.sources||[]).filter(x=>x.id!==b.dataset.delsrc);await save(S);renderSrc();});
+}
+/* ═══ 文章排程：新讀 → 4 天後重讀 → 14 天後第三次 ═══ */
+const REREAD=[4,14];
+function artEvery(){return S.artEvery||3;}
+function artPlan(days){
+  const t=today(),plan={};
+  const put=(d,o)=>{(plan[d]=plan[d]||[]).push(o);};
+  const arts=allArts();
+  arts.forEach(a=>{const r=(S.read||{})[a.id];
+    if(r&&r.due&&(r.round||0)<3)put(r.due,{a,kind:'re',round:(r.round||0)+1,best:r.best});});
+  const unread=arts.filter(a=>{const r=(S.read||{})[a.id];return !r||!(r.times||[]).length;});
+  unread.forEach((a,i)=>put(plus(i*artEvery()),{a,kind:'new',round:1}));
+  return plan;
+}
+function todayArts(){const p=artPlan(30),t=today();
+  const late=Object.keys(p).filter(k=>k<t).flatMap(k=>p[k]);
+  return late.concat(p[t]||[]);}
+
+/* ═══ 今日課表 ═══ */
+function bumpDay(){
+  const t=today();
+  if(S.dayDate!==t){
+    if(S.dayDate&&S.dayDate===plus(-1))S.streak=(S.streak||0)+1;
+    else if(S.dayDate!==t)S.streak=1;
+    S.dayDate=t;S.dayDone=0;
+  }
+  S.dayDone=(S.dayDone||0)+1;
+}
+function todayCard(){
+  if(!S)return '';
+  const t=today();
+  const on=r=>S.on[r.deck||'我的']!==false;
+  const all=Object.values(S.recs).filter(on);
+  const dueN=all.filter(r=>r.seen&&r.due&&r.due<=t).length;
+  const over=all.filter(r=>r.seen&&r.due&&r.due<t).length;
+  const newN=Math.min(S.goal||12,all.filter(r=>!r.seen).length);
+  const done=(S.dayDate===t?(S.dayDone||0):0);
+  const target=Math.min(dueN,S.revCap||60)+newN;
+  const ta=todayArts();
+  const artLine=ta.length
+    ? ta.map(x=>`<li>📖 <b>${esc(x.a.t)}</b>　${x.kind==='new'?'第一次讀':`第 ${x.round} 次重讀`}
+        ${x.best?`　<span class="mono">上次最佳 ${x.best} wpm</span>`:''}
+        <button class="tbtn" data-goart="${x.a.id}" style="margin-left:6px">去讀</button></li>`).join('')
+    : '<li>📖 今天沒有排文章。想多讀就到「文章閱讀」自己挑一篇。</li>';
+  return `<div class="card today-card">
+    <div class="step">今天要做什麼　${t}${S.streak>1?`　·　連續 ${S.streak} 天`:''}</div>
+    <ul class="todo">
+      <li>🔤 單字：<b>新字 ${newN}</b> ＋ <b>複習 ${Math.min(dueN,S.revCap||60)}</b>　＝ 共 ${target} 字
+        ${over?`　<span style="color:var(--no)">（其中 ${over} 字已逾期）</span>`:''}
+        <br><span class="mono" style="font-size:.78rem;color:var(--soft)">已完成 ${done} / ${target}</span></li>
+      ${artLine}
+      <li>🎧 跟讀：拿今天這篇文章按「逐句跟讀」，做 5 分鐘就好</li>
+    </ul>
+  </div>`;
+}
+/* ═══ 重新開始 ═══ */
+function wipeProgress(){
+  Object.values(S.recs).forEach(r=>{
+    r.seen=false;r.due=null;r.streak=0;r.last=null;
+    r.box=0;r.ease=2.5;r.reps=0;r.lapses=0;r.log=[];r.stage=0;
+  });
+}
+function bindReset(){
+  const arm=(btn,label,run)=>{
+    let armed=false,timer=null;
+    btn.onclick=async()=>{
+      if(!armed){
+        armed=true;btn.dataset.armed='true';btn.textContent='確定嗎？再按一次';
+        timer=setTimeout(()=>{armed=false;btn.dataset.armed='false';btn.textContent=label;},6000);
+        return;
+      }
+      clearTimeout(timer);armed=false;btn.dataset.armed='false';btn.textContent=label;
+      await run();
+    };
+  };
+  if($('rsProg'))arm($('rsProg'),'清除練習進度',async()=>{
+    wipeProgress();await save(S);
+    buildQueue();phase='pre';ans='';hinted=false;
+    render();renderSheet();renderLib();renderCal();
+    $('rsMsg').innerHTML='<b style="color:var(--ok)">已清除。</b>所有字全部回到「未學」，明天開始就是第一天了。';
+    window.scrollTo(0,0);
+  });
+  if($('rsAll'))arm($('rsAll'),'完全重置',async()=>{
+    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap};
+    S=freshState();Object.assign(S,keep);
+    await save(S);
+    buildQueue();phase='pre';ans='';hinted=false;
+    renderDeckToggles();render();renderSheet();renderLib();renderCal();renderRead();
+    $('rsMsg').innerHTML='<b style="color:var(--ok)">已完全重置。</b>自訂字卡、文章庫、閱讀紀錄都清掉了，只留下畫面與排程設定。';
+    window.scrollTo(0,0);
+  });
+}
+/* ═══ 複習行事曆 ═══ */
+const WD=['日','一','二','三','四','五','六'];
+function calData(days){
+  const t=today(),map={},over=[];
+  const on=r=>S.on[r.deck||'我的']!==false;
+  Object.values(S.recs).forEach(r=>{
+    if(!r.seen||!r.due||!on(r))return;
+    if(r.due<t)over.push(r);
+    else (map[r.due]=map[r.due]||[]).push(r);
+  });
+  const rows=[];
+  if(over.length)rows.push({d:'逾期',key:'over',list:over.sort((a,b)=>a.due<b.due?-1:1)});
+  for(let i=0;i<days;i++){
+    const k=plus(i);
+    rows.push({d:k,key:i===0?'today':'',list:(map[k]||[]).sort((a,b)=>(b.lapses||0)-(a.lapses||0))});
+  }
+  return rows;
+}
+function renderCal(){
+  const box=$('calList');if(!box||!S)return;
+  const open=$('calAll')&&$('calAll').getAttribute('aria-pressed')==='true';
+  const rows=calData(30);
+  const cap=S.revCap||60, ng=S.goal||12;
+  const ap=artPlan(30);
+  const unlearned=Object.values(S.recs).filter(r=>!r.seen&&S.on[r.deck||'我的']!==false).length;
+  let wk=0,nx=0,i=0;
+  rows.forEach(r=>{if(r.key==='over')return;if(i<7)wk+=r.list.length;else if(i<14)nx+=r.list.length;i++;});
+
+  $('calSum').innerHTML=`未來 7 天要複習 ${wk} 字　·　第 2 週 ${nx} 字　·　還沒學過 ${unlearned} 字`;
+
+  const note=`<div class="card" style="padding:16px 18px;margin:0 0 12px">
+    <p style="margin:0 0 8px;font-size:.86rem"><b>這張表上的數字是「當天要複習的舊字」，不含新字。</b></p>
+    <p class="hint" style="margin:0">
+      每天實際要做的是 <b>新字 ${ng} 個 ＋ 當天到期的舊字</b>。新字有自己的額度，不佔複習的名額。<br><br>
+      <b>為什麼前面幾天看起來很空？</b>因為行事曆只排「已經學過的字」。還沒碰過的 ${unlearned} 個字沒有日期，
+      要等你實際學到它那天，才會開始往後排四天。所以剛開始每天只有個位數是正常的，
+      大約第五天以後才會堆起來。<br><br>
+      <b>照現在的設定推估</b>（新字 ${ng}／天）：第一週每天約 ${Math.round(ng*5)} 字，
+      一個月後每天約 ${Math.round(ng*9)} 字，之後會慢慢降下來。
+      看到某幾天特別高，就把那幾天前一週的新字調低。<br><br>
+      <b>📖 文章</b>：每 ${artEvery()} 天排一篇新的，每篇讀完會再排 4 天後、14 天後各重讀一次。
+      重讀不是浪費 —— 同一篇讀第二次的速度通常比第一次快三到四成，那個數字才是你真正的進步。
+    </p></div>`;
+
+  box.innerHTML=note+rows.map(r=>{
+    const n=r.list.length, isFuture=r.key!=='over';
+    const newN=(isFuture&&unlearned>0)?ng:0;
+    const total=n+newN;
+    const heavy=n>cap;
+    const label=r.key==='over'?'逾期未做':fmtD(r.d);
+    const arts=(r.key==='over')?[]:(ap[r.d]||[]);
+    const artHTML=arts.length?`<span class="calart">📖 ${arts.map(x=>
+      `<b>${esc(x.a.t)}</b>${x.kind==='new'?'（第一次讀）':`（第 ${x.round} 次重讀）`}`).join('　')}</span>`:'';
+    if(isFuture&&n===0&&r.d!==today()&&!arts.length)
+      return `<div class="crow" style="opacity:.45"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline">
+        <span class="dt">${label}</span><span class="wk">${wdOf(r.d)}</span>
+        <span class="ct" style="margin-left:auto">複習 0${newN?`　＋新字 ${newN}`:''}</span></div></div>`;
+    if(isFuture&&n===0&&r.d!==today()&&arts.length)
+      return `<div class="crow"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap">
+        <span class="dt">${label}</span><span class="wk">${wdOf(r.d)}</span>
+        <span class="ct" style="margin-left:auto">複習 0${newN?`　＋新字 ${newN}`:''}</span></div>${artHTML}</div>`;
+    const words=r.list.map(x=>`<span><b>${esc(x.en)}</b> ${esc((x.zh||'').split('；')[0])}${(x.lapses||0)>0?` <span style="color:var(--no)">·退${x.lapses}</span>`:''}</span>`).join('');
+    return `<details class="crow ${r.key} ${heavy?'heavy':''}" ${open&&n?'open':''}>
+      <summary><span class="dt">${label}</span>
+        <span class="wk">${r.key==='over'?'快點補完，它會一直卡著':wdOf(r.d)}${r.d===today()?'　今天':''}</span>
+        <span class="ct">複習 ${n} 字${newN?`　＋新字 ${newN}`:''}${newN?`　＝ ${total}`:''}${heavy?`　⚠ 超過複習上限 ${cap}`:''}</span>
+      </summary>
+      ${artHTML}<div class="cw">${words||'<span>—</span>'}</div></details>`;}).join('');
+}
+function fmtD(k){if(k==='逾期')return '逾期';const[y,m,d]=k.split('-');return `${+m}/${+d}`;}
+function wdOf(k){if(k==='逾期')return '';const dt=new Date(k+'T00:00:00');return '週'+WD[dt.getDay()];}
+function calSheet(){
+  const rows=calData(30),goal=S.revCap||60,ap=artPlan(30);
+  $('sheet').innerHTML=`<h2 style="margin:0 0 4px">單字複習行事曆　產生於 ${today()}</h2>
+  <p style="margin:0 0 12px;font-size:10pt">下列是「當天要複習的舊字」，不含新字。每天另外還有新字 ${S.goal||12} 個。
+  標「超過」的日子做不完，先挑退步次數多的做。</p>`+
+  rows.filter(r=>r.list.length||(ap[r.d]||[]).length).map(r=>{
+    const a=(ap[r.d]||[]).map(x=>x.a.t+(x.kind==='new'?'（第一次）':`（第 ${x.round} 次重讀）`)).join('、');
+    return `<div style="margin-bottom:14px;break-inside:avoid">
+    <p style="margin:0 0 3px;font-weight:600">${fmtD(r.d)} ${wdOf(r.d)}　複習 ${r.list.length} 字${r.list.length>goal?'（超過上限）':''}${a?`　📖 ${esc(a)}`:''}</p>
+    <p style="margin:0;font-size:10.5pt;line-height:1.9">${r.list.map(x=>esc(x.en)+'（'+esc((x.zh||'').split('；')[0])+'）').join('、')}</p>
+  </div>`;}).join('');
+}
+/* ═══ 文章閱讀 ═══ */
+let rd={art:null,t0:0,tick:null,sens:[],si:0};
+function allArts(){
+  const mine=Object.values(S.arts||{});
+  return ARTS.map(a=>Object.assign({built:true},a)).concat(mine);
+}
+function renderRead(){
+  const home=$('readHome');if(!home)return;
+  const list=allArts().map(a=>{
+    const rec=(S.read||{})[a.id]||{};
+    const n=a.body.split(/\s+/).length;
+    return `<div class="arow" data-open="${a.id}">
+      <span class="t">${esc(a.t)}</span>
+      <span class="m">${esc(a.lv||'')}${a.tag?' · '+esc(a.tag):''}　${n} 字</span>
+      <span class="m mono">${rec.best?`最佳 ${rec.best} wpm　讀過 ${(rec.times||[]).length} 次${rec.due?`　下次 ${rec.due}`:'　已畢業'}`:'還沒讀過'}</span>
+    </div>`;}).join('');
+  home.innerHTML=`<p class="hint" style="margin-top:18px">
+    計時讀完一篇，系統會算出你的閱讀速度（每分鐘幾個字）。
+    <b>學測閱讀的失分大宗是來不及，不是看不懂</b> —— 所以這個數字比對錯更值得追蹤。<br>
+    文章裡<span style="border-bottom:1px dotted currentColor">加底線</span>的是你字庫裡已經有的字，點一下會顯示中文並唸出來。
+    讀完有理解題，也可以一鍵把生字建成字卡。</p>
+    ${list}
+    <p class="hint" style="margin-top:14px">想加自己的文章？到「匯入文章」貼上後按<b>存進文章庫</b>。</p>`;
+  home.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>openArt(el.dataset.open));
+}
+function kwMap(){
+  const m={};Object.values(S.recs).forEach(r=>{m[r.en.toLowerCase()]=r;if(r.form)m[r.form.toLowerCase()]=r;});
+  return m;
+}
+function bodyHTML(txt){
+  const m=kwMap();
+  return esc(txt).replace(/[A-Za-z][A-Za-z'-]*/g,w=>{
+    const r=m[w.toLowerCase()];
+    if(!r)return w;
+    return `<span class="kw ${r.kind==='p'?'p':''}" data-w="${esc(r.en)}">${w}</span>`;});
+}
+function openArt(id){
+  const a=allArts().find(x=>x.id===id);if(!a)return;
+  rd.art=a;rd.si=0;
+  rd.sens=a.body.replace(/\n+/g,' \n ').split(/(?<=[.!?])\s+/).filter(x=>x.trim());
+  $('readHome').classList.add('hide');$('readView').classList.remove('hide');
+  const n=a.body.split(/\s+/).length,rec=(S.read||{})[a.id]||{};
+  $('readView').innerHTML=`
+    <div class="row" style="margin:16px 0 8px">
+      <button class="btn ghost" id="backB">← 回文章列表</button>
+      <button class="btn" id="startB">開始計時閱讀</button>
+      <span class="timer" id="tm">00:00</span>
+      <span class="wpm" id="wp">${n} 字${rec.best?`　最佳 ${rec.best} wpm`:''}</span>
+    </div>
+    <div class="audio" style="border-top:none;margin-top:0">
+      <button class="abtn" id="readAll">🔊 朗讀全文</button>
+      <button class="abtn" id="shadowB">🎧 逐句跟讀</button>
+      <button class="abtn" id="recB">● 錄音</button>
+      <button class="abtn" id="playB" disabled>▶ 播我的</button>
+      <span class="ast" id="astA"></span>
+    </div>
+    <div class="card"><div class="body" id="bd">${bodyHTML(a.body)}</div></div>
+    <div class="row">
+      <button class="btn" id="doneB">讀完了，看理解題</button>
+      <button class="btn ghost" id="mineB">挑生字建卡</button>
+    </div>
+    <div id="qz"></div>`;
+  $('backB').onclick=()=>{stopTimer();shadowStop=true;speechSynthesis.cancel();
+    $('readView').classList.add('hide');$('readHome').classList.remove('hide');renderRead();};
+  $('startB').onclick=startTimer;
+  $('doneB').onclick=finishArt;
+  $('readAll').onclick=()=>{shadowStop=true;speak(a.body.replace(/\n+/g,'. '));};
+  $('shadowB').onclick=()=>shadowSentences();
+  $('recB').onclick=()=>recToggle($('recB'),$('playB'),$('astA'));
+  $('playB').onclick=playMine;
+  $('mineB').onclick=()=>{$('src').value=a.body;
+    document.querySelector('.tab[data-t=import]').click();scan();window.scrollTo(0,0);};
+  bindKW();
+}
+function bindKW(){
+  document.querySelectorAll('.kw').forEach(el=>el.onclick=e=>{
+    const r=Object.values(S.recs).find(x=>x.en===el.dataset.w);if(!r)return;
+    speak(r.en);
+    document.querySelectorAll('.pop').forEach(p=>p.remove());
+    const p=document.createElement('div');p.className='pop';
+    p.innerHTML=`<b>${esc(r.en)}</b>${r.syl&&r.syl!==r.en?` <span style="opacity:.7">${esc(r.syl)}</span>`:''}<br>${esc(r.zh)}<br>
+      <span style="opacity:.7;font-size:.9em">${LV[levelOf(r)]}${r.kind==='p'?' · 要會拼寫':''}</span>`;
+    document.body.appendChild(p);
+    const b=el.getBoundingClientRect();
+    p.style.left=Math.min(window.innerWidth-260,b.left)+'px';
+    p.style.top=(b.bottom+6)+'px';
+    setTimeout(()=>p.remove(),4000);e.stopPropagation();});
+}
+function shadowSentences(){
+  const st=$('astA');let i=0;shadowStop=false;
+  const spans=$('bd');
+  const step=()=>{
+    if(shadowStop||i>=rd.sens.length){st.textContent='跟讀結束';return;}
+    st.textContent=`第 ${i+1} / ${rd.sens.length} 句　先聽 → 換你唸 → 再聽一次`;
+    const sen=rd.sens[i].trim();
+    speak(sen,{onend:()=>{
+      if(shadowStop)return;
+      setTimeout(()=>{
+        if(shadowStop)return;
+        speak(sen,{onend:()=>{i++;setTimeout(step,400);}});
+      },Math.max(1600,sen.split(/\s+/).length*380));
+    }});
+  };
+  step();
+  $('shadowB').textContent='■ 停止跟讀';
+  $('shadowB').onclick=()=>{shadowStop=true;speechSynthesis.cancel();
+    $('shadowB').textContent='🎧 逐句跟讀';$('shadowB').onclick=()=>shadowSentences();st.textContent='';};
+}
+function startTimer(){
+  rd.t0=Date.now();stopTimer();
+  rd.tick=setInterval(()=>{const s=Math.floor((Date.now()-rd.t0)/1000);
+    $('tm').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},250);
+  $('startB').textContent='計時中⋯⋯';
+}
+function stopTimer(){if(rd.tick){clearInterval(rd.tick);rd.tick=null;}}
+async function finishArt(){
+  const a=rd.art;if(!a)return;
+  let msg='';
+  if(rd.t0){
+    stopTimer();
+    const sec=Math.max(1,Math.round((Date.now()-rd.t0)/1000));
+    const n=a.body.split(/\s+/).length,wpm=Math.round(n/(sec/60));
+    S.read=S.read||{};const rec=S.read[a.id]||{times:[],best:0,round:0};
+    rec.times=(rec.times||[]).concat([{d:today(),sec,wpm}]).slice(-20);
+    const prev=rec.best||0;rec.best=Math.max(prev,wpm);
+    rec.round=(rec.round||0)+1;
+    rec.due=rec.round<3?plus(REREAD[rec.round-1]):null;
+    S.read[a.id]=rec;await save(S);renderCal();renderToday();
+    msg=`<div class="verdict v-o">用了 ${Math.floor(sec/60)} 分 ${sec%60} 秒　·　${wpm} wpm`
+      +(prev?`　·　上次最佳 ${prev} wpm${wpm>prev?'　↑ 進步了':''}`:'')
+      +(S.read[a.id].due?`　·　下次重讀 ${S.read[a.id].due}`:'　·　這篇讀滿三次，畢業了')+`</div>
+      <p class="hint">一般高中生的英文閱讀速度大約 100–150 wpm。學測閱讀測驗四篇約 1,200 字，
+      要在 30 分鐘內連題目一起處理完，代表純閱讀至少要有 120 wpm 以上的餘裕。慢不要緊，重點是這條線有沒有往上。</p>`;
+    rd.t0=0;$('startB').textContent='再計時一次';
+  }else{
+    msg='<p class="hint">這次沒有計時。下次記得先按「開始計時閱讀」—— 速度是要練的東西。</p>';
+  }
+  const qs=(a.q||[]).map((x,i)=>`<div class="card" style="padding:18px 20px">
+    <p style="margin:0 0 10px"><b>${i+1}.</b> ${esc(x.q)}</p>
+    <div class="opts">${x.o.map((o,j)=>
+      `<button class="opt" data-q="${i}" data-j="${j}"><span class="k">${'ABCD'[j]}</span>${esc(o)}</button>`).join('')}</div>
+    <p class="hint" id="qw${i}"></p></div>`).join('');
+  $('qz').innerHTML=msg+(qs?`<h3 style="font-size:.9rem;margin:22px 0 8px">理解題</h3>`+qs:'');
+  $('qz').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.q,j=+b.dataset.j,x=a.q[i];
+    $('qw'+i).innerHTML=(j===x.a?'<b style="color:var(--ok)">答對了。</b>':'<b style="color:var(--no)">不對。</b>')
+      +`正解 ${'ABCD'[x.a]}：${esc(x.o[x.a])}　${esc(x.why||'')}`;});
+  window.scrollTo(0,document.body.scrollHeight);
+}
+/* ═══ 字庫狀態 ═══ */
+function renderLib(){
+  const box=$('libList');if(!box||!S)return;
+  const q=($('q')?$('q').value:'').trim().toLowerCase();
+  const f=$('filt')?$('filt').value:'all';const t=today();
+  let all=Object.values(S.recs);
+  if(q)all=all.filter(r=>r.en.toLowerCase().includes(q)||(r.zh||'').includes(q));
+  if(f==='weak')all=all.filter(r=>r.seen&&(r.box||0)<3);
+  else if(f==='lapse')all=all.filter(r=>(r.lapses||0)>0);
+  else if(f==='due')all=all.filter(r=>r.seen&&r.due&&r.due<=t);
+  else if(f==='new')all=all.filter(r=>!r.seen);
+  else if(f==='grad')all=all.filter(r=>(r.box||0)>=GRAD);
+  else if(f==='prod')all=all.filter(r=>r.kind==='p');
+  else if(f==='recog')all=all.filter(r=>r.kind!=='p');
+  all.sort((a,b)=>(b.lapses||0)-(a.lapses||0)||(a.box||0)-(b.box||0)||a.en.localeCompare(b.en));
+  const bb=$('bulk');
+  if(bb)bb.innerHTML=allDecks().map(d=>d[0]).map((n,i)=>
+    `<button class="tbtn" data-bd="${esc(n)}" style="margin:2px 3px">${esc(n)}</button>`).join('')+
+    '<span style="display:block;margin-top:4px">點字組名稱，把整組在「要會拼寫 / 看得懂就好」之間切換。</span>';
+  if(bb)bb.querySelectorAll('[data-bd]').forEach(b=>b.onclick=async()=>{
+    const dn=b.dataset.bd,rs=Object.values(S.recs).filter(r=>r.deck===dn);
+    const anyP=rs.some(r=>r.kind==='p');
+    rs.forEach(r=>r.kind=anyP?'r':'p');
+    await save(S);renderLib();render();renderCal();});
+  $('libMsg').textContent=`符合 ${all.length} 字`+(all.length>300?'，只顯示前 300 筆':'');
+  box.innerHTML=all.slice(0,300).map(r=>{
+    const lv=levelOf(r);
+    return `<div class="lrow ${(r.lapses||0)>0?'lap':''}">
+      <span class="w">${esc(r.en)}${r.syl&&r.syl!==r.en?`<br><span style="font-size:.72rem;font-weight:400;color:var(--soft)">${esc(r.syl)}</span>`:''}</span>
+      <span class="z">${esc(r.zh)}${r.kind==='p'?' <span class="n">·拼寫</span>':''}${r.fam&&r.fam.length?`<br><span class="n">同字族 ${esc(r.fam.join('／'))}</span>`:''}</span>
+      <span class="d">${[1,2,3,4,5,6,7,8].map(i=>`<i class="${i<=lv?'on':''}"></i>`).join('')}</span>
+      <span class="n mono">${LV[lv]}${r.seen?`　練 ${r.reps||0}${r.lapses?`　退 ${r.lapses}`:''}　下次 ${r.due||'—'}`:''}</span>
+    </div>`;}).join('')||'<p class="hint">沒有符合的字。</p>';
+}
+/* ═══ 字組開關 ═══ */
+function renderDeckToggles(){
+  const box=$('deckToggles');if(!box)return;
+  const cnt={};Object.values(S.recs).forEach(r=>{const d=r.deck||'我的';cnt[d]=(cnt[d]||0)+1;});
+  const names=allDecks().map(d=>d[0]).concat(Object.keys(cnt).filter(k=>!allDecks().some(d=>d[0]===k)));
+  box.innerHTML=names.map((n,i)=>`<label class="dk"><input type="checkbox" id="dk${i}" ${S.on[n]!==false?'checked':''}>
+    <span>${esc(n)}</span><span class="mono num">${cnt[n]||0}</span></label>`).join('');
+  names.forEach((n,i)=>{const el=$('dk'+i);if(el)el.onchange=async e=>{
+    S.on[n]=e.target.checked;await save(S);buildQueue();
+    phase=queue.length&&queue[0].seen?'quiz':'pre';render();renderSheet();};});
+}
+/* ═══ 列印：填空練習紙 ═══ */
+function renderSheet(){
+  const items=queue.map((r,i)=>{
+    const cl=r.ex&&reOf(r).test(r.ex)?esc(r.ex).replace(reOf(r),'<span class="bl"></span>'):'';
+    return `<li>${cl||'<span class="bl"></span>'}<br><span class="zh">${esc(r.zh)}　（${esc(r.pos)}）</span></li>`;
+  }).join('');
+  $('sheet').innerHTML=`<h2 style="margin:0 0 3px">單字填空練習　${today()}　共 ${queue.length} 題</h2>
+    <p style="margin:0 0 14px;font-size:10pt">看中文，把英文填進空格。填完在題號旁寫 ○△×，回到電腦前照著點一遍。</p>
+    <ol>${items}</ol><hr>
+    <p style="margin:0 0 6px;font-size:10pt"><b>答案</b>（先摺起來，寫完再看）</p>
+    <p class="ans">${queue.map((r,i)=>`${i+1}. ${esc(r.en)}`).join('　　')}</p>`;
+}
+
+/* ═══ 啟動 ═══ */
+(async()=>{
+  S=await load();
+  if(!S||!S.recs)S=freshState();
+  else{
+    seedInto(S.recs);
+    if(!S.on)S.on={};allDecks().forEach(([n])=>{if(S.on[n]===undefined)S.on[n]=true;});
+    Object.values(S.recs).forEach(r=>{      // 舊版只有 streak，換算成艾賓浩斯階梯的層級
+      if(r.box===undefined)r.box=!r.seen?0:(r.streak>=3?5:r.streak===2?4:r.streak===1?3:0);
+      if(r.ease===undefined)r.ease=2.5;
+      if(r.reps===undefined)r.reps=r.seen?1:0;
+      if(r.lapses===undefined)r.lapses=0;
+      if(!r.log)r.log=[];
+      if(r.syl===undefined)r.syl=(META[r.en]&&META[r.en][0])||autoSyl(r.en);
+      if(r.fam===undefined)r.fam=(META[r.en]&&META[r.en][1])||[];
+      if(r.kind===undefined)r.kind=(META[r.en]&&META[r.en][2])||'p';
+    });
+    if(!S.mode)S.mode='auto';
+    if(!S.revCap)S.revCap=60;
+    if(!S.artEvery)S.artEvery=3;
+    if(!S.sources)S.sources=[];
+    if(!S.goal||S.goal>40)S.goal=12;
+    if(!S.rate)S.rate=0.85;
+    if(S.autoSay===undefined)S.autoSay=true;
+    if(!S.arts)S.arts={};
+    if(!S.read)S.read={};
+  }
+  renderDeckToggles();
+  document.documentElement.dataset.theme=S.theme||'light';
+  document.documentElement.style.setProperty('--fs',(S.fs||17)+'px');
+  $('themeBtn').textContent=S.theme==='dark'?'淺色':'深色';
+  $('goal').value=S.goal;
+  buildQueue();
+  if(queue.length&&queue[0].seen)phase='quiz';
+  render();renderSheet();renderLib();renderRead();renderCal();renderToday();renderSrc();await save(S);
+
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+    ['study','import','deck','read','cal','src','lib','set'].forEach(k=>$('v-'+k).classList.toggle('hide',k!==t.dataset.t));
+  });
+  $('themeBtn').onclick=async()=>{S.theme=S.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=S.theme;$('themeBtn').textContent=S.theme==='dark'?'淺色':'深色';await save(S);};
+  const setFs=async d=>{S.fs=Math.min(26,Math.max(14,(S.fs||17)+d));
+    document.documentElement.style.setProperty('--fs',S.fs+'px');await save(S);};
+  $('fsUp').onclick=()=>setFs(1);$('fsDown').onclick=()=>setFs(-1);
+  $('printBtn').onclick=()=>{renderSheet();window.print();};
+  const paintMode=()=>{const m=S.mode||'auto';
+    document.querySelectorAll('.mbtn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.md===m));
+    $('mdWhy').textContent=MODEWHY[m];};
+  document.querySelectorAll('.mbtn').forEach(b=>b.onclick=async()=>{
+    S.mode=b.dataset.md;await save(S);paintMode();
+    if(phase==='quiz')render();});
+  paintMode();
+  if($('rateSel')){$('rateSel').value=String(S.rate||0.85);
+    $('rateSel').onchange=async e=>{S.rate=parseFloat(e.target.value);await save(S);};}
+  if($('autoSay')){$('autoSay').checked=S.autoSay!==false;
+    $('autoSay').onchange=async e=>{S.autoSay=e.target.checked;await save(S);};}
+  if($('calAll'))$('calAll').onclick=e=>{const b=e.currentTarget;
+    b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');
+    b.textContent=b.getAttribute('aria-pressed')==='true'?'收合全部':'展開全部單字';renderCal();};
+  if($('calPrint'))$('calPrint').onclick=()=>{calSheet();window.print();
+    setTimeout(()=>renderSheet(),800);};
+  $('scanBtn').onclick=scan;
+  $('q').oninput=renderLib;$('filt').onchange=renderLib;
+  $('clrBtn').onclick=()=>{$('src').value='';$('picks').innerHTML='';};
+  $('saveArtBtn').onclick=async()=>{
+    const b=$('src').value.trim();if(!b){alert('先貼一段文章。');return;}
+    const t=(b.split(/[.!?\n]/)[0]||'未命名').trim().slice(0,44);
+    const id='m'+Date.now();
+    const nm=prompt('這篇文章的來源？（會記到「教材來源」）','我存的文章')||'我存的文章';
+    let sid=(S.sources||[]).find(x=>x.name===nm);
+    if(!sid){sid={id:'u'+Date.now(),name:nm,file:'貼上的文章',date:today(),note:'',own:true};
+      S.sources=(S.sources||[]).concat([sid]);}
+    sid.note=(sid.note?sid.note+'；':'')+`文章〈${t}〉`;
+    S.arts=S.arts||{};S.arts[id]={id,t,lv:'我存的',tag:'',body:b,q:[],srcId:sid.id};
+    await save(S);renderRead();renderSrc();renderCal();
+    document.querySelector('.tab[data-t=read]').click();window.scrollTo(0,0);};
+  $('deckBtn').onclick=importDeck;
+  $('goal').onchange=async e=>{S.goal=Math.max(3,Math.min(60,+e.target.value||12));
+    await save(S);buildQueue();phase=queue.length&&queue[0].seen?'quiz':'pre';render();renderSheet();renderCal();};
+  if($('revCap')){$('revCap').value=S.revCap||60;
+    $('revCap').onchange=async e=>{S.revCap=Math.max(10,Math.min(200,+e.target.value||60));
+      await save(S);buildQueue();render();renderSheet();renderCal();};}
+  /* 備份格式：加上版本信封，之後的 Flutter 版靠 format/version 辨識並匯入 */
+  const BACKUP_FORMAT='vocab-trainer-backup',BACKUP_VERSION=1;
+  const packBackup=()=>JSON.stringify({format:BACKUP_FORMAT,version:BACKUP_VERSION,exportedAt:new Date().toISOString(),
+    stats:{words:Object.keys(S.recs).length,seen:Object.values(S.recs).filter(r=>r.seen).length},state:S});
+  const unpackBackup=txt=>{const o=JSON.parse(txt);
+    if(o&&o.format===BACKUP_FORMAT&&o.state&&o.state.recs)return o.state;   // 新格式
+    if(o&&o.recs)return o;                                                   // 舊格式：直接是狀態物件
+    throw new Error('bad backup');};
+  const restoreFrom=async txt=>{
+    try{const st=unpackBackup(txt);
+      const keep=freshState();                      // 新版新增的字組要補進來，舊備份缺的欄位用預設值
+      S=Object.assign(keep,st);S.recs=seedInto(S.recs);S.on=Object.assign(keep.on,st.on||{});
+      await save(S);buildQueue();phase='pre';ans='';hinted=false;
+      renderDeckToggles();render();renderSheet();renderLib();renderCal();renderRead();renderSrc();
+      const seen=Object.values(S.recs).filter(r=>r.seen).length;
+      $('ioMsg').innerHTML=`<b style="color:var(--ok)">還原完成。</b>${seen} 個字有學習紀錄。`;return true;}
+    catch(e){$('ioMsg').textContent='這份讀不出來，確認是這個網頁產生的備份。';return false;}};
+  $('expBtn').onclick=()=>{$('io').value=packBackup();$('ioMsg').textContent='已產生備份文字，整段複製存起來。';};
+  $('impBtn').onclick=()=>restoreFrom($('io').value);
+  $('dlBtn').onclick=()=>{
+    const blob=new Blob([packBackup()],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`vocab-backup-${today()}.json`;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);
+    $('ioMsg').textContent='已下載備份檔，到新裝置用「從檔案還原」讀進去。';};
+  $('fileBtn').onclick=()=>$('fileIn').click();
+  $('fileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    await restoreFrom(await f.text());e.target.value='';};
+  document.addEventListener('keydown',e=>{
+    if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+    if(idx>=queue.length)return;
+    if(phase==='quiz'&&quizType(cur)==='choice'&&/^[1-4]$/.test(e.key)){
+      const b=document.querySelectorAll('.opt')[+e.key-1];if(b)b.click();return;}
+    if(phase!=='res')return;
+    if(e.key==='1')doMark('o');else if(e.key==='2')doMark('t');else if(e.key==='3')doMark('x');
+  });
+})();
+</script>
