@@ -10,7 +10,7 @@
 輸出：
   audio/w/<slug>_<accent>.mp3          單字
   audio/s/<slug>_<accent>.mp3          例句
-  audio/a/<artId>_<accent>.mp3         整篇文章
+  audio/a/<artId>_<accent>.mp3         整篇文章（同時輸出 <artId>_<accent>.words.json：每個字的 [起秒, 迄秒, 文字]，供逐字反白）
   audio/a/<artId>_s<n>_<accent>.mp3    文章逐句（分句規則與 index.html 的 openArt 相同）
 
 slug 規則與 index.html 的 audioSlug() 相同：小寫，非 a-z0-9 的字元換成 _。
@@ -26,8 +26,8 @@ VOICES = {  # 多益英聽四國口音
     'en-AU': 'en-AU-NatashaNeural',
     'en-CA': 'en-CA-ClaraNeural',
 }
-RATE = {'w': '+0%', 's': '-5%', 'a': '-5%'}
-BITRATE = {'w': '32k', 's': '32k', 'a': '48k'}
+RATE = {'w': '+0%', 's': '-5%', 'a': '-5%', 'A': '-5%'}
+BITRATE = {'w': '32k', 's': '32k', 'a': '48k', 'A': '48k'}
 
 def slug(s):
     return re.sub(r'[^a-z0-9]+', '_', s.lower()).strip('_')
@@ -60,22 +60,34 @@ def jobs(words, arts, accents, kinds):
                 if ex: yield ('s', f's/{slug(en)}_{acc}.mp3', ex, acc)
         if 'a' in kinds:
             for a in arts:
-                body = a['body'].replace('\n', '. ').replace('..', '.')
-                yield ('a', f"a/{a['id']}_{acc}.mp3", body, acc)
+                yield ('A', f"a/{a['id']}_{acc}.mp3", a['body'], acc)   # A＝整篇，附逐字時間點
                 for n, sen in enumerate(split_sentences(a['body'])):
                     yield ('a', f"a/{a['id']}_s{n}_{acc}.mp3", sen, acc)
 
 async def synth(kind, rel, text, acc, sem, stats):
     import edge_tts
     path = os.path.join(OUT, rel)
-    if os.path.exists(path) and os.path.getsize(path) > 500:
+    words_path = path[:-4] + '.words.json'
+    if os.path.exists(path) and os.path.getsize(path) > 500 and (kind != 'A' or os.path.exists(words_path)):
         stats['skip'] += 1; return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     tmp = path + '.raw.mp3'
     async with sem:
         for attempt in range(5):
             try:
-                await edge_tts.Communicate(text, VOICES[acc], rate=RATE[kind]).save(tmp)
+                if kind == 'A':
+                    # 整篇：用串流拿逐字時間點（offset/duration 單位 100ns）。換行以停頓取代，句點不重複
+                    spoken = re.sub(r'\n+', ' ', text)
+                    comm = edge_tts.Communicate(spoken, VOICES[acc], rate=RATE[kind], boundary='WordBoundary')
+                    buf, words = bytearray(), []
+                    async for ch in comm.stream():
+                        if ch['type'] == 'audio': buf += ch['data']
+                        elif ch['type'] == 'WordBoundary':
+                            s0 = ch['offset'] / 1e7; words.append([round(s0, 2), round(s0 + ch['duration'] / 1e7, 2), ch['text']])
+                    open(tmp, 'wb').write(buf)
+                    json.dump(words, open(words_path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+                else:
+                    await edge_tts.Communicate(text, VOICES[acc], rate=RATE[kind]).save(tmp)
                 break
             except Exception as e:
                 await asyncio.sleep(2 + attempt * 3 + random.random())

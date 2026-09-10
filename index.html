@@ -133,6 +133,11 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
 .arow .m{font-size:.72rem;color:var(--soft)}
 .body{font-family:"Iowan Old Style",Georgia,serif;font-size:1.06rem;line-height:1.95;white-space:pre-wrap}
 .body .kw{border-bottom:1px dotted var(--soft);cursor:pointer}
+.body .tw{border-radius:3px;transition:background .12s}
+.body .tw.lit-s{background:rgba(255,214,10,.22)}
+.body .tw.lit{background:#ffd60a;color:#111;box-shadow:0 0 0 2px #ffd60a}
+[data-theme="dark"] .body .tw.lit-s{background:rgba(255,214,10,.16)}
+[data-theme="dark"] .body .tw.lit{background:#e6b800;color:#000;box-shadow:0 0 0 2px #e6b800}
 .body .kw.p{border-bottom-color:var(--ok)}
 .sen{display:block;padding:3px 4px;border-radius:2px;margin:0 -4px}
 .sen.cur{background:var(--hl)}
@@ -2272,12 +2277,58 @@ function kwMap(){
   const m={};Object.values(S.recs).forEach(r=>{m[r.en.toLowerCase()]=r;if(r.form)m[r.form.toLowerCase()]=r;});
   return m;
 }
+/* 內文每個字包一層 .tw（data-i 字序、data-s 句序），字庫裡的字再加 .kw。逐字反白與逐句跟讀靠這兩個索引 */
 function bodyHTML(txt){
-  const m=kwMap();
-  return esc(txt).replace(/[A-Za-z][A-Za-z'-]*/g,w=>{
+  const m=kwMap();let i=0,si=0;
+  return esc(txt).replace(/[A-Za-z][A-Za-z'’-]*|[.!?](?=\s|$)/g,w=>{
+    if(/^[.!?]$/.test(w)){si++;return w;}
     const r=m[w.toLowerCase()];
-    if(!r)return w;
-    return `<span class="kw ${r.kind==='p'?'p':''}" data-w="${esc(r.en)}">${w}</span>`;});
+    const cls='tw'+(r?' kw'+(r.kind==='p'?' p':''):'');
+    return `<span class="${cls}" data-i="${i++}" data-s="${si}"${r?` data-w="${esc(r.en)}"`:''}>${w}</span>`;});
+}
+/* 逐字反白：把 TTS 回傳的字時間點對到內文的 .tw 順序（兩邊都是依序出現的英文字，正規化後逐一配對） */
+function alignWords(tts){
+  const spans=[...document.querySelectorAll('#bd .tw')];
+  const norm=x=>String(x).toLowerCase().replace(/[^a-z0-9]/g,'');
+  const out=[];let j=0;
+  for(const [s0,e0,t] of tts){
+    const n=norm(t);if(!n)continue;
+    let k=-1;
+    for(let d=0;d<4&&j+d<spans.length;d++){if(norm(spans[j+d].textContent)===n){k=j+d;break;}}
+    if(k<0)continue;
+    out.push({s:s0,e:e0,i:k});j=k+1;
+  }
+  return out;
+}
+let kara={raf:null,times:null,cur:-1,sen:-1};
+function karaClear(){
+  document.querySelectorAll('#bd .tw.lit,#bd .tw.lit-s').forEach(x=>x.classList.remove('lit','lit-s'));
+  kara.cur=-1;kara.sen=-1;
+}
+function karaLightSentence(si){
+  if(si===kara.sen)return;kara.sen=si;
+  document.querySelectorAll('#bd .tw.lit-s').forEach(x=>x.classList.remove('lit-s'));
+  document.querySelectorAll(`#bd .tw[data-s="${si}"]`).forEach(x=>x.classList.add('lit-s'));
+}
+function karaTick(el){
+  if(!kara.times||el.paused){kara.raf=null;return;}
+  const t=el.currentTime;const T=kara.times;
+  let lo=0,hi=T.length-1,k=-1;
+  while(lo<=hi){const m=(lo+hi)>>1;if(T[m].s<=t){k=m;lo=m+1;}else hi=m-1;}
+  if(k>=0&&k!==kara.cur){
+    const prev=kara.cur>=0?document.querySelector(`#bd .tw[data-i="${T[kara.cur].i}"]`):null;if(prev)prev.classList.remove('lit');
+    const sp=document.querySelector(`#bd .tw[data-i="${T[k].i}"]`);
+    if(sp){sp.classList.add('lit');karaLightSentence(+sp.dataset.s);
+      const r=sp.getBoundingClientRect();
+      if(r.top<80||r.bottom>window.innerHeight-80)sp.scrollIntoView({block:'center',behavior:'smooth'});}
+    kara.cur=k;
+  }
+  kara.raf=requestAnimationFrame(()=>karaTick(el));
+}
+function karaBind(el){
+  el.addEventListener('play',()=>{if(kara.times&&!kara.raf)kara.raf=requestAnimationFrame(()=>karaTick(el));});
+  el.addEventListener('seeked',()=>{kara.cur=-1;});
+  el.addEventListener('ended',()=>{karaClear();});
 }
 function openArt(id){
   const a=allArts().find(x=>x.id===id);if(!a)return;
@@ -2367,16 +2418,22 @@ async function loadArtAudio(a){
   if(own){
     if(el.dataset.obj)URL.revokeObjectURL(el.dataset.obj);
     el.src=el.dataset.obj=URL.createObjectURL(own);
-    msg.textContent=`🎙 自己的音檔（${Math.round(own.size/1024)} KB，只存在這台裝置）`;del.style.display='';
+    msg.textContent=`🎙 自己的音檔（${Math.round(own.size/1024)} KB，只存在這台裝置；沒有逐字反白）`;del.style.display='';
+    kara.times=null;karaClear();
     el.onerror=()=>{msg.textContent='這個音檔播不了，換一個格式試試（mp3、m4a 最穩）。';};
   }else{
     el.src=audioUrl('a',a.id);
     msg.textContent=`內建音檔 · ${accentName()}口音`;del.style.display='none';
+    kara.times=null;karaClear();
+    fetch(audioUrl('a',a.id).replace(/\.mp3$/,'.words.json')).then(r=>r.ok?r.json():null).then(w=>{
+      if(w&&w.length){kara.times=alignWords(w);msg.textContent+='　·　逐字反白';}
+    }).catch(()=>{});
     el.onerror=()=>{msg.textContent='沒有內建音檔（離線或尚未產生）。可以直接看文章、用「逐句跟讀」的瀏覽器語音，或上傳自己的。';
       const b=$('revealB');if(b){b.disabled=false;b.textContent='看文章';}};
   }
   el.playbackRate=rate();
   el.onplay=()=>{el.playbackRate=rate();shadowStop=true;try{speechSynthesis.cancel();}catch(e){}AUD.pause();};
+  if(!el.dataset.kara){el.dataset.kara='1';karaBind(el);}
 }
 function bindKW(){
   document.querySelectorAll('.kw').forEach(el=>el.onclick=e=>{
@@ -2396,10 +2453,12 @@ function shadowSentences(){
   const st=$('astA');let i=0;shadowStop=false;
   const spans=$('bd');
   const step=()=>{
-    if(shadowStop||i>=rd.sens.length){st.textContent='跟讀結束';return;}
+    if(shadowStop||i>=rd.sens.length){st.textContent='跟讀結束';karaClear();return;}
     st.textContent=`第 ${i+1} / ${rd.sens.length} 句　先聽 → 換你唸 → 再聽一次`;
     const sen=rd.sens[i].trim(),key=`${rd.art.id}_s${i}`;   // 逐句 mp3 由 gen_audio.py 依同一套分句規則產生
     if($('artAud'))$('artAud').pause();
+    karaLightSentence(i);const first=document.querySelector(`#bd .tw[data-s="${i}"]`);
+    if(first){const r=first.getBoundingClientRect();if(r.top<80||r.bottom>window.innerHeight-80)first.scrollIntoView({block:'center',behavior:'smooth'});}
     sayAudio('a',key,sen,{onend:()=>{
       if(shadowStop)return;
       setTimeout(()=>{
