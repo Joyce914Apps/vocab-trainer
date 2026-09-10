@@ -2397,7 +2397,7 @@ function openArt(id){
         <button class="abtn" id="againB">🔁 邊看邊再聽一次</button>
       </div>
       <div class="audio" style="border-top:none;margin-top:0">
-        <button class="abtn" id="shadowB">🎧 逐句跟讀</button>
+        <button class="abtn" id="shadowB" title="每句播兩次：先聽 → 留一段空白讓你跟著唸 → 再聽一次對照">🎧 逐句跟讀</button>
         <button class="abtn" id="recB">● 錄音</button>
         <button class="abtn" id="playB" disabled>▶ 播我的</button>
         <span class="ast" id="astA"></span>
@@ -2488,15 +2488,18 @@ function shadowSentences(){
   const spans=$('bd');
   const step=()=>{
     if(shadowStop||i>=rd.sens.length){st.textContent='跟讀結束';karaClear();return;}
-    st.textContent=`第 ${i+1} / ${rd.sens.length} 句　先聽 → 換你唸 → 再聽一次`;
+    const tag=`第 ${i+1} / ${rd.sens.length} 句　`;
+    st.textContent=tag+'① 先聽';
     const sen=rd.sens[i].trim(),key=`${rd.art.id}_s${i}`;   // 逐句 mp3 由 gen_audio.py 依同一套分句規則產生
     if($('artAud'))$('artAud').pause();
     karaLightSentence(i);const first=document.querySelector(`#bd .tw[data-s="${i}"]`);
     if(first){const r=first.getBoundingClientRect();if(r.top<80||r.bottom>window.innerHeight-80)first.scrollIntoView({block:'center',behavior:'smooth'});}
     sayAudio('a',key,sen,{onend:()=>{
       if(shadowStop)return;
+      st.textContent=tag+'② 換你唸（出聲跟著唸這一句）';
       setTimeout(()=>{
         if(shadowStop)return;
+        st.textContent=tag+'③ 再聽一次，對照哪裡不一樣';
         sayAudio('a',key,sen,{onend:()=>{i++;setTimeout(step,400);}});
       },Math.max(1600,sen.split(/\s+/).length*380));
     }});
