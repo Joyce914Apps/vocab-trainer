@@ -1410,7 +1410,7 @@ function buildQueue(){
          .slice(0,S.revCap||60);
   const room=rest?0:Math.max(0,(S.goal||12));
   /* 挑新字：照字組順序，但同字根的未學字拉到相鄰位置一起背（固定遍數法「一串一串，有邏輯」） */
-  const pool=all.filter(r=>!r.seen),nw=[],used=new Set();
+  const pool=all.filter(r=>!r.seen).sort((a,b)=>(b.pin?1:0)-(a.pin?1:0)),nw=[],used=new Set();   // 從文章挑出來的字先排
   for(const r of pool){
     if(nw.length>=room)break;if(used.has(r.id))continue;
     nw.push(r);used.add(r.id);
@@ -1813,54 +1813,103 @@ function base(w){
   if(/ly$/.test(w))t.push(w.slice(0,-2));
   return t;
 }
-function scan(){
+/* 大字典（data/dict.json，ECDICT 開源字典的常用字子集、繁體）：掃描時才載入 */
+let BIGDICT=null;
+async function loadBigDict(){
+  if(BIGDICT)return BIGDICT;
+  try{const r=await fetch('data/dict.json');BIGDICT=await r.json();}catch(e){BIGDICT={w:{},l:{}};}
+  return BIGDICT;
+}
+function bigLookup(w){
+  const D=BIGDICT||{w:{},l:{}};
+  for(const f of [w].concat(base(w))){
+    const k=D.l[f]||f;if(D.w[k])return {en:k,zh:D.w[k][0],pos:D.w[k][1]};
+  }
+  return null;
+}
+/* 線上查（MyMemory 免費翻譯，不需金鑰，每日有額度） */
+async function lookupOnline(q){
+  const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(q)+'&langpair=en|zh-TW');
+  const d=await r.json();const t=d&&d.responseData&&d.responseData.translatedText||'';
+  return /QUERY LENGTH|INVALID|LIMIT/i.test(t)?'':t;
+}
+function libFind(w){
+  const forms=[w].concat(base(w)).map(x=>x.toLowerCase());
+  return Object.values(S.recs).find(r=>forms.includes(r.en.toLowerCase()))||null;
+}
+async function scan(){
   const text=$('src').value.trim();
   if(!text){$('picks').innerHTML='<p class="hint">先貼一段英文進來。</p>';return;}
+  $('picks').innerHTML='<p class="hint">查字典中⋯</p>';
+  await loadBigDict();
   const sents=text.replace(/\s+/g,' ').split(/(?<=[.!?])\s+/).filter(s=>s.length>12);
   const seen={},out=[];
   sents.forEach(s=>{
     (s.toLowerCase().match(/[a-z][a-z'-]{2,}/g)||[]).forEach(w=>{
       if(STOP.has(w)||seen[w])return;
-      let hit=null;for(const f of base(w)){if(DICT[f]){hit=DICT[f];break;}}
-      const key=hit?hit[0]:w;
+      const lib=libFind(w);
+      if(lib){if(seen[lib.en])return;seen[lib.en]=1;out.push({lib,en:lib.en,form:w,sent:s.trim()});return;}
+      const hit=bigLookup(w);
+      const key=hit?hit.en:w;
       if(seen[key])return;seen[key]=1;
-      if(Object.values(S.recs).some(r=>r.en.toLowerCase()===key))return;
-      out.push({en:key,form:w,zh:hit?hit[2]:'',pos:hit?hit[1]:'',sent:s.trim(),known:!!hit});
+      out.push({en:key,form:w,zh:hit?hit.zh:'',pos:hit?hit.pos:'',sent:s.trim(),dict:!!hit});
     });
   });
-  out.sort((a,b)=>(b.known-a.known));
-  const list=out.slice(0,60);
-  if(!list.length){$('picks').innerHTML='<p class="hint">沒挑出新字 —— 可能都已經在字庫裡了，或這段太短。</p>';return;}
+  const libs=out.filter(c=>c.lib),news=out.filter(c=>!c.lib);
+  libs.sort((a,b)=>(a.lib.seen-b.lib.seen));
+  news.sort((a,b)=>(b.dict-a.dict));
+  const list=libs.concat(news).slice(0,80);
+  if(!list.length){$('picks').innerHTML='<p class="hint">這段太短，沒挑出字。</p>';return;}
+  const libTag=r=>!r.seen?'<span class="tag">字庫已有 · 未學</span>':(r.box||0)>=GRADn()?'<span class="tag">字庫已有 · 已畢業</span>':`<span class="tag">字庫已有 · ${lvLabel(r)}</span>`;
   $('picks').innerHTML=`<p class="hint" style="margin:18px 0 10px">
-    挑出 ${list.length} 個字。<b>只勾你真的不會的</b> —— 勾太多只會做不完。
-    標「內建」的已經幫你填好中文；沒標的請自己查一下打進去，這個查的動作本身就是在記。</p>`
-    +list.map((c,i)=>`<div class="pick">
+    挑出 ${list.length} 個字（字庫已有 ${libs.length}、新字 ${news.length}）。<b>只勾你真的不會的</b>。<br>
+    「字庫已有 · 未學」的字勾了會<b>排到下一批新字</b>，它們本來就有拆字、音節與四國發音。
+    新字已用字典帶入中文，可以自己改；沒查到的按「🌐 線上查」，例句中譯也可以一鍵翻。</p>`
+    +list.map((c,i)=>c.lib?`<div class="pick">
       <div class="top">
-        <input type="checkbox" id="c${i}" ${c.known?'':''}>
-        <label class="w" for="c${i}">${esc(c.en)}</label>
-        ${c.known?'<span class="tag">內建</span>':'<span class="tag">要填中文</span>'}
-        <input type="text" id="z${i}" value="${esc(c.zh)}" placeholder="中文意思">
+        <input type="checkbox" id="c${i}" ${c.lib.seen?'disabled':''}>
+        <label class="w" for="c${i}">${esc(c.en)}</label>${libTag(c.lib)}
+        <span class="hint" style="flex:1">${esc((c.lib.zh||'').split('；')[0])}${c.lib.pin&&!c.lib.seen?'　已排入下一批':''}</span>
       </div>
       <div class="s">${esc(c.sent)}</div>
+    </div>`:`<div class="pick">
+      <div class="top">
+        <input type="checkbox" id="c${i}">
+        <label class="w" for="c${i}">${esc(c.en)}</label>
+        ${c.dict?'<span class="tag">字典</span>':'<span class="tag">要填中文</span>'}
+        <input type="text" id="z${i}" value="${esc(c.zh)}" placeholder="中文意思">
+        <button class="tbtn" data-look="${i}" title="用線上翻譯查">🌐 線上查</button>
+      </div>
+      <div class="s">${esc(c.sent)}</div>
+      <div class="top" style="margin-top:4px"><input type="text" id="x${i}" placeholder="例句中譯（選填）" style="flex:1"><button class="tbtn" data-tr="${i}">翻例句</button></div>
     </div>`).join('')
-    +`<div class="row"><button class="btn" id="mkBtn">把勾選的做成字卡</button>
+    +`<div class="row"><button class="btn" id="mkBtn">建卡／排入下一批</button>
       <button class="btn ghost" id="allBtn">全部勾選</button></div><p class="hint" id="mkMsg"></p>`;
-  $('allBtn').onclick=()=>list.forEach((_,i)=>$('c'+i).checked=true);
+  $('allBtn').onclick=()=>list.forEach((_,i)=>{const b=$('c'+i);if(b&&!b.disabled)b.checked=true;});
+  document.querySelectorAll('[data-look]').forEach(b=>b.onclick=async()=>{
+    const i=+b.dataset.look;b.textContent='查詢中⋯';
+    try{const t=await lookupOnline(list[i].en);if(t){$('z'+i).value=t;$('c'+i).checked=true;}b.textContent=t?'🌐 已查':'查不到';}
+    catch(e){b.textContent='離線';}});
+  document.querySelectorAll('[data-tr]').forEach(b=>b.onclick=async()=>{
+    const i=+b.dataset.tr;b.textContent='翻譯中⋯';
+    try{const t=await lookupOnline(list[i].sent);if(t)$('x'+i).value=t;b.textContent=t?'已翻':'翻不到';}
+    catch(e){b.textContent='離線';}});
   $('mkBtn').onclick=async()=>{
-    let n=0;
+    let n=0,pinned=0,skipped=0;
     list.forEach((c,i)=>{
       if(!$('c'+i).checked)return;
+      if(c.lib){if(!c.lib.seen){c.lib.pin=true;pinned++;}return;}
       const zh=$('z'+i).value.trim();
-      if(!zh)return;
+      if(!zh){skipped++;return;}
       const id='u'+(S.cid++);
-      S.recs[id]={id,en:c.en,form:c.form||'',pos:c.pos||'—',zh,ex:c.sent,exz:'',note:'',src:'我的文章',deck:'我的文章',syl:(META[c.en]&&META[c.en][0])||autoSyl(c.en),fam:(META[c.en]&&META[c.en][1])||[],kind:'r',srcId:'own',box:0,ease:2.5,reps:0,lapses:0,log:[],
+      S.recs[id]={id,en:c.en,form:c.form||'',pos:c.pos||'—',zh,ex:c.sent,exz:($('x'+i)&&$('x'+i).value.trim())||'',note:'',src:'我的文章',deck:'我的文章',syl:(META[c.en]&&META[c.en][0])||autoSyl(c.en),fam:(META[c.en]&&META[c.en][1])||[],kind:'r',srcId:'own',pin:true,box:0,ease:2.5,reps:0,lapses:0,log:[],
         stage:0,seen:false,due:null,streak:0,last:null};n++;
     });
-    await save(S);renderStats();
-    $('mkMsg').textContent=n?`建了 ${n} 張卡，明天起會排進「今日練習」。沒填中文的那幾個略過了。`:'沒有勾到有填中文的字。';
+    if(n&&S.on['我的文章']===undefined)S.on['我的文章']=true;
+    await save(S);renderStats();buildQueue();render();renderSheet();renderCal();renderLib();
+    $('mkMsg').textContent=(n||pinned)?`建了 ${n} 張新卡、排入 ${pinned} 個字庫的字，下一個讀書日的新字會先出這些。${skipped?`沒填中文的 ${skipped} 個略過了。`:''}`:'沒有勾到可以處理的字。';
   };
 }
-
 /* ═══ 貼上字卡 ═══ */
 async function importDeck(){
   const lines=$('deckBox').value.split('\n').map(s=>s.trim()).filter(Boolean);
