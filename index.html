@@ -2392,8 +2392,6 @@ function openArt(id){
     </div>
     <div id="readPart" class="hide">
       <div class="row" style="margin:8px 0">
-        <button class="btn" id="startB">開始計時閱讀</button>
-        <span class="timer" id="tm">00:00</span>
         <button class="abtn" id="againB">🔁 邊看邊再聽一次</button>
       </div>
       <div class="audio" style="border-top:none;margin-top:0">
@@ -2413,6 +2411,7 @@ function openArt(id){
     </div>`;
   /* 先聽再看：聽完一遍（音檔播到底）才開放文章；也可以直接看 */
   const reveal=how=>{
+    rd.t0=Date.now();                                     // 看到文章那一刻默默開始計時，按「讀完了」結束
     $('readPart').classList.remove('hide');$('listenRow').classList.add('hide');
     $('artStep').textContent=how==='skip'?'看文章':'第二遍 · 邊看邊聽，對照剛才漏掉的地方';
     $('artStepHint').textContent=how==='skip'?'下次試試先聽一遍再看，聽力進步最快的就是這一步。':'看的時候留意：哪幾句剛才沒聽出來？那幾句多聽兩次。讀完按「開始計時閱讀」測速度。';
@@ -2422,7 +2421,6 @@ function openArt(id){
   $('skipB').onclick=()=>reveal('skip');
   $('backB').onclick=()=>{stopTimer();shadowStop=true;stopAudio();$('artAud').pause();
     $('readView').classList.add('hide');$('readHome').classList.remove('hide');renderRead();};
-  $('startB').onclick=startTimer;
   $('doneB').onclick=finishArt;
   loadArtAudio(a);
   $('artAud').onended=async()=>{
@@ -2509,12 +2507,7 @@ function shadowSentences(){
   $('shadowB').onclick=()=>{shadowStop=true;stopAudio();
     $('shadowB').textContent='🎧 逐句跟讀';$('shadowB').onclick=()=>shadowSentences();st.textContent='';};
 }
-function startTimer(){
-  rd.t0=Date.now();stopTimer();
-  rd.tick=setInterval(()=>{const s=Math.floor((Date.now()-rd.t0)/1000);
-    $('tm').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},250);
-  $('startB').textContent='計時中⋯⋯';
-}
+/* 閱讀速度：不再有計時按鈕。打開文章時記 rd.t0，按「讀完了」算 wpm；含點中譯、跟讀的時間，所以第一次會偏低，重讀時的進步才明顯 */
 function stopTimer(){if(rd.tick){clearInterval(rd.tick);rd.tick=null;}}
 async function finishArt(){
   if($('zhAllB')){$('zhAllB').disabled=false;$('zhAllB').title='';}
@@ -2530,14 +2523,11 @@ async function finishArt(){
     rec.round=(rec.round||0)+1;
     rec.due=rec.round<3?plusS(REREAD[rec.round-1]):null;
     S.read[a.id]=rec;await save(S);renderCal();renderToday();
-    msg=`<div class="verdict v-o">用了 ${Math.floor(sec/60)} 分 ${sec%60} 秒　·　${wpm} wpm`
-      +(prev?`　·　上次最佳 ${prev} wpm${wpm>prev?'　↑ 進步了':''}`:'')
-      +(S.read[a.id].due?`　·　下次重讀 ${S.read[a.id].due}`:'　·　這篇讀滿三次，畢業了')+`</div>
-      <p class="hint">一般高中生的英文閱讀速度大約 100–150 wpm。學測閱讀測驗四篇約 1,200 字，
-      要在 30 分鐘內連題目一起處理完，代表純閱讀至少要有 120 wpm 以上的餘裕。慢不要緊，重點是這條線有沒有往上。</p>`;
-    rd.t0=0;$('startB').textContent='再計時一次';
-  }else{
-    msg='<p class="hint">這次沒有計時。下次記得先按「開始計時閱讀」—— 速度是要練的東西。</p>';
+    msg=`<p class="hint" style="margin:6px 0 2px">從打開文章到讀完：${Math.floor(sec/60)} 分 ${sec%60} 秒　·　<b>${wpm} wpm</b>`
+      +(prev?`　·　上次最佳 ${prev}${wpm>prev?'　↑ 進步了':''}`:'')
+      +(S.read[a.id].due?`　·　下次重讀 ${S.read[a.id].due}`:'　·　讀滿三次，畢業了')
+      +`<br><span style="font-size:.74rem">這個數字包含點中譯、跟讀的時間，第一次偏低是正常的；重讀那天的數字才是速度。學測閱讀要從容作答約需 120 wpm。</span></p>`;
+    rd.t0=0;
   }
   const qs=(a.q||[]).map((x,i)=>`<div class="card" style="padding:18px 20px">
     <p style="margin:0 0 10px"><b>${i+1}.</b> ${esc(x.q)}</p>
