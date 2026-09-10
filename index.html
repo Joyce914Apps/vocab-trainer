@@ -134,10 +134,10 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
 .body{font-family:"Iowan Old Style",Georgia,serif;font-size:1.06rem;line-height:1.95;white-space:pre-wrap}
 .body .kw{border-bottom:1px dotted var(--soft);cursor:pointer}
 .body .tw{border-radius:3px;transition:background .12s}
-.body .sen{cursor:pointer;border-radius:3px}
-.body .sen:hover{background:rgba(127,127,127,.08)}
-.body .sen.open{background:rgba(127,127,127,.08)}
-.body .senzh{display:block;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;font-size:.86rem;line-height:1.6;color:var(--soft);margin:2px 0 6px;padding:4px 8px;border-left:3px solid var(--ok);white-space:normal;cursor:default}
+.body .stc{cursor:pointer;border-radius:3px}
+.body .stc:hover{background:rgba(127,127,127,.08)}
+.body .stc.open{background:rgba(127,127,127,.08)}
+.body .stczh{display:block;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;font-size:.86rem;line-height:1.6;color:var(--soft);margin:2px 0 6px;padding:4px 8px;border-left:3px solid var(--ok);white-space:normal;cursor:default}
 .body .tw.lit-s{background:rgba(255,214,10,.22)}
 .body .tw.lit{background:#ffd60a;color:#111;box-shadow:0 0 0 2px #ffd60a}
 [data-theme="dark"] .body .tw.lit-s{background:rgba(255,214,10,.16)}
@@ -2293,16 +2293,16 @@ function bodyHTML(txt){
       const r=m[w.toLowerCase()];
       const cls='tw'+(r?' kw'+(r.kind==='p'?' p':''):'');
       return `<span class="${cls}" data-i="${i++}" data-s="${si}"${r?` data-w="${esc(r.en)}"`:''}>${w}</span>`;});
-    return `<span class="sen" data-s="${si++}" title="點一下看中譯">${inner}</span>`;
+    return `<span class="stc" data-s="${si++}" title="點一下看中譯">${inner}</span>`;
   }).join('');
 }
 /* 逐句中譯：點句子展開，一次只開一句；記錄開過哪幾句（重讀那天優先跟讀） */
 function bindSenZh(a){
   const zh=ARTZH[a.id];if(!zh)return;
-  document.querySelectorAll('#bd .sen').forEach(el=>el.onclick=async e=>{
+  document.querySelectorAll('#bd .stc').forEach(el=>el.onclick=async e=>{
     if(e.target.closest('.kw'))return;                       // 點字庫字是看單字，不是看中譯
     const k=+el.dataset.s,open=el.classList.contains('open');
-    document.querySelectorAll('#bd .sen.open').forEach(x=>{x.classList.remove('open');const z=x.querySelector('.senzh');if(z)z.remove();});
+    document.querySelectorAll('#bd .stc.open').forEach(x=>{x.classList.remove('open');const z=x.querySelector('.senzh');if(z)z.remove();});
     if(open)return;
     el.classList.add('open');
     const z=document.createElement('span');z.className='senzh';z.textContent=zh[k]||'（這句還沒有中譯）';el.appendChild(z);
@@ -2312,7 +2312,7 @@ function bindSenZh(a){
 }
 function senZhAll(a,show){
   const zh=ARTZH[a.id]||[];
-  document.querySelectorAll('#bd .sen').forEach(el=>{
+  document.querySelectorAll('#bd .stc').forEach(el=>{
     const z=el.querySelector('.senzh');if(z)z.remove();el.classList.remove('open');
     if(show){el.classList.add('open');const n=document.createElement('span');n.className='senzh';n.textContent=zh[+el.dataset.s]||'';el.appendChild(n);}
   });
