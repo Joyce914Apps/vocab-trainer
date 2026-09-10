@@ -143,6 +143,8 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
 .body .stczh{display:block;font-family:-apple-system,"PingFang TC","Noto Sans TC",sans-serif;font-size:.86rem;line-height:1.6;color:var(--soft);margin:2px 0 6px;padding:4px 8px;border-left:3px solid var(--ok);white-space:normal;cursor:default}
 .body .tw.lit-s{background:rgba(255,214,10,.22)}
 .body .tw.lit{background:#ffd60a;color:#111;box-shadow:0 0 0 2px #ffd60a}
+.body.echo .tw{opacity:.32;transition:opacity .15s}
+.body.echo .tw.ech{opacity:1;background:rgba(255,214,10,.35);box-shadow:0 0 0 2px rgba(255,214,10,.35)}
 [data-theme="dark"] .body .tw.lit-s{background:rgba(255,214,10,.16)}
 [data-theme="dark"] .body .tw.lit{background:#e6b800;color:#000;box-shadow:0 0 0 2px #e6b800}
 .body .kw.p{border-bottom-color:var(--ok)}
@@ -1593,13 +1595,17 @@ function shadow(txt,el,r){
   mark('① 先聽');
   say({onend:()=>{
     if(shadowStop)return;
-    mark('② 換你唸（跟著唸出聲，不要只在心裡）');
-    const wait=Math.max(1800,txt.split(/\s+/).length*420);
+    mark('② 停——先別出聲，聽心裡留下的「回音」');
     setTimeout(()=>{
       if(shadowStop)return;
-      mark('③ 再聽一次，對照哪裡不一樣');
-      say({onend:()=>{if(!shadowStop)mark('跟讀完成');}});
-    },wait);
+      mark('③ 照著回音唸出來（重音、語調都照它）');
+      const wait=Math.max(1800,txt.split(/\s+/).length*420);
+      setTimeout(()=>{
+        if(shadowStop)return;
+        mark('④ 再聽一次，對照哪裡不一樣');
+        say({onend:()=>{if(!shadowStop)mark('跟讀完成');}});
+      },wait);
+    },1500);
   }});
 }
 /* 錄自己的聲音，播回來對照 */
@@ -2455,12 +2461,14 @@ function openArt(id){
         <button class="abtn" id="againB">🔁 邊看邊再聽一次</button>
       </div>
       <div class="audio" style="border-top:none;margin-top:0">
-        <button class="abtn" id="shadowB" title="每句播兩次：先聽 → 留一段空白讓你跟著唸 → 再聽一次對照">🎧 逐句跟讀</button>
+        <button class="abtn" id="echoB" title="4–6 個字一段：聽 → 停、聽心裡的回音 → 模仿 → 再聽，同一段重複到溜；每天十分鐘">🔁 回音練習</button>
+        <button class="abtn" id="shadowB" title="整句：先聽 → 停 → 跟著唸 → 再聽一次對照">🎧 逐句跟讀</button>
         <button class="abtn" id="recB">● 錄音</button>
         <button class="abtn" id="playB" disabled>▶ 播我的</button>
         <span class="ast" id="astA"></span>
       </div>
       <p class="hint" style="margin:6px 0 4px">看不懂的句子<b>點一下</b>會出現中譯，再點收起。先自己猜，猜不到再點。${(rec.zhOpened&&Object.keys(rec.zhOpened).length)?`上次點開了 ${Object.keys(rec.zhOpened).length} 句。`:''}</p>
+      <div id="echoBox" class="hide"></div>
       <div class="card"><div class="body" id="bd">${bodyHTML(a.body)}</div></div>
       <div class="row">
         <button class="btn" id="doneB">讀完了，看理解題</button>
@@ -2479,7 +2487,7 @@ function openArt(id){
   };
   $('revealB').onclick=()=>reveal('heard');
   $('skipB').onclick=()=>reveal('skip');
-  $('backB').onclick=()=>{stopTimer();shadowStop=true;stopAudio();$('artAud').pause();
+  $('backB').onclick=()=>{stopTimer();shadowStop=true;stopAudio();$('artAud').pause();echoStop();
     $('readView').classList.add('hide');$('readHome').classList.remove('hide');renderRead();};
   $('doneB').onclick=finishArt;
   loadArtAudio(a);
@@ -2495,12 +2503,121 @@ function openArt(id){
     await ownPut(a.id,f);e.target.value='';loadArtAudio(a);};
   $('ownDelB').onclick=async()=>{await ownDelete(a.id);loadArtAudio(a);};
   $('shadowB').onclick=()=>shadowSentences();
+  $('echoB').onclick=()=>echoStart(a);
   $('recB').onclick=()=>recToggle($('recB'),$('playB'),$('astA'));
   $('playB').onclick=playMine;
   $('mineB').onclick=()=>{$('src').value=a.body;
     document.querySelector('.tab[data-t=import]').click();scan();window.scrollTo(0,0);};
   bindKW();bindSenZh(a);
   $('zhAllB').onclick=()=>{const on=$('zhAllB').dataset.on==='1';senZhAll(a,!on);$('zhAllB').dataset.on=on?'0':'1';$('zhAllB').textContent=on?'全部中譯':'收起中譯';};
+}
+/* ═══ 回音練習 ═══
+   把整篇音檔依逐字時間點切成 4–6 個字的短片段（在標點處斷開），每段：播 → 停、聽心裡的回音 → 模仿 → 再播對照，
+   同一段重複幾輪再往下；每天十分鐘。只有內建音檔有時間點，自己上傳的音檔不能用。 */
+let echo={on:false,art:null,chunks:[],k:0,round:0,t0:0,tick:null,timer:null,phase:''};
+function echoChunks(){
+  const spans=[...document.querySelectorAll('#bd .tw')];
+  const T=kara.times||[];const tOf={};T.forEach(x=>tOf[x.i]=x);
+  const out=[];let cur=[];
+  const punctAfter=sp=>{const n=sp.nextSibling;return n&&n.nodeType===3&&/^[,;:.!?]/.test(n.textContent);};
+  const sentEnd=sp=>{const n=sp.nextSibling;return n&&n.nodeType===3&&/^[.!?]/.test(n.textContent)||!sp.parentElement.contains(sp.nextElementSibling);};
+  spans.forEach((sp,idx)=>{
+    cur.push(idx);
+    const last=idx===spans.length-1;
+    if(last||sentEnd(sp)||cur.length>=6||(cur.length>=4&&punctAfter(sp))){
+      const a=cur[0],b=cur[cur.length-1];
+      const s0=(tOf[a]||tOf[a+1]||{}).s,e0=(tOf[b]||tOf[b-1]||{}).e;
+      if(s0!==undefined&&e0!==undefined){
+        const prev=out[out.length-1];
+        if(cur.length<3&&prev&&(b-prev.a+1)<=8){prev.b=b;prev.e=e0;prev.text+=' '+cur.map(i=>spans[i].textContent).join(' ');}   // 太短的尾巴併進前一段
+        else out.push({a,b,s:s0,e:e0,text:cur.map(i=>spans[i].textContent).join(' ')});
+      }
+      cur=[];
+    }
+  });
+  return out;
+}
+function echoMark(k){
+  document.querySelectorAll('#bd .tw.ech').forEach(x=>x.classList.remove('ech'));
+  const c=echo.chunks[k];if(!c)return;
+  for(let i=c.a;i<=c.b;i++){const sp=document.querySelector(`#bd .tw[data-i="${i}"]`);if(sp)sp.classList.add('ech');}
+  const first=document.querySelector(`#bd .tw[data-i="${c.a}"]`);
+  if(first&&first.scrollIntoView){const r=first.getBoundingClientRect();if(r.top<120||r.bottom>window.innerHeight-120)first.scrollIntoView({block:'center',behavior:'smooth'});}
+}
+function echoPlay(c,onend){
+  const el=$('artAud');if(!el)return;
+  el.pause();el.playbackRate=rate();
+  const stopAt=c.e+0.12;
+  const onT=()=>{if(el.currentTime>=stopAt){el.pause();el.removeEventListener('timeupdate',onT);if(echo.on)onend();}};
+  el.addEventListener('timeupdate',onT);
+  el.currentTime=Math.max(0,c.s-0.06);
+  el.play().catch(()=>{el.removeEventListener('timeupdate',onT);echoSetPhase('這個瀏覽器要先按一下播放器的 ▶ 才能自動播');});
+}
+function echoSetPhase(t){echo.phase=t;const el=$('echoPhase');if(el)el.textContent=t;}
+function echoRender(){
+  const box=$('echoBox');if(!box)return;
+  const n=echo.chunks.length,c=echo.chunks[echo.k];
+  const el=(Date.now()-echo.t0)/1000,mm=String(Math.floor(el/60)).padStart(2,'0'),ss=String(Math.floor(el%60)).padStart(2,'0');
+  box.innerHTML=`<div class="card today-card" style="margin:8px 0">
+    <div class="step">回音練習　第 ${echo.k+1} / ${n} 段　·　第 ${echo.round+1} 輪　·　<span class="mono" id="echoTm">${mm}:${ss}</span> / 10:00</div>
+    <p class="serif" style="margin:8px 0 4px;font-size:1.1rem"><b>${esc(c?c.text:'')}</b></p>
+    <p class="hint" style="margin:0 0 8px" id="echoPhase">${esc(echo.phase)}</p>
+    <div class="row" style="gap:6px">
+      <button class="tbtn" id="echoAgain">🔁 這段再一次</button>
+      <button class="tbtn" id="echoNext">下一段 →</button>
+      <button class="tbtn" id="echoPrev">← 上一段</button>
+      <button class="tbtn" id="echoStopB">■ 結束</button>
+    </div>
+    <p class="hint" style="margin:8px 0 0">聽完<b>先停</b>，不要馬上開口。心裡會留一個和原聲一樣的回音，照著那個回音唸，注意重音與語調。同一段唸到不用想就溜出來，再按下一段。</p>
+  </div>`;
+  $('echoAgain').onclick=()=>{echo.round++;echoRun();};
+  $('echoNext').onclick=()=>{if(echo.k<n-1){echo.k++;echo.round=0;echoRun();}else echoStop('全部練完了，明天從頭再來。');};
+  $('echoPrev').onclick=()=>{if(echo.k>0){echo.k--;echo.round=0;echoRun();}};
+  $('echoStopB').onclick=()=>echoStop();
+}
+function echoRun(){
+  if(!echo.on)return;
+  const c=echo.chunks[echo.k];if(!c){echoStop();return;}
+  echoMark(echo.k);echoRender();
+  const words=c.b-c.a+1;
+  echoSetPhase('① 聽');
+  echoPlay(c,()=>{
+    echoSetPhase('② 停——先別出聲，聽心裡的回音');
+    echo.timer=setTimeout(()=>{if(!echo.on)return;
+      echoSetPhase('③ 照著回音唸出來');
+      echo.timer=setTimeout(()=>{if(!echo.on)return;
+        echoSetPhase('④ 再聽一次，對照');
+        echoPlay(c,()=>{
+          if(!echo.on)return;
+          echo.round++;
+          if(echo.round<3){echo.timer=setTimeout(()=>{if(echo.on)echoRun();},700);}
+          else{echoSetPhase('這段走完三輪。溜了就按「下一段」，還卡就「再一次」。');echoRender();}
+        });
+      },Math.max(1500,words*520));
+    },1500);
+  });
+}
+function echoStart(a){
+  if(!kara.times||!kara.times.length){$('astA').textContent='回音練習需要內建音檔的時間點（自己上傳的音檔不能用）。';return;}
+  shadowStop=true;stopAudio();
+  echo.on=true;echo.art=a;echo.chunks=echoChunks();
+  const rec=(S.read||{})[a.id]||{};
+  echo.k=(rec.echoAt&&rec.echoAt<echo.chunks.length)?rec.echoAt:0;echo.round=0;echo.t0=Date.now();
+  $('bd').classList.add('echo');$('echoBox').classList.remove('hide');
+  if(echo.tick)clearInterval(echo.tick);
+  echo.tick=setInterval(()=>{const el=(Date.now()-echo.t0)/1000;const t=$('echoTm');
+    if(t)t.textContent=String(Math.floor(el/60)).padStart(2,'0')+':'+String(Math.floor(el%60)).padStart(2,'0');
+    if(el>=600)echoStop('十分鐘到了，今天就到這裡。明天從第 '+(echo.k+1)+' 段接著。');},1000);
+  echoRun();
+}
+async function echoStop(msg){
+  if(!echo.on&&!msg)return;
+  echo.on=false;clearTimeout(echo.timer);clearInterval(echo.tick);echo.tick=null;
+  const el=$('artAud');if(el)el.pause();
+  if(echo.art){S.read=S.read||{};const rr=S.read[echo.art.id]=S.read[echo.art.id]||{};rr.echoAt=echo.k;rr.echoMin=(rr.echoMin||0)+Math.round((Date.now()-echo.t0)/60000);await save(S);}
+  document.querySelectorAll('#bd .tw.ech').forEach(x=>x.classList.remove('ech'));
+  const bd=$('bd');if(bd)bd.classList.remove('echo');
+  const box=$('echoBox');if(box){box.innerHTML=msg?`<p class="hint" style="margin:8px 0">${esc(msg)}</p>`:'';if(!msg)box.classList.add('hide');}
 }
 /* 文章音檔：自己上傳的優先，否則用內建 mp3（依口音），播放速度跟設定 */
 async function loadArtAudio(a){
