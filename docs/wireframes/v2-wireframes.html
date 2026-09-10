@@ -61,7 +61,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <h2>這份文件回答什麼</h2>
 <ul class="notes">
 <li>v2 的畫面有哪些、彼此怎麼連（第 2 頁資訊架構）</li>
-<li>登入與角色：學生／老師分流，Google／LINE／Apple 登入為第一步（第 3、6 頁）</li>
+<li>訪客優先與登入時機：不登入也能完整練習；加入班級、同步、老師身分才登入（第 3、6 頁）</li>
 <li>學生的流程：每日練習、文章；老師的流程：建班、上稿、發布、儀表板（第 3–4、14–16 頁）</li>
 <li>同一個畫面在手機、平板、桌機怎麼排（第 5 頁），之後每頁以最常用的尺寸畫</li>
 <li>每個畫面的區塊與按鈕，對應 v1.7 已驗證的功能（第 6–13 頁）</li>
@@ -78,7 +78,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <h2>v2 相對 v1.7 的差異（只列新增）</h2>
 <table>
 <tr><th>項目</th><th>v1.7（HTML）</th><th>v2（Flutter）</th></tr>
-<tr><td>帳號</td><td>沒有帳號，一台裝置一份進度</td><td>登入為第一步（Google／LINE／Apple），跨裝置同步，離線優先</td></tr>
+<tr><td>帳號</td><td>沒有帳號，一台裝置一份進度</td><td>訪客模式可完整使用（App Store 5.1.1 不可強制登入）；加入班級、跨裝置同步、老師身分時才登入（Google／LINE／Apple），訪客進度併入帳號</td></tr>
 <tr><td>角色</td><td>只有學生；上稿由開發者手動</td><td>學生與老師兩種角色；老師建班、上稿、發布、看儀表板（v2.0 上稿仍由開發者代做，v2.1 老師自助＋AI）</td></tr>
 <tr><td>教材</td><td>寫死在程式裡</td><td>公用教材包（學測／TOEIC／國中小…）＋班級講義（老師發布，僅班級可見）</td></tr>
 <tr><td>版面</td><td>單欄</td><td>手機底部分頁；平板側欄＋兩欄；桌機三欄</td></tr>
@@ -96,9 +96,9 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="row">
 <div class="col">
 <div class="lane"><b>啟動層</b>
-<div class="flow"><div class="st">啟動</div><span class="ar">→</span><div class="st hi">登入<br><span class="sub">Google / LINE / Apple</span></div><span class="ar">→</span><div class="st dec">首次？選角色</div><span class="ar">學生→</span><div class="st">加入班級（代碼）或自學</div><span class="ar">→</span><div class="st">選教材</div><span class="ar">→</span><div class="st end">今日</div></div>
-<div class="flow"><span style="width:250px"></span><span class="ar">老師→</span><div class="st">建立班級</div><span class="ar">→</span><div class="st end">老師首頁（儀表板）</div></div>
-<div class="cap">已登入過的直接進上次的角色首頁。一個帳號可同時是老師與家長身分（例如家長替孩子建班）；學生帳號只有學生視角。</div>
+<div class="flow"><div class="st">啟動</div><span class="ar">→</span><div class="st hi">今日（訪客）<br><span class="sub">直接可練，進度存本機</span></div><span class="ar">需要時→</span><div class="st dec">登入<br><span class="sub">Google / LINE / Apple</span></div><span class="ar">→</span><div class="st">併入訪客進度</div><span class="ar">→</span><div class="st end">今日（已同步）</div></div>
+<div class="flow"><span class="sub">登入的入口：</span><div class="st">加入班級（代碼）</div><div class="st">設定 → 帳號與同步</div><div class="st">我是老師 → 建立班級 → 老師首頁</div></div>
+<div class="cap">App Store 5.1.1：核心功能不可強制登入。訪客模式＝v1.7 的完整功能；帳號只用在班級、同步、老師身分。已登入的直接進上次的角色首頁。</div>
 </div>
 <div class="lane"><b>學生主畫面（底部 5 分頁 / 側欄 5 項）</b>
 <div class="flow">
@@ -136,7 +136,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <li>次級畫面都是從主畫面進入、返回鍵回來，不做深層路徑</li>
 <li>手機：底部分頁；平板：左側 rail；桌機：左側完整導覽</li>
 <li>GoRouter：<code>/login</code> <code>/role</code>　學生 <code>/s/today</code> <code>/s/library</code> <code>/s/read/:id</code> <code>/s/calendar</code> <code>/s/settings</code> <code>/s/scan</code>　老師 <code>/t/dashboard</code> <code>/t/lessons</code> <code>/t/lessons/new</code> <code>/t/classes</code> <code>/t/materials</code></li>
-<li>權限：學生只讀自己的進度與所屬班級的講義；老師讀寫自己班級的講義與學生進度；講義原文只在班級內可見</li>
+<li>權限：訪客資料只在本機；學生只讀自己的進度與所屬班級的講義；老師讀寫自己班級的講義與學生進度；講義原文只在班級內可見</li>
 </ul>
 </div></div>
 <div class="foot"><span>單字練習台 v2 Wireframes</span><span>2 / 18</span></div>
@@ -146,9 +146,9 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="pg">
 <h2>3. 流程（一）首次啟動、每日練習</h2>
 <div class="lane"><b>A. 首次啟動（學生）</b>
-<div class="flow"><div class="st">打開 App</div><span class="ar">→</span><div class="st hi">登入<br><span class="sub">Google / LINE / Apple</span></div><span class="ar">→</span><div class="st">我是學生</div><span class="ar">→</span><div class="st dec">有班級代碼？</div><span class="ar">有→</span><div class="st">加入班級<br><span class="sub">老師的講義自動出現</span></div><span class="ar">→</span><div class="st">選公用教材（可跳過）</div><span class="ar">→</span><div class="st">讀書日、每日新字</div><span class="ar">→</span><div class="st dec">v1 備份？</div><span class="ar">→</span><div class="st end">今日</div></div>
-<div class="flow"><span style="width:330px"></span><span class="ar">沒有→</span><div class="st">自學：選公用教材</div></div>
-<div class="cap">登入是第一步：跨裝置同步、班級講義、老師看進度都靠它。未成年用 LINE 或 Google 都不用自己管密碼。離線時仍可練，恢復連線自動同步。</div>
+<div class="flow"><div class="st">打開 App</div><span class="ar">→</span><div class="st hi">今日（訪客）<br><span class="sub">預設學測教材、二三四五、8 字</span></div><span class="ar">→</span><div class="st">今日卡片一行提示<br><span class="sub">「有班級代碼或想跨裝置？登入」</span></div><span class="ar">→</span><div class="st dec">要加入班級？</div><span class="ar">要→</span><div class="st">登入（Google / LINE / Apple）</div><span class="ar">→</span><div class="st">輸入代碼<br><span class="sub">老師的講義自動出現</span></div><span class="ar">→</span><div class="st end">今日</div></div>
+<div class="flow"><span style="width:420px"></span><span class="ar">不用→</span><div class="st">繼續當訪客練</div><span class="sub">　隨時可在設定登入，本機進度併入帳號</span></div>
+<div class="cap">不強制登入（App Store 5.1.1）。訪客的進度、備份匯出匯入與 v1 相同；登入後才有跨裝置同步與班級講義。未成年用 LINE 或 Google 都不用自己管密碼。</div>
 </div>
 <div class="lane"><b>B. 每日練習（今日分頁）</b>
 <div class="flow"><div class="st">今日清單<br><span class="sub">新字 N・複習 M・文章・預習</span></div><span class="ar">→</span><div class="st dec">這張卡學過？</div><span class="ar">否→</span><div class="st hi">① 預習<br><span class="sub">例句・發音・拆字・手打</span></div><span class="ar">→</span><div class="st">② 回想<br><span class="sub">選擇 / 拼寫 / 認得</span></div><span class="ar">→</span><div class="st">③ 標記 ○△×</div><span class="ar">→</span><div class="st dec">還有卡？</div><span class="ar">是→</span><div class="st">下一張</div></div>
@@ -208,24 +208,24 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 
 <!-- 6 選學生 / 選教材 -->
 <div class="pg">
-<h2>6. 啟動：登入、選角色、加入班級、選教材</h2>
+<h2>6. 啟動：訪客首頁、登入、加入班級、選教材</h2>
 <div class="row">
-<div class="wf"><div class="frame phone"><div class="bar"><span>單字練習台</span></div><div class="body">
-<div style="text-align:center;margin:28px 0 14px;font-size:14px;font-weight:700">單字練習台</div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>今日</span><span>Ａ－ Ａ＋ ☾</span></div><div class="body">
+<div class="box hi"><b>今天要做什麼</b><br>🔤 新字 8 ＋ 複習 0<br><span class="sub">第一天：先認識 8 個字就好</span></div>
+<div class="box dim">有老師給的班級代碼，或想在手機和電腦都能練？<br><span class="btn">加入班級</span><span class="btn">登入同步</span>　<span class="sub">不用也可以，之後在設定</span></div>
+<div class="box"><b>① 建立印象</b><br><span style="font-size:11px;font-weight:700">abandon</span> aban·don 🔊<br><i>They abandoned the plan.</i>…<span class="btn pri">記住了，考我</span></div>
+<div class="sub" style="margin-top:6px"><span class="n">1</span>第一次打開直接可練：預設學測教材、讀書日二三四五、每日 8 字<br><span class="n">2</span>提示只在前三天出現，之後收進設定</div>
+</div><div class="tabs"><span class="on">今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">訪客首頁（不強制登入）</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>← 登入</span></div><div class="body">
+<div class="sub" style="margin:6px 0 10px">加入班級、跨裝置同步、或以老師身分使用，需要登入。你在這台裝置的進度會併入帳號。</div>
 <div class="box" style="text-align:center">使用 Google 登入</div>
 <div class="box" style="text-align:center">使用 LINE 登入</div>
 <div class="box" style="text-align:center">使用 Apple 登入</div>
-<div class="sub" style="text-align:center;margin-top:8px">登入後進度會跨裝置同步，老師的講義會自動出現。<br>沒有網路也能練，之後自動補同步。</div>
-<div class="sub" style="margin-top:10px"><span class="n">1</span>iOS 一定要有 Apple；LINE 走自訂驗證<br><span class="n">2</span>第一次登入才問角色，之後直接進首頁</div>
-</div></div><div class="cap">登入（第一步）</div></div>
-<div class="wf"><div class="frame phone"><div class="bar"><span>你是？</span></div><div class="body">
-<div class="box hi" style="padding:10px"><b>我是學生</b><br><span class="sub">每天練單字、聽文章</span></div>
-<div class="box" style="padding:10px"><b>我是老師／家長</b><br><span class="sub">建班級、上講義、看進度</span></div>
-<h3 style="margin-top:14px">學生：加入班級</h3>
-<div class="box">班級代碼 [ ______ ] <span class="btn pri">加入</span></div>
-<div class="box dim">先自學，之後再加入</div>
-<div class="sub"><span class="n">3</span>加入後老師發布的講義自動成為字組<br><span class="n">4</span>可同時在多個班級</div>
-</div></div><div class="cap">選角色、加入班級</div></div>
+<h3 style="margin-top:12px">登入後</h3>
+<div class="box hi">我是學生：班級代碼 [ ______ ] <span class="btn pri">加入</span><br><span class="sub">或先不加入，只做同步</span></div>
+<div class="box">我是老師／家長 → 建立班級</div>
+<div class="sub" style="margin-top:6px"><span class="n">3</span>iOS 一定要有 Apple；LINE 走自訂驗證<br><span class="n">4</span>同一人換登入方式會變成不同帳號，畫面會提醒「請用上次的方式」</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span class="on">設定</span></div></div><div class="cap">登入（需要時才出現）</div></div>
 <div class="wf"><div class="frame phone"><div class="bar"><span>← 選教材</span></div><div class="body">
 <div class="sub">小安 · 目前：英檢中級</div>
 <h3>高中</h3><div class="box hi">學測 L1–L4　<span class="sub">749 字 · 5 篇</span></div>
@@ -242,12 +242,12 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="sub" style="margin-top:6px"><span class="n">5</span>班級講義與公用教材可同時開，額度共用，今日清單先講義後公用</div>
 </div><div class="tabs"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span class="on">設定</span></div></div><div class="cap">選教材（班級講義＋公用教材）</div></div>
 <div class="col" style="max-width:220px"><h3>說明</h3><ul class="notes">
-<li>登入方式三選一，同一個人用不同方式登入會變成不同帳號，畫面上會提醒「請用上次的方式」</li>
+<li>訪客資料在登入時併入帳號（以 updatedAt 較新者為準），不會丟</li>
 <li>家長替孩子用：家長以老師身分建班（一人班），孩子用自己的 LINE 登入加入</li>
 <li>公用教材由開發者維護；班級講義由老師發布，只在班級內可見</li>
 <li>v1 備份匯入放在登入後第一次進今日時提示，之後在設定</li>
 </ul>
-<div class="q">要確認：學生要不要允許「不登入先試用」？目前畫的是一律登入。</div>
+<div class="q">已定：不強制登入（App Store 5.1.1）。訪客可完整練習；班級、同步、老師身分才登入。</div>
 </div></div>
 <div class="foot"><span>單字練習台 v2 Wireframes</span><span>6 / 18</span></div>
 </div>
@@ -548,7 +548,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <li><b>同時開兩套教材</b>：一位學生能不能同時練學測與英檢講義（額度共用），還是一次一套？（第 6 頁）</li>
 <li><b>目標完成日</b>：全域一個，還是每套教材各一個？（第 12 頁）</li>
 <li><b>回音練習</b>：三輪後停下等按，還是自動往下？（第 10 頁）</li>
-<li><b>試用</b>：學生要不要允許不登入先試用？目前一律登入（第 6 頁）</li>
+<li><b>訪客提示</b>：今日卡片的「加入班級／登入同步」提示只在前三天顯示，之後收進設定，可以嗎？（第 6 頁）</li>
 <li><b>LINE 登入</b>：需要申請 LINE Login channel（用您現有的 LINE Developers 帳號即可）；Apple 登入需要開發者帳號，是否現在申請？</li>
 <li><b>AI 上稿</b>：v2.1 的 AI 產例句與改寫要接哪家模型、費用由誰付？v2.0 先由開發者代做，可以嗎？（第 15 頁）</li>
 <li><b>桌機月曆格</b>：要做，還是桌機也用列表？（第 11 頁）</li>
