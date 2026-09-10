@@ -2015,10 +2015,6 @@ const SRC=[
   note:'勾選字 cinema–client；填空字群 comedian/commitment 兩組；雜誌〈Star-chasing with the Michelin Guides〉'},
  {id:'s6',name:'學測 Level 1–2 高頻字',file:'（系統內建，非上傳檔案）',date:'2026-08-19',
   note:'兩組：① 基礎但仍會失分的核心字 ② 一字多義 —— 看起來會、但考的是第二個意思的那批基礎字。'},
- {id:'s4',name:'龍騰 1 上 L01 七格背誦版（截圖）',file:'1788841644284.jpg',date:'2026-08-19',
-  note:'沒有匯入單字。從這張表學到三件事並做進系統：音節拆解、同字族、Words for Production／Recognition 標記。'},
- {id:'s5',name:'自學教材參考',file:'2 份 .doc ＋ 2 份 .ppt',date:'2026-08-19',
-  note:'沒有匯入單字。採用了它的「前四天連續」間隔前段；未採用固定 16 遍的後段。'},
  {id:"s7",name:"英檢中級 2-10 講義",file:"英檢中級2-10.pdf",date:"2026-09-10",note:"勾選字 consultant–conventional 與填空字群 consist–cord 共 40 字，其中 11 字（consume、consumer、context、contrast、contribute、convenience、consist、constant、construct、convince、cope）字庫已有，不重複建卡；文章單字 21 字；網路文章〈Different Types of YouTubers〉與雜誌文章〈Beware of the TikTok Brain〉皆改寫為原創版本 a6、a7；短文翻譯為寫作練習，不進單字系統。"},
 ];
 function srcOf(r){
@@ -2029,6 +2025,7 @@ function srcOf(r){
   if(d==='雜誌 · 雨天與國花')return 's1';
   if(d==='雜誌 · 電子垃圾'||d==='作文 · 因果文句型')return 's2';
   if(d==='雜誌 · 米其林指南')return 's3';
+  if(d==='英檢中級 2-10')return 's7';
   if(d==='英檢中級 · ca–cl 單字'){
     const L=EXTRA[0][1].map(x=>x[0]),i=L.indexOf(r.en);
     return i<L.indexOf('cement')?'s1':(i<L.indexOf('cinema')?'s2':'s3');}
@@ -2060,8 +2057,8 @@ function renderSrc(){
       ${x.own?`<button class="tbtn" data-delsrc="${x.id}" style="margin-top:6px">刪除這筆紀錄</button>`:''}
     </div>`;}).join('');
   const own=stat['own']||{n:0,seen:0,solid:0};
-  box.innerHTML=rows+(own.n?`<div class="srow"><div class="s1"><b>沒有標來源的字</b>
-    <span class="n">早期匯入或從文章挑的</span></div>
+  box.innerHTML=rows+(own.n?`<div class="srow"><div class="s1"><b>我的文章 · 自己挑的字</b>
+    <span class="n">從「找出生字」建的卡</span></div>
     <div class="s2 mono">${own.n} 字　已學 ${own.seen}　已穩 ${own.solid}</div></div>`:'');
   box.querySelectorAll('[data-delsrc]').forEach(b=>b.onclick=async()=>{
     S.sources=(S.sources||[]).filter(x=>x.id!==b.dataset.delsrc);await save(S);renderSrc();});
