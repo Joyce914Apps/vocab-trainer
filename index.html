@@ -358,7 +358,7 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
     口音 <select id="voiceSel" class="tbtn" style="padding:5px 8px"></select>
     <button class="tbtn" id="voiceTry">試聽</button>
     <span class="hint" id="voiceMsg"></span>
-    <span class="hint">多益英聽會出現美、英、澳、加四種口音，平常用美國，考前輪流聽。手機上裝了 Google 語音或 iOS 增強版語音會更自然。</span><br>
+    <span class="hint">單字、例句、文章都有內建的四國口音 mp3（神經網路語音），平常用美國，考前輪流聽。離線或沒有音檔時才會退回瀏覽器語音。</span><br>
     「跟讀」會先唸一次、留一段空白讓你出聲跟著唸、再唸一次讓你對照。搭配「錄音／播我的」可以聽出自己哪裡不一樣 ——
     這也正好是英檢課的錄音作業在練的東西。<br><br>
     <b>作答方式：為什麼預設不是拼寫</b><br>
@@ -1490,20 +1490,48 @@ function speak(txt,opt){
     speechSynthesis.cancel();speechSynthesis.speak(u);
   }catch(e){if(opt&&opt.onend)opt.onend();}
 }
+/* ═══ 內建 mp3 與自己的音檔 ═══
+   audio/ 目錄的 mp3 由 tools/gen_audio.py 用微軟神經網路語音產生（四國口音），比瀏覽器內建語音自然得多。
+   播放順序：文章有自己上傳的音檔 → 內建 mp3 → 退回瀏覽器語音（離線、404、尚未產生時）。 */
+const audioSlug=s=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+const AUD=new Audio();const audMissing=new Set();
+function accent(){return (S&&S.accent)||'en-US';}
+function accentName(){return (ACCENTS.find(a=>a[0]===accent())||[])[1]||accent();}
+function audioUrl(kind,key){return `audio/${kind}/${kind==='a'?key:audioSlug(key)}_${accent()}.mp3`;}
+function sayAudio(kind,key,txt,opt){
+  const url=audioUrl(kind,key);
+  if(audMissing.has(url))return speak(txt,opt);
+  try{speechSynthesis.cancel();}catch(e){}
+  AUD.pause();AUD.onended=null;AUD.onerror=null;
+  AUD.src=url;AUD.playbackRate=(opt&&opt.rate)||rate();
+  AUD.onended=()=>{if(opt&&opt.onend)opt.onend();};
+  AUD.onerror=()=>{audMissing.add(url);speak(txt,opt);};          // 檔案不存在或離線
+  AUD.play().catch(()=>speak(txt,opt));                            // 被瀏覽器擋（未互動）就退回語音
+}
+const sayWord=(r,opt)=>sayAudio('w',r.en,r.en,opt);
+const saySent=(r,opt)=>r.ex?sayAudio('s',r.en,r.ex,opt):sayWord(r,opt);
+function stopAudio(){AUD.pause();try{speechSynthesis.cancel();}catch(e){}}
+/* 自己上傳的文章音檔存在這台裝置的 IndexedDB */
+function idb(){return new Promise((res,rej)=>{const q=indexedDB.open('vocab_audio',1);
+  q.onupgradeneeded=()=>q.result.createObjectStore('own');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+async function ownGet(k){try{const db=await idb();return await new Promise((res,rej)=>{const t=db.transaction('own').objectStore('own').get(k);t.onsuccess=()=>res(t.result||null);t.onerror=()=>rej(t.error);});}catch(e){return null;}}
+async function ownPut(k,blob){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction('own','readwrite').objectStore('own').put(blob,k);t.onsuccess=()=>res();t.onerror=()=>rej(t.error);});}
+async function ownDelete(k){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction('own','readwrite').objectStore('own').delete(k);t.onsuccess=()=>res();t.onerror=()=>rej(t.error);});}
 /* 跟讀：唸一次 → 留一段等長的空白讓你跟著唸 → 再唸一次 */
 let shadowStop=false;
-function shadow(txt,el){
+function shadow(txt,el,r){
   shadowStop=false;
   const mark=t=>{if(el)el.textContent=t;};
+  const say=o=>r?saySent(r,o):speak(txt,o);
   mark('① 先聽');
-  speak(txt,{onend:()=>{
+  say({onend:()=>{
     if(shadowStop)return;
     mark('② 換你唸（跟著唸出聲，不要只在心裡）');
     const wait=Math.max(1800,txt.split(/\s+/).length*420);
     setTimeout(()=>{
       if(shadowStop)return;
       mark('③ 再聽一次，對照哪裡不一樣');
-      speak(txt,{onend:()=>{if(!shadowStop)mark('跟讀完成');}});
+      say({onend:()=>{if(!shadowStop)mark('跟讀完成');}});
     },wait);
   }});
 }
@@ -1562,9 +1590,9 @@ function bindAudio(r,id){
   const recB=box.querySelector('[data-a=rec]'),playB=box.querySelector('[data-a=play]');
   box.querySelectorAll('.abtn').forEach(b=>b.onclick=()=>{
     const a=b.dataset.a;
-    if(a==='word')speak(r.en);
-    else if(a==='sent'){shadowStop=true;speak(r.ex);}
-    else if(a==='shadow')shadow(r.ex,st);
+    if(a==='word')sayWord(r);
+    else if(a==='sent'){shadowStop=true;saySent(r);}
+    else if(a==='shadow')shadow(r.ex,st,r);
     else if(a==='rec')recToggle(recB,playB,st);
     else if(a==='play')playMine();
   });
@@ -1620,8 +1648,8 @@ function renderPre(){
     <input class="typebox" id="echo" autocomplete="off" spellcheck="false" placeholder="${esc(r.en)}">
     <div class="row"><button class="btn" id="nextB">記住了，考我</button></div>
   </div>`;
-  $('sayB').onclick=()=>speak(r.en);bindKind();bindAudio(r,'P');
-  if(S.autoSay!==false)speak(r.en);
+  $('sayB').onclick=()=>sayWord(r);bindKind();bindAudio(r,'P');
+  if(S.autoSay!==false)sayWord(r);
   $('echo').focus();
   $('echo').onkeydown=e=>{if(e.key==='Enter')go();};
   $('nextB').onclick=go;
@@ -1644,7 +1672,7 @@ function renderQuiz(){
       <p class="prompt">在心裡把中文說出來 —— 真的說出來，不要只覺得「好像知道」。</p>
       <div class="row"><button class="btn" id="okB">說好了，看答案</button></div>
     </div>`;
-    $('sayB').onclick=()=>speak(r.en);
+    $('sayB').onclick=()=>sayWord(r);
     $('okB').onclick=()=>{ans='';sug='';phase='res';render();};
     return;
   }
@@ -1659,9 +1687,9 @@ function renderQuiz(){
       <div class="opts">${choices.map((c,i)=>
         `<button class="opt" data-c="${esc(c)}"><span class="k">${i+1}</span>${esc(c)}</button>`).join('')}</div>
     </div>`;
-    speak(r.ex||r.en);
-    $('playB').onclick=()=>speak(r.ex||r.en);
-    $('slowB').onclick=()=>speak(r.ex||r.en,{rate:0.6});
+    saySent(r);
+    $('playB').onclick=()=>saySent(r);
+    $('slowB').onclick=()=>saySent(r,{rate:0.6});
     document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
       ans=b.dataset.c;sug=(ans.toLowerCase()===r.en.toLowerCase())?'o':'x';phase='res';render();});
     return;
@@ -1738,7 +1766,7 @@ function renderResult(){
       <button class="mark m-x" data-m="x" data-sug="${sug==='x'}"><span class="g">×</span><span class="lb">不會</span><span class="sub">${previewGap(cur,'x')===1?'明天立刻補':previewGap(cur,'x')+' 天後補'}</span></button>
     </div>
   </div>`;
-  $('sayB').onclick=()=>speak(r.en);bindKind();bindAudio(r,'R');
+  $('sayB').onclick=()=>sayWord(r);bindKind();bindAudio(r,'R');
   document.querySelectorAll('.mark').forEach(b=>b.onclick=()=>doMark(b.dataset.m));
 }
 async function doMark(m){
@@ -2180,7 +2208,7 @@ function renderRead(){
     return `<div class="arow" data-open="${a.id}">
       <span class="t">${esc(a.t)}</span>
       <span class="m">${esc(a.lv||'')}${a.tag?' · '+esc(a.tag):''}　${n} 字</span>
-      <span class="m mono">${rec.best?`最佳 ${rec.best} wpm　讀過 ${(rec.times||[]).length} 次${rec.due?`　下次 ${rec.due}`:'　已畢業'}`:'還沒讀過'}</span>
+      <span class="m mono">${rec.listens?`已聽 ${rec.listens} 遍　`:''}${rec.best?`最佳 ${rec.best} wpm　讀過 ${(rec.times||[]).length} 次${rec.due?`　下次 ${rec.due}`:'　已畢業'}`:'還沒讀過'}</span>
     </div>`;}).join('');
   home.innerHTML=`<p class="hint" style="margin-top:18px">
     計時讀完一篇，系統會算出你的閱讀速度（每分鐘幾個字）。
@@ -2208,31 +2236,73 @@ function openArt(id){
   rd.sens=a.body.replace(/\n+/g,' \n ').split(/(?<=[.!?])\s+/).filter(x=>x.trim());
   $('readHome').classList.add('hide');$('readView').classList.remove('hide');
   const n=a.body.split(/\s+/).length,rec=(S.read||{})[a.id]||{};
+  const listens=rec.listens||0;
   $('readView').innerHTML=`
     <div class="row" style="margin:16px 0 8px">
       <button class="btn ghost" id="backB">← 回文章列表</button>
-      <button class="btn" id="startB">開始計時閱讀</button>
-      <span class="timer" id="tm">00:00</span>
-      <span class="wpm" id="wp">${n} 字${rec.best?`　最佳 ${rec.best} wpm`:''}</span>
+      <span class="wpm">${esc(a.t)}　·　${n} 字${rec.best?`　最佳 ${rec.best} wpm`:''}${listens?`　已聽 ${listens} 遍`:''}</span>
     </div>
-    <div class="audio" style="border-top:none;margin-top:0">
-      <button class="abtn" id="readAll">🔊 朗讀全文</button>
-      <button class="abtn" id="shadowB">🎧 逐句跟讀</button>
-      <button class="abtn" id="recB">● 錄音</button>
-      <button class="abtn" id="playB" disabled>▶ 播我的</button>
-      <span class="ast" id="astA"></span>
+    <div class="card today-card" id="listenCard">
+      <div class="step" id="artStep">第一遍 · 先聽，不看文字</div>
+      <p class="hint" style="margin:6px 0 0" id="artStepHint">先洗耳朵：不用聽懂每個字，抓「在講什麼、幾個重點」就好。聽完再打開文章對照，看看哪裡漏掉了。</p>
     </div>
-    <div class="card"><div class="body" id="bd">${bodyHTML(a.body)}</div></div>
-    <div class="row">
-      <button class="btn" id="doneB">讀完了，看理解題</button>
-      <button class="btn ghost" id="mineB">挑生字建卡</button>
+    <div class="audio" style="border-top:none;margin-top:0;flex-direction:column;align-items:stretch;gap:6px">
+      <audio id="artAud" controls preload="none" style="width:100%"></audio>
+      <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">
+        <span class="ast" id="artAudMsg"></span>
+        <button class="abtn" id="ownB">📁 用自己的音檔</button>
+        <input type="file" id="ownIn" accept="audio/*" style="display:none">
+        <button class="abtn" id="ownDelB" style="display:none">✕ 移除自己的音檔</button>
+      </div>
     </div>
-    <div id="qz"></div>`;
-  $('backB').onclick=()=>{stopTimer();shadowStop=true;speechSynthesis.cancel();
+    <div class="row" id="listenRow">
+      <button class="btn" id="revealB" disabled>聽完一遍再看文章</button>
+      <button class="btn ghost" id="skipB">直接看文章</button>
+    </div>
+    <div id="readPart" class="hide">
+      <div class="row" style="margin:8px 0">
+        <button class="btn" id="startB">開始計時閱讀</button>
+        <span class="timer" id="tm">00:00</span>
+        <button class="abtn" id="againB">🔁 邊看邊再聽一次</button>
+      </div>
+      <div class="audio" style="border-top:none;margin-top:0">
+        <button class="abtn" id="shadowB">🎧 逐句跟讀</button>
+        <button class="abtn" id="recB">● 錄音</button>
+        <button class="abtn" id="playB" disabled>▶ 播我的</button>
+        <span class="ast" id="astA"></span>
+      </div>
+      <div class="card"><div class="body" id="bd">${bodyHTML(a.body)}</div></div>
+      <div class="row">
+        <button class="btn" id="doneB">讀完了，看理解題</button>
+        <button class="btn ghost" id="mineB">挑生字建卡</button>
+      </div>
+      <div id="qz"></div>
+    </div>`;
+  /* 先聽再看：聽完一遍（音檔播到底）才開放文章；也可以直接看 */
+  const reveal=how=>{
+    $('readPart').classList.remove('hide');$('listenRow').classList.add('hide');
+    $('artStep').textContent=how==='skip'?'看文章':'第二遍 · 邊看邊聽，對照剛才漏掉的地方';
+    $('artStepHint').textContent=how==='skip'?'下次試試先聽一遍再看，聽力進步最快的就是這一步。':'看的時候留意：哪幾句剛才沒聽出來？那幾句多聽兩次。讀完按「開始計時閱讀」測速度。';
+    window.scrollTo(0,0);
+  };
+  $('revealB').onclick=()=>reveal('heard');
+  $('skipB').onclick=()=>reveal('skip');
+  $('backB').onclick=()=>{stopTimer();shadowStop=true;stopAudio();$('artAud').pause();
     $('readView').classList.add('hide');$('readHome').classList.remove('hide');renderRead();};
   $('startB').onclick=startTimer;
   $('doneB').onclick=finishArt;
-  $('readAll').onclick=()=>{shadowStop=true;speak(a.body.replace(/\n+/g,'. '));};
+  loadArtAudio(a);
+  $('artAud').onended=async()=>{
+    S.read=S.read||{};const rr=S.read[a.id]=S.read[a.id]||{};rr.listens=(rr.listens||0)+1;await save(S);
+    const b=$('revealB');if(b){b.disabled=false;b.textContent=`聽完第 ${rr.listens} 遍了，看文章對照 →`;}
+    if($('artStepHint')&&$('listenRow')&&!$('listenRow').classList.contains('hide'))$('artStepHint').textContent='想再聽一遍就按播放；覺得抓到大意了就看文章。';
+  };
+  $('againB').onclick=()=>{const el=$('artAud');el.currentTime=0;el.play();};
+  $('ownB').onclick=()=>$('ownIn').click();
+  $('ownIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;
+    if(f.size>60*1024*1024){$('artAudMsg').textContent='檔案太大（上限 60 MB）。';return;}
+    await ownPut(a.id,f);e.target.value='';loadArtAudio(a);};
+  $('ownDelB').onclick=async()=>{await ownDelete(a.id);loadArtAudio(a);};
   $('shadowB').onclick=()=>shadowSentences();
   $('recB').onclick=()=>recToggle($('recB'),$('playB'),$('astA'));
   $('playB').onclick=playMine;
@@ -2240,10 +2310,29 @@ function openArt(id){
     document.querySelector('.tab[data-t=import]').click();scan();window.scrollTo(0,0);};
   bindKW();
 }
+/* 文章音檔：自己上傳的優先，否則用內建 mp3（依口音），播放速度跟設定 */
+async function loadArtAudio(a){
+  const el=$('artAud'),msg=$('artAudMsg'),del=$('ownDelB');if(!el)return;
+  el.pause();
+  const own=await ownGet(a.id);
+  if(own){
+    if(el.dataset.obj)URL.revokeObjectURL(el.dataset.obj);
+    el.src=el.dataset.obj=URL.createObjectURL(own);
+    msg.textContent=`🎙 自己的音檔（${Math.round(own.size/1024)} KB，只存在這台裝置）`;del.style.display='';
+    el.onerror=()=>{msg.textContent='這個音檔播不了，換一個格式試試（mp3、m4a 最穩）。';};
+  }else{
+    el.src=audioUrl('a',a.id);
+    msg.textContent=`內建音檔 · ${accentName()}口音`;del.style.display='none';
+    el.onerror=()=>{msg.textContent='沒有內建音檔（離線或尚未產生）。可以直接看文章、用「逐句跟讀」的瀏覽器語音，或上傳自己的。';
+      const b=$('revealB');if(b){b.disabled=false;b.textContent='看文章';}};
+  }
+  el.playbackRate=rate();
+  el.onplay=()=>{el.playbackRate=rate();shadowStop=true;try{speechSynthesis.cancel();}catch(e){}AUD.pause();};
+}
 function bindKW(){
   document.querySelectorAll('.kw').forEach(el=>el.onclick=e=>{
     const r=Object.values(S.recs).find(x=>x.en===el.dataset.w);if(!r)return;
-    speak(r.en);
+    sayWord(r);
     document.querySelectorAll('.pop').forEach(p=>p.remove());
     const p=document.createElement('div');p.className='pop';
     p.innerHTML=`<b>${esc(r.en)}</b>${r.syl&&r.syl!==r.en?` <span style="opacity:.7">${esc(r.syl)}</span>`:''}<br>${esc(r.zh)}<br>
@@ -2260,18 +2349,19 @@ function shadowSentences(){
   const step=()=>{
     if(shadowStop||i>=rd.sens.length){st.textContent='跟讀結束';return;}
     st.textContent=`第 ${i+1} / ${rd.sens.length} 句　先聽 → 換你唸 → 再聽一次`;
-    const sen=rd.sens[i].trim();
-    speak(sen,{onend:()=>{
+    const sen=rd.sens[i].trim(),key=`${rd.art.id}_s${i}`;   // 逐句 mp3 由 gen_audio.py 依同一套分句規則產生
+    if($('artAud'))$('artAud').pause();
+    sayAudio('a',key,sen,{onend:()=>{
       if(shadowStop)return;
       setTimeout(()=>{
         if(shadowStop)return;
-        speak(sen,{onend:()=>{i++;setTimeout(step,400);}});
+        sayAudio('a',key,sen,{onend:()=>{i++;setTimeout(step,400);}});
       },Math.max(1600,sen.split(/\s+/).length*380));
     }});
   };
   step();
   $('shadowB').textContent='■ 停止跟讀';
-  $('shadowB').onclick=()=>{shadowStop=true;speechSynthesis.cancel();
+  $('shadowB').onclick=()=>{shadowStop=true;stopAudio();
     $('shadowB').textContent='🎧 逐句跟讀';$('shadowB').onclick=()=>shadowSentences();st.textContent='';};
 }
 function startTimer(){
@@ -2445,7 +2535,7 @@ function renderSheet(){
     $('rateSel').onchange=async e=>{S.rate=parseFloat(e.target.value);await save(S);};}
   renderVoiceSel();
   if($('voiceSel'))$('voiceSel').onchange=async e=>{S.accent=e.target.value||'en-US';await save(S);renderVoiceSel();};
-  if($('voiceTry'))$('voiceTry').onclick=()=>speak('Patience is a virtue. The victims received support.');
+  if($('voiceTry'))$('voiceTry').onclick=()=>sayAudio('a','a1_s0','Most of us replace our phones every two or three years.');
   if($('autoSay')){$('autoSay').checked=S.autoSay!==false;
     $('autoSay').onchange=async e=>{S.autoSay=e.target.checked;await save(S);};}
   if($('calAll'))$('calAll').onclick=e=>{const b=e.currentTarget;
