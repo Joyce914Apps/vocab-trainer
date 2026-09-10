@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""為單字、例句、文章產生 mp3（微軟 Edge 神經網路語音，免費）。
+"""為單字、例句、文章產生 mp3（edge-tts 套件的神經網路語音，免費）。
 
 用法：
   pip3 install edge-tts            # 需要網路；ffmpeg 選用，有的話會壓小檔案

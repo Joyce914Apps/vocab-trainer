@@ -2,3 +2,5 @@
 *.log
 node_modules/
 private/
+tools/__pycache__/
+*.pyc
