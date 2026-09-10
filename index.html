@@ -2131,6 +2131,8 @@ function todayCard(){
         ${over?`　<span style="color:var(--no)">（其中 ${over} 字已逾期）</span>`:''}
         <br><span class="mono" style="font-size:.78rem;color:var(--soft)">業績　新字 ${Math.min(S.dayDate===t?(S.dayNew||0):0,newN)} / ${newN}　複習 ${S.dayDate===t?(S.dayRev||0):0} / ${revCap}　已完成 ${done} / ${target}${done>=target&&target>0?'　✅ 今天的業績達成':''}</span></li>
       ${Object.keys(S.deckDue||{}).filter(n=>deckDue(n)).map(n=>`<li>📘 ${esc(n)}：${deckPlanLine(n).replace(/<\/?span[^>]*>/g,'')}</li>`).join('')}
+      ${previewItems().filter(x=>x.day===t&&x.arts.length).map(x=>`<li>📘 <b>上課前預習</b>（${esc(x.deck)}，${fmtD(x.due)} 上課）：${x.arts.map(a=>`〈${esc(a.t)}〉<button class="tbtn" data-goart="${a.id}" style="margin-left:4px">去聽去讀</button>`).join('　')}
+        <br><span class="hint">先聽一遍、再看文章對照，不用做題也可以。這是額外的預習，今天原本排的文章照舊。</span></li>`).join('')}
       ${artLine}
       <li>🎧 跟讀：拿今天這篇文章按「逐句跟讀」，做 5 分鐘就好</li>
     </ul>
@@ -2235,13 +2237,15 @@ function renderCal(){
       <span class="dt">${fmtD(r.d)}</span><span class="wk">${wdOf(r.d)}</span>
       <span class="ct" style="margin-left:auto">🌙 休息日${n?`，前段新字 ${n} 個露臉`:'，不排進度'}</span></div></div>`;
     const arts=(r.key==='over')?[]:(ap[r.d]||[]);
-    const artHTML=arts.length?`<span class="calart">📖 ${arts.map(x=>
-      `<b>${esc(x.a.t)}</b>${x.kind==='new'?'（第一次讀）':`（第 ${x.round} 次重讀）`}`).join('　')}</span>`:'';
-    if(isFuture&&n===0&&r.d!==today()&&!arts.length)
+    const pvs=isFuture?previewItems().filter(x=>x.day===r.d&&x.arts.length):[];
+    const pvHTML=pvs.map(x=>`<span class="calart">📘 預習 ${esc(x.deck)}：${x.arts.map(a=>`<b>${esc(a.t)}</b>`).join('、')}（${fmtD(x.due)} 上課）</span>`).join('');
+    const artHTML=pvHTML+(arts.length?`<span class="calart">📖 ${arts.map(x=>
+      `<b>${esc(x.a.t)}</b>${x.kind==='new'?'（第一次讀）':`（第 ${x.round} 次重讀）`}`).join('　')}</span>`:'');
+    if(isFuture&&n===0&&r.d!==today()&&!arts.length&&!pvs.length)
       return `<div class="crow" style="opacity:.45"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline">
         <span class="dt">${label}</span><span class="wk">${wdOf(r.d)}</span>
         <span class="ct" style="margin-left:auto">複習 0${newN?`　＋新字 ${newN}`:''}</span></div></div>`;
-    if(isFuture&&n===0&&r.d!==today()&&arts.length)
+    if(isFuture&&n===0&&r.d!==today()&&(arts.length||pvs.length))
       return `<div class="crow"><div style="padding:8px 13px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap">
         <span class="dt">${label}</span><span class="wk">${wdOf(r.d)}</span>
         <span class="ct" style="margin-left:auto">複習 0${newN?`　＋新字 ${newN}`:''}</span></div>${artHTML}</div>`;
@@ -2638,13 +2642,24 @@ function renderLib(){
 /* ═══ 字組開關 ═══ */
 /* 字組上課日：填了日期，這組未學的字會排到新字最前面（最近的上課日優先），並算出每天要背幾個；過了日期自動解除 */
 function deckDue(n){const d=(S.deckDue||{})[n];return d&&d>=today()?d:null;}
+/* 講義字組對應的文章：上課前一天排「預習」，是額外的一項，不動原本每 N 天一篇的文章輪序 */
+const LESSON_ARTS={'英檢中級 2-10':['a6','a7']};
+function prevStudyOnOrBefore(k){let d=new Date(k+'T00:00:00');for(let i=0;i<14;i++){if(studyDays().includes(d.getDay()))return isoLocal(d);d.setDate(d.getDate()-1);}return k;}
+function previewItems(){
+  return Object.keys(S.deckDue||{}).filter(n=>deckDue(n)&&LESSON_ARTS[n]).map(n=>{
+    const due=deckDue(n),day=prevStudyOnOrBefore(addDays(due,-1));
+    const arts=LESSON_ARTS[n].map(id=>allArts().find(a=>a.id===id)).filter(Boolean);
+    return {deck:n,due,day:day<today()?today():day,arts};
+  });
+}
 function deckPlanLine(n){
   const d=deckDue(n);if(!d)return '';
   const left=Object.values(S.recs).filter(r=>r.deck===n&&!r.seen).length;
   const days=studyDaysBetween(today(),d);
   if(!left)return `<span class="hint">上課日 ${d}　·　都學過了</span>`;
   const per=Math.ceil(left/Math.max(1,days));
-  return `<span class="hint">上課日 ${d}　·　還有 ${left} 字，${days} 個讀書日，每天約 <b>${per}</b> 個${per>(S.goal||8)?'　⚠ 超過每日新字上限，請調高':''}</span>`;
+  const pv=previewItems().find(x=>x.deck===n);
+  return `<span class="hint">上課日 ${d}　·　還有 ${left} 字，${days} 個讀書日，每天約 <b>${per}</b> 個${per>(S.goal||8)?'　⚠ 超過每日新字上限，請調高':''}${pv&&pv.arts.length?`　·　文章 ${pv.arts.length} 篇預習排在 ${fmtD(pv.day)}`:''}</span>`;
 }
 function renderDeckToggles(){
   const box=$('deckToggles');if(!box)return;
