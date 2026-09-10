@@ -55,13 +55,14 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <!-- 1 封面 -->
 <div class="pg">
 <h1>單字練習台 v2 — Wireframes</h1>
-<div class="sub">Flutter Web / Android / iOS 同一套程式碼　·　RWD 三個斷點：手機（&lt;600）、平板（600–1024）、桌機（&gt;1024）　·　2026-09-10　·　供流程確認，非視覺稿</div>
+<div class="sub">Flutter Web / Android / iOS 同一套程式碼　·　兩種角色：學生（手機優先）、老師（桌機優先）　·　RWD 三個斷點：手機（&lt;600）、平板（600–1024）、桌機（&gt;1024）　·　2026-09-10 v2 修訂　·　供流程確認，非視覺稿</div>
 <div class="row" style="margin-top:14px">
 <div class="col">
 <h2>這份文件回答什麼</h2>
 <ul class="notes">
 <li>v2 的畫面有哪些、彼此怎麼連（第 2 頁資訊架構）</li>
-<li>五條主要流程：首次啟動、每日練習、文章、每週講義、跨裝置同步（第 3–4 頁）</li>
+<li>登入與角色：學生／老師分流，Google／LINE／Apple 登入為第一步（第 3、6 頁）</li>
+<li>學生的流程：每日練習、文章；老師的流程：建班、上稿、發布、儀表板（第 3–4、14–16 頁）</li>
 <li>同一個畫面在手機、平板、桌機怎麼排（第 5 頁），之後每頁以最常用的尺寸畫</li>
 <li>每個畫面的區塊與按鈕，對應 v1.7 已驗證的功能（第 6–13 頁）</li>
 <li>三個平台的差異與要決定的事（第 14–15 頁）</li>
@@ -77,15 +78,16 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <h2>v2 相對 v1.7 的差異（只列新增）</h2>
 <table>
 <tr><th>項目</th><th>v1.7（HTML）</th><th>v2（Flutter）</th></tr>
-<tr><td>學生</td><td>一台裝置一份進度</td><td>多學生檔案、登入後跨裝置同步（離線優先）</td></tr>
-<tr><td>教材</td><td>寫死在程式裡</td><td>教材包（學測／英檢／TOEIC／國中小…）可選、可更新</td></tr>
+<tr><td>帳號</td><td>沒有帳號，一台裝置一份進度</td><td>登入為第一步（Google／LINE／Apple），跨裝置同步，離線優先</td></tr>
+<tr><td>角色</td><td>只有學生；上稿由開發者手動</td><td>學生與老師兩種角色；老師建班、上稿、發布、看儀表板（v2.0 上稿仍由開發者代做，v2.1 老師自助＋AI）</td></tr>
+<tr><td>教材</td><td>寫死在程式裡</td><td>公用教材包（學測／TOEIC／國中小…）＋班級講義（老師發布，僅班級可見）</td></tr>
 <tr><td>版面</td><td>單欄</td><td>手機底部分頁；平板側欄＋兩欄；桌機三欄</td></tr>
 <tr><td>平台</td><td>瀏覽器</td><td>Web（PWA）＋ Android ＋ iOS，可上架</td></tr>
 <tr><td>音檔</td><td>線上取用</td><td>教材包附帶，可離線</td></tr>
 <tr><td>其餘</td><td colspan="2">排程方案、讀書日、拆字、先聽再看、逐字反白、逐句中譯、回音練習、講義上課日、找出生字：<b>全部承襲，流程不變</b></td></tr>
 </table>
 </div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>1 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>1 / 18</span></div>
 </div>
 
 <!-- 2 資訊架構 -->
@@ -94,10 +96,11 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="row">
 <div class="col">
 <div class="lane"><b>啟動層</b>
-<div class="flow"><div class="st">啟動</div><span class="ar">→</span><div class="st dec">有學生檔案？</div><span class="ar">否→</span><div class="st">建立第一位學生</div><span class="ar">→</span><div class="st">選教材</div><span class="ar">→</span><div class="st end">今日</div></div>
-<div class="flow"><span style="width:120px"></span><span class="ar">是→</span><div class="st">選學生（記住上次）</div><span class="ar">→</span><div class="st end">今日</div></div>
+<div class="flow"><div class="st">啟動</div><span class="ar">→</span><div class="st hi">登入<br><span class="sub">Google / LINE / Apple</span></div><span class="ar">→</span><div class="st dec">首次？選角色</div><span class="ar">學生→</span><div class="st">加入班級（代碼）或自學</div><span class="ar">→</span><div class="st">選教材</div><span class="ar">→</span><div class="st end">今日</div></div>
+<div class="flow"><span style="width:250px"></span><span class="ar">老師→</span><div class="st">建立班級</div><span class="ar">→</span><div class="st end">老師首頁（儀表板）</div></div>
+<div class="cap">已登入過的直接進上次的角色首頁。一個帳號可同時是老師與家長身分（例如家長替孩子建班）；學生帳號只有學生視角。</div>
 </div>
-<div class="lane"><b>主畫面（底部 5 分頁 / 側欄 5 項）</b>
+<div class="lane"><b>學生主畫面（底部 5 分頁 / 側欄 5 項）</b>
 <div class="flow">
 <div class="st">今日<br><span class="sub">清單・業績・練習卡</span></div>
 <div class="st">字庫<br><span class="sub">搜尋・篩選・分組・字卡</span></div>
@@ -105,8 +108,16 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="st">行事曆<br><span class="sub">30 天・休息日・預習</span></div>
 <div class="st">設定<br><span class="sub">教材・字組・方案・聲音・帳號・備份</span></div>
 </div></div>
+<div class="lane"><b>老師主畫面（桌機優先，左側導覽 4 項）</b>
+<div class="flow">
+<div class="st">儀表板<br><span class="sub">班級・每位學生・本週</span></div>
+<div class="st">講義<br><span class="sub">上稿・審核・發布・上課日</span></div>
+<div class="st">班級<br><span class="sub">學生名單・邀請碼・設定</span></div>
+<div class="st">教材庫<br><span class="sub">公用教材＋自己的講義</span></div>
+</div></div>
 <div class="lane"><b>次級畫面</b>
 <div class="flow">
+<div class="st">登入／選角色</div>
 <div class="st">單字卡（預習／回想／對答案）</div>
 <div class="st">文章頁（聽／看／回音／跟讀／題目）</div>
 <div class="st">找出生字</div>
@@ -124,18 +135,20 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <li>教材切換放在設定，因為一位學生多數時候只練一套</li>
 <li>次級畫面都是從主畫面進入、返回鍵回來，不做深層路徑</li>
 <li>手機：底部分頁；平板：左側 rail；桌機：左側完整導覽</li>
-<li>GoRouter 路徑：<code>/today</code> <code>/library</code> <code>/read</code> <code>/read/:id</code> <code>/calendar</code> <code>/settings</code> <code>/settings/plan</code> <code>/scan</code> <code>/profiles</code></li>
+<li>GoRouter：<code>/login</code> <code>/role</code>　學生 <code>/s/today</code> <code>/s/library</code> <code>/s/read/:id</code> <code>/s/calendar</code> <code>/s/settings</code> <code>/s/scan</code>　老師 <code>/t/dashboard</code> <code>/t/lessons</code> <code>/t/lessons/new</code> <code>/t/classes</code> <code>/t/materials</code></li>
+<li>權限：學生只讀自己的進度與所屬班級的講義；老師讀寫自己班級的講義與學生進度；講義原文只在班級內可見</li>
 </ul>
 </div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>2 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>2 / 18</span></div>
 </div>
 
 <!-- 3 流程 A/B -->
 <div class="pg">
 <h2>3. 流程（一）首次啟動、每日練習</h2>
-<div class="lane"><b>A. 首次啟動</b>
-<div class="flow"><div class="st">打開 App</div><span class="ar">→</span><div class="st">輸入學生名字<br><span class="sub">（先不要求登入）</span></div><span class="ar">→</span><div class="st">選教材<br><span class="sub">學測 / 英檢中級 / TOEIC / …</span></div><span class="ar">→</span><div class="st">選讀書日與每日新字<br><span class="sub">預設二三四五、8 個</span></div><span class="ar">→</span><div class="st dec">有 v1 備份？</div><span class="ar">是→</span><div class="st">匯入</div><span class="ar">→</span><div class="st end">今日</div></div>
-<div class="cap">登入與同步放在之後的設定裡提示，不擋第一次使用。未成年預設匿名＋六位代碼。</div>
+<div class="lane"><b>A. 首次啟動（學生）</b>
+<div class="flow"><div class="st">打開 App</div><span class="ar">→</span><div class="st hi">登入<br><span class="sub">Google / LINE / Apple</span></div><span class="ar">→</span><div class="st">我是學生</div><span class="ar">→</span><div class="st dec">有班級代碼？</div><span class="ar">有→</span><div class="st">加入班級<br><span class="sub">老師的講義自動出現</span></div><span class="ar">→</span><div class="st">選公用教材（可跳過）</div><span class="ar">→</span><div class="st">讀書日、每日新字</div><span class="ar">→</span><div class="st dec">v1 備份？</div><span class="ar">→</span><div class="st end">今日</div></div>
+<div class="flow"><span style="width:330px"></span><span class="ar">沒有→</span><div class="st">自學：選公用教材</div></div>
+<div class="cap">登入是第一步：跨裝置同步、班級講義、老師看進度都靠它。未成年用 LINE 或 Google 都不用自己管密碼。離線時仍可練，恢復連線自動同步。</div>
 </div>
 <div class="lane"><b>B. 每日練習（今日分頁）</b>
 <div class="flow"><div class="st">今日清單<br><span class="sub">新字 N・複習 M・文章・預習</span></div><span class="ar">→</span><div class="st dec">這張卡學過？</div><span class="ar">否→</span><div class="st hi">① 預習<br><span class="sub">例句・發音・拆字・手打</span></div><span class="ar">→</span><div class="st">② 回想<br><span class="sub">選擇 / 拼寫 / 認得</span></div><span class="ar">→</span><div class="st">③ 標記 ○△×</div><span class="ar">→</span><div class="st dec">還有卡？</div><span class="ar">是→</span><div class="st">下一張</div></div>
@@ -146,7 +159,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="flow"><div class="st">未學</div><span class="ar">→</span><div class="st">第 1 天</div><span class="ar">→</span><div class="st">第 2 天</div><span class="ar">→</span><div class="st">第 3 天</div><span class="ar">→</span><div class="st">第 4 天</div><span class="ar">→</span><div class="st">隔 7</div><span class="ar">→</span><div class="st">隔 15</div><span class="ar">→</span><div class="st">隔 30</div><span class="ar">→</span><div class="st end">畢業（每 60 天回來）</div></div>
 <div class="cap">預設「考前混合」；△ 退兩階、× 歸零；固定遍數方案不用難度係數。前段照日曆天，後段順延到讀書日。</div>
 </div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>3 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>3 / 18</span></div>
 </div>
 
 <!-- 4 流程 C/D/E -->
@@ -156,15 +169,15 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="flow"><div class="st">文章列表</div><span class="ar">→</span><div class="st hi">第一遍：只有播放器<br><span class="sub">內文隱藏</span></div><span class="ar">播完→</span><div class="st">看文章對照<br><span class="sub">逐字反白・點句看中譯</span></div><span class="ar">→</span><div class="st dec">練發音？</div><span class="ar">→</span><div class="st">回音練習<br><span class="sub">4–6 字・聽停唸聽・10 分鐘</span></div><span class="ar">或</span><div class="st">逐句跟讀 / 錄音</div><span class="ar">→</span><div class="st">讀完了 → 理解題<br><span class="sub">wpm 自動算</span></div><span class="ar">→</span><div class="st end">4 天、14 天後重讀</div></div>
 <div class="cap">「直接看文章」可跳過聽。答完題才開放「全部中譯」。自己的音檔可上傳，但沒有反白與回音練習。</div>
 </div>
-<div class="lane"><b>E. 每週講義</b>
-<div class="flow"><div class="st">老師給講義 PDF</div><span class="ar">→</span><div class="st">開發者整理成教材包更新<br><span class="sub">字組・拆字・文章・音檔</span></div><span class="ar">→</span><div class="st">App 收到教材更新</div><span class="ar">→</span><div class="st hi">設定：字組填上課日</div><span class="ar">→</span><div class="st">新字自動優先<br><span class="sub">每天約 X 個</span></div><span class="ar">→</span><div class="st">上課前一天：預習文章</div><span class="ar">→</span><div class="st">上課前：過一遍</div><span class="ar">→</span><div class="st end">上課日過，自動解除</div></div>
-<div class="cap">原本的複習與文章輪序照舊，講義只是插隊的新字與一個額外的預習項目。不做「只練這組」。</div>
+<div class="lane"><b>E. 每週講義（老師上稿 → 學生端）</b>
+<div class="flow"><div class="st">老師：上傳 PDF 或貼文字</div><span class="ar">→</span><div class="st">系統抽字<br><span class="sub">字庫比對＋字典帶中文</span></div><span class="ar">→</span><div class="st hi">老師審核<br><span class="sub">勾選・改中文・P/R・例句</span></div><span class="ar">→</span><div class="st">文章：貼原文或 AI 改寫</div><span class="ar">→</span><div class="st">伺服器產音檔與時間點</div><span class="ar">→</span><div class="st">設上課日 → 發布</div><span class="ar">→</span><div class="st">學生端：新講義<br><span class="sub">新字優先・前一天預習</span></div><span class="ar">→</span><div class="st end">上課日過，自動解除</div></div>
+<div class="cap">v2.0：上稿由開發者用同一個介面代做；v2.1：老師自助＋AI 產例句／改寫。原文只在班級內可見，AI 改寫版才可公開。學生端的複習輪序照舊。</div>
 </div>
-<div class="lane"><b>F. 跨裝置同步（P1）</b>
-<div class="flow"><div class="st">設定 → 帳號</div><span class="ar">→</span><div class="st dec">登入方式</div><span class="ar">→</span><div class="st">Google</div><span class="ar">或</span><div class="st">匿名＋六位代碼</div><span class="ar">→</span><div class="st">本機進度上傳</div><span class="ar">→</span><div class="st">另一台輸入代碼 / 同帳號</div><span class="ar">→</span><div class="st end">兩邊自動同步<br><span class="sub">離線可練，每張卡取較新者</span></div></div>
-<div class="cap">本機 Drift 為真相；沒登入也能完整使用，備份檔匯出匯入仍保留。</div>
+<div class="lane"><b>F. 老師：班級與儀表板</b>
+<div class="flow"><div class="st">建立班級</div><span class="ar">→</span><div class="st">取得邀請碼 / LINE 分享連結</div><span class="ar">→</span><div class="st">學生加入</div><span class="ar">→</span><div class="st">發布講義、設上課日</div><span class="ar">→</span><div class="st hi">儀表板<br><span class="sub">連續天數・本週業績・講義完成率・中譯點最多的句子・回音分鐘</span></div><span class="ar">→</span><div class="st end">下週再上稿</div></div>
+<div class="cap">同步（P0）：登入即同步，本機 Drift 為真相，每張卡取較新者；備份檔匯出匯入仍保留給沒網路的情況。</div>
 </div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>4 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>4 / 18</span></div>
 </div>
 
 <!-- 5 RWD -->
@@ -190,20 +203,29 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="cap">桌機 &gt;1024：左導覽（含學生／教材）＋主區＋右資訊欄</div></div>
 </div>
 <div class="notes" style="margin-top:6px"><b>規則</b>：內容順序三個尺寸一樣，只有排列不同；練習卡最寬 640px 置中；右欄在平板收成可展開的抽屜；字級跟隨系統與 A－A＋。</div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>5 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>5 / 18</span></div>
 </div>
 
 <!-- 6 選學生 / 選教材 -->
 <div class="pg">
-<h2>6. 啟動：選學生、選教材</h2>
+<h2>6. 啟動：登入、選角色、加入班級、選教材</h2>
 <div class="row">
 <div class="wf"><div class="frame phone"><div class="bar"><span>單字練習台</span></div><div class="body">
-<h3 style="margin-top:8px">誰要練習？</h3>
-<div class="box hi">👧 小安　<span class="sub">上次 9/9 · 連續 3 天</span></div>
-<div class="box">👦 弟弟　<span class="sub">上次 9/7</span></div>
-<div class="box dim">＋ 新增學生</div>
-<div class="sub" style="margin-top:10px"><span class="n">1</span>每位學生在每套教材各有獨立進度<br><span class="n">2</span>長按可改名、刪除（先強制備份）</div>
-</div></div><div class="cap">選學生（有兩位以上才顯示）</div></div>
+<div style="text-align:center;margin:28px 0 14px;font-size:14px;font-weight:700">單字練習台</div>
+<div class="box" style="text-align:center">使用 Google 登入</div>
+<div class="box" style="text-align:center">使用 LINE 登入</div>
+<div class="box" style="text-align:center">使用 Apple 登入</div>
+<div class="sub" style="text-align:center;margin-top:8px">登入後進度會跨裝置同步，老師的講義會自動出現。<br>沒有網路也能練，之後自動補同步。</div>
+<div class="sub" style="margin-top:10px"><span class="n">1</span>iOS 一定要有 Apple；LINE 走自訂驗證<br><span class="n">2</span>第一次登入才問角色，之後直接進首頁</div>
+</div></div><div class="cap">登入（第一步）</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>你是？</span></div><div class="body">
+<div class="box hi" style="padding:10px"><b>我是學生</b><br><span class="sub">每天練單字、聽文章</span></div>
+<div class="box" style="padding:10px"><b>我是老師／家長</b><br><span class="sub">建班級、上講義、看進度</span></div>
+<h3 style="margin-top:14px">學生：加入班級</h3>
+<div class="box">班級代碼 [ ______ ] <span class="btn pri">加入</span></div>
+<div class="box dim">先自學，之後再加入</div>
+<div class="sub"><span class="n">3</span>加入後老師發布的講義自動成為字組<br><span class="n">4</span>可同時在多個班級</div>
+</div></div><div class="cap">選角色、加入班級</div></div>
 <div class="wf"><div class="frame phone"><div class="bar"><span>← 選教材</span></div><div class="body">
 <div class="sub">小安 · 目前：英檢中級</div>
 <h3>高中</h3><div class="box hi">學測 L1–L4　<span class="sub">749 字 · 5 篇</span></div>
@@ -212,16 +234,22 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <h3>國中小</h3><div class="box dim">國中 1200　<span class="sub">籌備中</span></div>
 <div class="sub" style="margin-top:6px"><span class="n">3</span>依考試分群、依程度排序<br><span class="n">4</span>切換教材不清進度，各自到期各自算</div>
 </div><div class="tabs"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span class="on">設定</span></div></div><div class="cap">選教材（設定內，首次啟動也會經過）</div></div>
-<div class="col"><h3>說明</h3><ul class="notes">
-<li><span class="n">1</span>教材包從伺服器或內建載入；有更新時教材列顯示「有新講義」</li>
-<li><span class="n">2</span>刪除學生前先下載備份，避免誤刪</li>
-<li><span class="n">3</span>目錄來自 <code>courses.json</code>：id、名稱、考試類別、程度、字數、文章數、版本</li>
-<li><span class="n">4</span>同時開兩套教材時，今日清單分兩段顯示（先英檢講義，再學測），額度共用</li>
-<li>首次啟動接著問：讀書日（預設二三四五）、每日新字（預設 8）、有沒有 v1 備份要匯入</li>
+<div class="wf"><div class="frame phone"><div class="bar"><span>← 選教材</span></div><div class="body">
+<h3>我的班級</h3><div class="box hi">英檢中級 · 週三班　<span class="sub">老師發布 · 2-5～2-10</span> <span class="tag">班級</span></div>
+<h3>公用教材</h3><div class="box">學測 L1–L4　<span class="sub">749 字 · 5 篇</span></div>
+<div class="box dim">TOEIC 入門　<span class="sub">籌備中</span></div>
+<div class="box dim">國中 1200　<span class="sub">籌備中</span></div>
+<div class="sub" style="margin-top:6px"><span class="n">5</span>班級講義與公用教材可同時開，額度共用，今日清單先講義後公用</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span class="on">設定</span></div></div><div class="cap">選教材（班級講義＋公用教材）</div></div>
+<div class="col" style="max-width:220px"><h3>說明</h3><ul class="notes">
+<li>登入方式三選一，同一個人用不同方式登入會變成不同帳號，畫面上會提醒「請用上次的方式」</li>
+<li>家長替孩子用：家長以老師身分建班（一人班），孩子用自己的 LINE 登入加入</li>
+<li>公用教材由開發者維護；班級講義由老師發布，只在班級內可見</li>
+<li>v1 備份匯入放在登入後第一次進今日時提示，之後在設定</li>
 </ul>
-<div class="q">要確認：一個學生能不能同時練兩套教材（額度共用）？還是一次只開一套（切換）？目前畫的是「可同時，額度共用」。</div>
+<div class="q">要確認：學生要不要允許「不登入先試用」？目前畫的是一律登入。</div>
 </div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>6 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>6 / 18</span></div>
 </div>
 
 <!-- 7 練習卡三段 -->
@@ -245,7 +273,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 </div><div class="tabs"><span class="on">今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">③ 對答案：三顆標記，下次間隔即時顯示</div></div>
 </div>
 <div class="notes"><b>互動細節</b>：進新字自動唸一次（可關）；徽章可點切換 要會拼寫↔看得懂就好；× 的字 4 題後回籠、△ 排最後、答對新字當場再看一次；頂端「12 / 31」是本場進度，右上 ■ 結束本場（進度已存）。</div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>7 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>7 / 18</span></div>
 </div>
 
 <!-- 8 字庫 -->
@@ -269,7 +297,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <li>右側字卡等於對答案卡的靜態版：發音、拆字、同字根、例句、統計、徽章切換</li>
 <li>搜尋同時比對英文與中文</li>
 </ul></div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>8 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>8 / 18</span></div>
 </div>
 
 <!-- 9 文章 -->
@@ -302,7 +330,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="sub"><span class="n">2</span>逐字反白＋當前句淡底　<span class="n">3</span>點句展開中譯　<span class="n">4</span>底線＝字庫有的字，點了看單字</div>
 </div><div class="tabs"><span>今日</span><span>字庫</span><span class="on">文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">看文章（逐字反白、點句中譯）</div></div>
 </div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>9 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>9 / 18</span></div>
 </div>
 
 <!-- 10 回音練習 / 題目 -->
@@ -335,7 +363,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 </ul>
 <div class="q">要確認：回音練習每段預設三輪就停，還是自動往下？目前是三輪後停下等你按。</div>
 </div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>10 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>10 / 18</span></div>
 </div>
 
 <!-- 11 行事曆 -->
@@ -363,7 +391,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="cap">桌機：月曆格＋右側當日明細</div></div>
 </div>
 <div class="notes"><b>桌機月曆是新的</b>（v1 只有列表）。手機維持列表，平板兩者切換。休息日灰底、預習與上課日有 📘 標記、超過複習上限的日子有 ⚠。</div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>11 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>11 / 18</span></div>
 </div>
 
 <!-- 12 設定 -->
@@ -376,17 +404,17 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <div class="box"><b>學習計畫</b>　每日新字 [ 8 ]　讀書日 ☐一 ☑二 ☑三 ☑四 ☑五 ☐六 ☐日　目標完成日 [2027-01-22]<br>排程方案 考前混合 ▾　☑ 新字前段不順延　☑ 答對新字當場再看　☑ 同字根連著背<br><div class="box hi">試算：起始 9/6（第 5 個讀書日）· 未學 512 · 每週 32 · 學完 2027-01-06 · 畢業預估 2027-05-02 · 每日負擔約 31<br>目標反推：距 134 天（76 讀書日）→ 每日至少 7 · 建議方案 考前混合</div></div>
 <div class="box"><b>作答</b> 自動 / 選擇 / 拼寫 / 只求認得　<b>聲音</b> 口音 美國 ▾ 語速 0.85 ▾ ☑ 進新字自動唸 <span class="btn">試聽</span></div>
 </div>
-<div class="aside"><b>帳號與同步</b><br><span class="sub">未登入：進度只在這台</span><br><span class="btn">用 Google 登入</span><br><span class="btn">匿名＋六位代碼</span><br><span class="sub">登入後兩台自動同步，離線也能練</span><div class="ln"></div><b>備份</b><br><span class="btn">下載備份檔</span><span class="btn">從檔案還原</span><br><span class="sub">匯入 v1 備份也在這</span><div class="ln"></div><b>重置</b><br><span class="btn">清除進度</span><span class="btn">完全重置</span><br><span class="sub">按兩次才執行</span></div></div></div>
+<div class="aside"><b>帳號</b><br>小安（LINE 登入）<br><span class="sub">已同步 · 最後 9/10 21:03</span><br><b>班級</b> 英檢中級 · 週三班<br><span class="btn">加入其他班級</span><br><span class="btn">登出</span><div class="ln"></div><b>備份</b><br><span class="btn">下載備份檔</span><span class="btn">從檔案還原</span><br><span class="sub">匯入 v1 備份也在這</span><div class="ln"></div><b>重置</b><br><span class="btn">清除進度</span><span class="btn">完全重置</span><br><span class="sub">按兩次才執行</span></div></div></div>
 <div class="col"><h3>說明</h3><ul class="notes">
 <li>五個群組同一頁，桌機左側有錨點；手機是長頁，改任一項下方試算即時更新</li>
 <li>字組列＝v1.7 的字組開關＋上課日＋過一遍，講義有新內容時該列標「有新講義」</li>
-<li>帳號：未成年預設匿名＋代碼；Google 登入為選項。登入不是必要條件</li>
+<li>帳號：顯示登入方式、同步狀態、所屬班級；登出會保留本機資料</li>
 <li>匯入 v1 備份：辨識 <code>vocab-trainer-backup</code> 格式，合併不覆蓋</li>
 <li>字級與主題在頂欄（A－ A＋ ☾），不在設定裡</li>
 </ul>
 <div class="q">要確認：目標完成日要不要跟著教材各自一個？目前是每個學生一個全域目標日。</div>
 </div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>12 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>12 / 18</span></div>
 </div>
 
 <!-- 13 找出生字 / 貼上字卡 -->
@@ -417,12 +445,81 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <li>自己建的字沒有內建音檔，用系統語音；教材包更新後可補</li>
 <li>Android／iOS：可用「分享到單字練習台」把網頁或 PDF 文字直接送進找出生字（v2 新增）</li>
 </ul></div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>13 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>13 / 18</span></div>
 </div>
 
-<!-- 14 平台差異 -->
+
+<!-- 老師 A：儀表板 -->
 <div class="pg">
-<h2>14. 三個平台的差異</h2>
+<h2>14. 老師：儀表板（桌機）</h2>
+<div class="row">
+<div class="frame desk" style="width:600px;height:270px"><div class="hsplit"><div class="nav"><div class="on">儀表板</div><div>講義</div><div>班級</div><div>教材庫</div><div style="margin-top:20px;color:#888">Joyce 老師 ▾</div><div style="color:#888">英檢中級 · 週三班 ▾</div></div>
+<div class="main" style="font-size:8px">
+<div class="row"><div class="box" style="flex:1"><b>本週</b><br>學生 6 · 有練 5 · 平均連續 4 天</div><div class="box" style="flex:1"><b>講義 2-10</b>（9/17 上課）<br>完成率 62% · 文章預習 3/6</div><div class="box hi" style="flex:1"><b>要注意</b><br>小華 3 天沒練 · 阿明 退步 12 字</div></div>
+<table style="font-size:7.5px"><tr><th>學生</th><th>連續</th><th>本週新字</th><th>本週複習</th><th>講義 2-10</th><th>文章</th><th>回音分鐘</th><th>最近</th></tr>
+<tr><td>小安</td><td>5</td><td>40/40</td><td>112</td><td>48/48 ✓</td><td>2/2 ✓</td><td>28</td><td>今天</td></tr>
+<tr><td>小華</td><td style="color:#c00">0</td><td>8/40</td><td>20</td><td>10/48</td><td>0/2</td><td>0</td><td>3 天前</td></tr>
+<tr><td>阿明</td><td>3</td><td>32/40</td><td>90</td><td>30/48</td><td>1/2</td><td>12</td><td>昨天</td></tr>
+<tr><td>…</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table>
+<div class="sub" style="margin-top:4px">點學生：右側看細節</div></div>
+<div class="aside"><b>小華</b><br>英檢中級 · 加入 8/20<br><div class="ln"></div>連續 0 · 累計 12 個讀書日<br>生疏 40 · 穩定 22 · 畢業 3<br><div class="ln"></div><b>講義 2-10</b><br>未學 38 · 每天需 13 ⚠<br><b>中譯點最多</b><br>a6 第 8 句（4 次）<br><b>退步最多</b><br>constitution、convey<br><div class="ln"></div><span class="btn">LINE 提醒</span><span class="btn">看完整紀錄</span></div></div></div>
+<div class="col"><h3>說明</h3><ul class="notes">
+<li>資料全部來自學生端已在記錄的欄位：doneDays、streak、card_progress、zhOpened、echoMin</li>
+<li>「要注意」規則：3 天沒練、本週退步 ≥10 字、講義每天需求超過每日新字上限</li>
+<li>老師只看到自己班級的學生，且只有彙總與進度，不看備份內容</li>
+<li>「LINE 提醒」v2.1，走 Messaging API（您 line_bento_order 的經驗）</li>
+<li>手機版：卡片列表，一位學生一張卡；表格改成可橫向捲動</li>
+</ul></div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>14 / 18</span></div>
+</div>
+
+<!-- 老師 B：上稿 -->
+<div class="pg">
+<h2>15. 老師：上稿（桌機，三步）</h2>
+<div class="row">
+<div class="frame desk" style="width:600px;height:275px"><div class="hsplit"><div class="nav"><div>儀表板</div><div class="on">講義</div><div>班級</div><div>教材庫</div></div>
+<div class="main" style="font-size:8px">
+<div class="sub"><b>新講義</b>　① 上傳 ▸ <b>② 審核字卡</b> ▸ ③ 文章與發布</div>
+<div class="row"><div class="box" style="flex:1">講義名稱 [ 英檢中級 2-11 ]　上課日 [ 2026-09-24 ]　來源 <span class="tag">PDF 已上傳（僅班級可見）</span></div></div>
+<div class="sub">抽出 60 字：字庫已有 11（不重複）、字典帶入 46、要填中文 3。勾選要進字組的字，改中文，標 P／R。</div>
+<table style="font-size:7.5px"><tr><th>✓</th><th>單字</th><th>中文</th><th>詞性</th><th>P/R</th><th>例句</th><th></th></tr>
+<tr><td>☑</td><td>consultant</td><td>[顧問；諮詢者]</td><td>n.</td><td>R ▾</td><td>[The company hired a consultant…]</td><td><span class="btn">AI 產</span></td></tr>
+<tr><td>☑</td><td>constitute</td><td>[組成；構成]</td><td>v.</td><td>P ▾</td><td>[Women constitute more than half…]</td><td><span class="btn">AI 產</span></td></tr>
+<tr><td>☐</td><td>consume</td><td colspan="4" style="color:#888">字庫已有 · 學測 L3–4，不重複</td><td></td></tr>
+<tr><td>☑</td><td>serotonin</td><td style="background:#fff3b0">[ 要填 ]</td><td>n.</td><td>R ▾</td><td>[ ]</td><td><span class="btn">🌐 查</span><span class="btn">AI 產</span></td></tr></table>
+<div class="sub" style="margin-top:4px"><span class="btn">全部 AI 產例句</span><span class="btn">批次標 P/R</span>　<span class="btn pri">下一步：文章與發布 →</span></div></div>
+<div class="aside"><b>③ 文章與發布</b><br><span class="sub">貼原文（僅班級可見）或</span><br><span class="btn">AI 改寫成原創版</span><br>標題 [ Who Are the Video Creators? ]<br>題目 3 題 <span class="tag">AI 產，可改</span><br>逐句中譯 <span class="tag">AI 產，可改</span><br><div class="ln"></div><span class="btn">產生音檔（四國口音）</span><br><span class="sub">約 1 分鐘，含逐字時間點</span><div class="ln"></div><span class="btn pri">發布到 週三班</span><br><span class="sub">學生端立刻出現「新講義」，上課日已設，前一天排預習</span></div></div></div>
+<div class="col"><h3>說明</h3><ul class="notes">
+<li>步驟 ① 上傳 PDF 或貼文字；有文字層才能抽字，掃描檔提示改貼文字</li>
+<li>抽字邏輯＝v1.7 的找出生字（字庫比對、內建字典、線上查）搬到老師端</li>
+<li>「AI 產」例句、改寫、題目、中譯：v2.1；v2.0 由開發者在同一介面代做，老師只審核與發布</li>
+<li>原文 PDF 存在班級私有空間，永不進公開資料；AI 改寫版才可加入公用教材（需老師勾選同意）</li>
+<li>發布後仍可修改，學生端下次啟動更新，已學的進度不受影響</li>
+</ul></div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>15 / 18</span></div>
+</div>
+
+<!-- 老師 C：班級與教材庫 -->
+<div class="pg">
+<h2>16. 老師：班級、教材庫（桌機）</h2>
+<div class="row">
+<div class="frame desk" style="width:330px;height:230px"><div class="hsplit"><div class="nav"><div>儀表板</div><div>講義</div><div class="on">班級</div><div>教材庫</div></div>
+<div class="main" style="font-size:8px"><b>英檢中級 · 週三班</b>　<span class="btn">改名</span><br>邀請碼 <span class="tag">7K3P2Q</span> <span class="btn">複製</span><span class="btn">LINE 分享連結</span>
+<div class="sub">預設：讀書日 二三四五 · 每日新字 8 · 方案 考前混合（學生可自行改）</div>
+<table style="font-size:7.5px"><tr><th>學生</th><th>加入</th><th>登入方式</th><th></th></tr><tr><td>小安</td><td>8/20</td><td>LINE</td><td><span class="btn">移出</span></td></tr><tr><td>小華</td><td>8/20</td><td>Google</td><td><span class="btn">移出</span></td></tr></table>
+<div class="box dim">＋ 建立另一個班級</div></div></div></div>
+<div class="frame desk" style="width:330px;height:230px"><div class="hsplit"><div class="nav"><div>儀表板</div><div>講義</div><div>班級</div><div class="on">教材庫</div></div>
+<div class="main" style="font-size:8px"><b>我的講義</b><br><div class="box">英檢中級 2-10　48 字 · 2 篇 · 已發布 週三班 · 上課 9/17</div><div class="box">英檢中級 2-7　50 字 · 1 篇 · 已發布</div><div class="box dim">英檢中級 2-11　草稿</div>
+<b>公用教材</b><br><div class="box">學測 L1–L4　749 字 · 5 篇 <span class="btn">指派給班級</span></div><div class="box dim">TOEIC 入門　籌備中</div>
+<div class="sub">指派公用教材給班級 → 學生端多一組字組，仍可自行開關</div></div></div></div>
+</div>
+<div class="notes" style="margin-top:8px"><b>資料模型</b>：老師 → 班級（邀請碼）→ 學生；講義屬於老師，發布到班級；學生的進度屬於學生，老師只有讀取彙總的權限。Firestore 規則：<code>classes/{cid}</code> 老師可寫、成員可讀；<code>lessons/{lid}</code> 老師可寫、班級成員可讀；<code>users/{uid}/progress</code> 本人可寫、所屬班級老師可讀。</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>16 / 18</span></div>
+</div>
+
+<!-- 平台差異 -->
+<div class="pg">
+<h2>17. 三個平台的差異</h2>
 <table>
 <tr><th style="width:120px">項目</th><th>Web（GitHub Pages / PWA）</th><th>Android</th><th>iOS</th></tr>
 <tr><td>取得方式</td><td>開網址；可「加到主畫面」變 PWA</td><td>Play 商店（先內測）</td><td>App Store（TestFlight 先）；需 Apple 開發者帳號</td></tr>
@@ -434,27 +531,30 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <tr><td>自動播放</td><td>需使用者先互動一次</td><td colspan="2">無限制</td></tr>
 <tr><td>分享匯入</td><td>無</td><td colspan="2">系統分享表 → 找出生字</td></tr>
 <tr><td>通知</td><td>無（PWA 通知先不做）</td><td colspan="2">本機提醒「今天的字」（P2，可關）</td></tr>
-<tr><td>同步</td><td colspan="3">Firebase Auth＋Firestore，同一套；未登入也可用</td></tr>
+<tr><td>登入</td><td>Google、LINE（網頁授權）、Apple（網頁授權）</td><td>Google、LINE SDK、Apple（網頁授權）</td><td>Google、LINE SDK、Apple 原生（必備）</td></tr>
+<tr><td>同步</td><td colspan="3">Firebase Auth＋Firestore，登入即同步；離線可練</td></tr>
 <tr><td>首次載入</td><td>2–4 MB，之後快取</td><td colspan="2">安裝後即開</td></tr>
 <tr><td>版面</td><td>依視窗寬度切換三種版型</td><td>手機版型；平板依寬度切平板版型</td><td>iPhone 手機版型；iPad 平板版型，支援分割畫面</td></tr>
 </table>
 <div class="notes" style="margin-top:8px"><b>共用比例</b>：引擎與畫面 100% 共用；平台分岔集中在 storage、io、audio 三個資料夾各兩個檔案（web.dart／native.dart），估計不到 100 行。</div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>14 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>17 / 18</span></div>
 </div>
 
 <!-- 15 要確認 -->
 <div class="pg">
-<h2>15. 請您確認的事</h2>
+<h2>18. 請您確認的事</h2>
 <div class="row"><div class="col">
 <ol class="notes" style="font-size:10.5px">
 <li><b>同時開兩套教材</b>：一位學生能不能同時練學測與英檢講義（額度共用），還是一次一套？（第 6 頁）</li>
 <li><b>目標完成日</b>：全域一個，還是每套教材各一個？（第 12 頁）</li>
 <li><b>回音練習</b>：三輪後停下等按，還是自動往下？（第 10 頁）</li>
-<li><b>登入方式</b>：匿名＋六位代碼為預設、Google 為選項，可以嗎？要不要 Apple 登入（iOS 上架若提供第三方登入就必須有）？</li>
+<li><b>試用</b>：學生要不要允許不登入先試用？目前一律登入（第 6 頁）</li>
+<li><b>LINE 登入</b>：需要申請 LINE Login channel（用您現有的 LINE Developers 帳號即可）；Apple 登入需要開發者帳號，是否現在申請？</li>
+<li><b>AI 上稿</b>：v2.1 的 AI 產例句與改寫要接哪家模型、費用由誰付？v2.0 先由開發者代做，可以嗎？（第 15 頁）</li>
 <li><b>桌機月曆格</b>：要做，還是桌機也用列表？（第 11 頁）</li>
 <li><b>本機提醒通知</b>（原生）：要不要做「今天的字還沒做」的提醒？預設關。</li>
 <li><b>教材更新方式</b>：App 啟動時檢查伺服器上的教材版本自動更新，還是只隨 App 版本更新？</li>
-<li><b>老師端</b>：v2 不做；v3 再議。確認？</li>
+<li><b>老師儀表板的欄位</b>：連續天數、本週業績、講義完成率、中譯點最多的句子、回音分鐘——夠嗎？要不要看到每個字的○△×？（第 16 頁）</li>
 <li><b>上架順序</b>：Web → Android → iOS。iOS 需要開發者帳號（年費）與 Mac 簽章，是否現在就要？</li>
 </ol>
 </div>
@@ -474,7 +574,7 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 <li>視覺稿（配色、字體、圖示）在階段 2 畫面做出來後再定，不在這份的範圍</li>
 </ul>
 </div></div>
-<div class="foot"><span>單字練習台 v2 Wireframes</span><span>15 / 15</span></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>18 / 18</span></div>
 </div>
 
 </body></html>
