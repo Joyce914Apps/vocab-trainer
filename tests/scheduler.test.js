@@ -28,6 +28,8 @@ assert(bestPlan(135)==='mix','剩 135 天建議 mix = '+bestPlan(135));
 assert(bestPlan(60)==='s8','剩 60 天建議 s8 = '+bestPlan(60));
 assert(bestPlan(100)==='f10','剩 100 天建議 f10 = '+bestPlan(100));
 assert(bestPlan(20)==='s4','剩 20 天建議 s4 = '+bestPlan(20));
+assert(spanOf('e5')===29&&bestPlan(33)==='e5','經典 5 遍跨度 29、剩 33 天建議 e5 = '+bestPlan(33));
+S.plan='e5';assert(earlyLen()===1&&GRADn()===4,'e5 前段 1、畢業 box 4');S.plan='mix';
 // applyRule：自適應
 S.plan='mix';let r={box:3,ease:2.5,reps:5,streak:2,lapses:0};
 applyRule(r,'o',false);assert(r.box===4&&r.ease>2.5&&nextGap(r)===Math.round(7*r.ease/2.5),'mix ○ 升一階、gap 依 ease');
