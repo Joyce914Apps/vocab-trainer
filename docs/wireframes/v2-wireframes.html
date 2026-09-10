@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>單字練習台 v2 Wireframes</title>
+<style>
+@page{size:A4 landscape;margin:10mm}
+*{box-sizing:border-box}
+body{font-family:-apple-system,"PingFang TC","Noto Sans TC",Helvetica,sans-serif;color:#222;margin:0;font-size:11px;line-height:1.45}
+.pg{width:277mm;height:190mm;page-break-after:always;padding:6mm 8mm;position:relative;overflow:hidden}
+.pg:last-child{page-break-after:auto}
+h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:0 0 6px;border-bottom:2px solid #222;padding-bottom:3px}
+h3{font-size:11px;margin:6px 0 3px}
+.sub{color:#666;font-size:10px}
+.foot{position:absolute;bottom:4mm;left:8mm;right:8mm;font-size:9px;color:#888;display:flex;justify-content:space-between}
+.row{display:flex;gap:10px;align-items:flex-start}
+.col{flex:1}
+/* 線框元件 */
+.frame{border:2px solid #333;border-radius:14px;background:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.phone{width:172px;height:340px;border-radius:18px}
+.tablet{width:300px;height:220px;border-radius:10px}
+.desk{width:420px;height:250px;border-radius:6px}
+.bar{background:#e9e9e9;border-bottom:1px solid #bbb;padding:4px 6px;font-size:9px;font-weight:600;display:flex;justify-content:space-between}
+.body{flex:1;padding:5px;overflow:hidden;font-size:8.5px}
+.tabs{display:flex;border-top:1px solid #bbb;background:#f3f3f3}
+.tabs span{flex:1;text-align:center;font-size:7.5px;padding:3px 0;border-right:1px solid #ddd}
+.tabs span.on{background:#333;color:#fff}
+.box{border:1px solid #888;border-radius:3px;padding:3px 4px;margin:3px 0;background:#fafafa;font-size:8px}
+.box.hi{background:#fff3b0;border-color:#c9a400}
+.box.dim{color:#999;border-style:dashed}
+.btn{display:inline-block;border:1px solid #333;border-radius:3px;padding:1px 5px;font-size:7.5px;margin:2px 2px 0 0;background:#fff}
+.btn.pri{background:#333;color:#fff}
+.ln{height:4px;background:#ddd;border-radius:2px;margin:3px 0}
+.ln.s{width:60%}.ln.m{width:80%}
+.tag{display:inline-block;border:1px solid #999;border-radius:8px;padding:0 4px;font-size:7px;color:#555}
+.side{width:34px;background:#f3f3f3;border-right:1px solid #bbb;display:flex;flex-direction:column;align-items:center;padding-top:6px;gap:8px;font-size:7px}
+.nav{width:90px;background:#f3f3f3;border-right:1px solid #bbb;padding:6px;font-size:8px}
+.nav div{padding:3px 4px;border-radius:3px;margin:2px 0}.nav .on{background:#333;color:#fff}
+.main{flex:1;padding:6px;font-size:8.5px;overflow:hidden}
+.aside{width:120px;border-left:1px solid #bbb;padding:6px;font-size:8px;background:#fafafa}
+.hsplit{display:flex;flex:1;overflow:hidden}
+.n{display:inline-block;width:14px;height:14px;border-radius:50%;background:#c9a400;color:#fff;font-size:9px;text-align:center;line-height:14px;font-weight:700;margin-right:3px}
+.notes{font-size:9.5px}.notes li{margin:2px 0}
+table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid #bbb;padding:3px 5px;text-align:left;vertical-align:top}th{background:#eee}
+/* 流程圖 */
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:4px 0}
+.st{border:1.5px solid #333;border-radius:6px;padding:4px 7px;background:#fff;font-size:9.5px;min-width:70px;text-align:center}
+.st.dec{border-radius:2px;background:#fff8dc;transform:none}
+.st.end{border-radius:20px;background:#eee}
+.ar{font-size:14px;color:#555}
+.lane{border:1px dashed #999;border-radius:6px;padding:4px 6px;margin:4px 0}
+.lane b{font-size:9.5px}
+.cap{font-size:8.5px;color:#555;text-align:center;margin-top:3px}
+.wf{display:flex;flex-direction:column;align-items:center}
+.q{background:#fff8dc;border-left:3px solid #c9a400;padding:4px 8px;margin:4px 0;font-size:10px}
+</style></head><body>
+
+<!-- 1 封面 -->
+<div class="pg">
+<h1>單字練習台 v2 — Wireframes</h1>
+<div class="sub">Flutter Web / Android / iOS 同一套程式碼　·　RWD 三個斷點：手機（&lt;600）、平板（600–1024）、桌機（&gt;1024）　·　2026-09-10　·　供流程確認，非視覺稿</div>
+<div class="row" style="margin-top:14px">
+<div class="col">
+<h2>這份文件回答什麼</h2>
+<ul class="notes">
+<li>v2 的畫面有哪些、彼此怎麼連（第 2 頁資訊架構）</li>
+<li>五條主要流程：首次啟動、每日練習、文章、每週講義、跨裝置同步（第 3–4 頁）</li>
+<li>同一個畫面在手機、平板、桌機怎麼排（第 5 頁），之後每頁以最常用的尺寸畫</li>
+<li>每個畫面的區塊與按鈕，對應 v1.7 已驗證的功能（第 6–13 頁）</li>
+<li>三個平台的差異與要決定的事（第 14–15 頁）</li>
+</ul>
+<h2>閱讀方式</h2>
+<ul class="notes">
+<li>灰框＝區塊，黑邊按鈕＝主要操作，黃底＝重點或當前狀態，虛線框＝隱藏／條件顯示</li>
+<li><span class="n">1</span> 數字圓點對應右側說明</li>
+<li>所有文字都是實際會出現的文案草稿，可以直接改</li>
+</ul>
+</div>
+<div class="col">
+<h2>v2 相對 v1.7 的差異（只列新增）</h2>
+<table>
+<tr><th>項目</th><th>v1.7（HTML）</th><th>v2（Flutter）</th></tr>
+<tr><td>學生</td><td>一台裝置一份進度</td><td>多學生檔案、登入後跨裝置同步（離線優先）</td></tr>
+<tr><td>教材</td><td>寫死在程式裡</td><td>教材包（學測／英檢／TOEIC／國中小…）可選、可更新</td></tr>
+<tr><td>版面</td><td>單欄</td><td>手機底部分頁；平板側欄＋兩欄；桌機三欄</td></tr>
+<tr><td>平台</td><td>瀏覽器</td><td>Web（PWA）＋ Android ＋ iOS，可上架</td></tr>
+<tr><td>音檔</td><td>線上取用</td><td>教材包附帶，可離線</td></tr>
+<tr><td>其餘</td><td colspan="2">排程方案、讀書日、拆字、先聽再看、逐字反白、逐句中譯、回音練習、講義上課日、找出生字：<b>全部承襲，流程不變</b></td></tr>
+</table>
+</div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>1 / 15</span></div>
+</div>
+
+<!-- 2 資訊架構 -->
+<div class="pg">
+<h2>2. 資訊架構（Sitemap）</h2>
+<div class="row">
+<div class="col">
+<div class="lane"><b>啟動層</b>
+<div class="flow"><div class="st">啟動</div><span class="ar">→</span><div class="st dec">有學生檔案？</div><span class="ar">否→</span><div class="st">建立第一位學生</div><span class="ar">→</span><div class="st">選教材</div><span class="ar">→</span><div class="st end">今日</div></div>
+<div class="flow"><span style="width:120px"></span><span class="ar">是→</span><div class="st">選學生（記住上次）</div><span class="ar">→</span><div class="st end">今日</div></div>
+</div>
+<div class="lane"><b>主畫面（底部 5 分頁 / 側欄 5 項）</b>
+<div class="flow">
+<div class="st">今日<br><span class="sub">清單・業績・練習卡</span></div>
+<div class="st">字庫<br><span class="sub">搜尋・篩選・分組・字卡</span></div>
+<div class="st">文章<br><span class="sub">列表・先聽再看・回音</span></div>
+<div class="st">行事曆<br><span class="sub">30 天・休息日・預習</span></div>
+<div class="st">設定<br><span class="sub">教材・字組・方案・聲音・帳號・備份</span></div>
+</div></div>
+<div class="lane"><b>次級畫面</b>
+<div class="flow">
+<div class="st">單字卡（預習／回想／對答案）</div>
+<div class="st">文章頁（聽／看／回音／跟讀／題目）</div>
+<div class="st">找出生字</div>
+<div class="st">貼上字卡</div>
+<div class="st">教材來源</div>
+<div class="st">學習計畫試算</div>
+<div class="st">帳號與同步</div>
+<div class="st">備份匯出／匯入</div>
+</div></div>
+</div>
+<div class="col" style="max-width:260px">
+<h3>導覽原則</h3>
+<ul class="notes">
+<li>「今日」永遠是首頁，打開就能練，不用選任何東西</li>
+<li>教材切換放在設定，因為一位學生多數時候只練一套</li>
+<li>次級畫面都是從主畫面進入、返回鍵回來，不做深層路徑</li>
+<li>手機：底部分頁；平板：左側 rail；桌機：左側完整導覽</li>
+<li>GoRouter 路徑：<code>/today</code> <code>/library</code> <code>/read</code> <code>/read/:id</code> <code>/calendar</code> <code>/settings</code> <code>/settings/plan</code> <code>/scan</code> <code>/profiles</code></li>
+</ul>
+</div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>2 / 15</span></div>
+</div>
+
+<!-- 3 流程 A/B -->
+<div class="pg">
+<h2>3. 流程（一）首次啟動、每日練習</h2>
+<div class="lane"><b>A. 首次啟動</b>
+<div class="flow"><div class="st">打開 App</div><span class="ar">→</span><div class="st">輸入學生名字<br><span class="sub">（先不要求登入）</span></div><span class="ar">→</span><div class="st">選教材<br><span class="sub">學測 / 英檢中級 / TOEIC / …</span></div><span class="ar">→</span><div class="st">選讀書日與每日新字<br><span class="sub">預設二三四五、8 個</span></div><span class="ar">→</span><div class="st dec">有 v1 備份？</div><span class="ar">是→</span><div class="st">匯入</div><span class="ar">→</span><div class="st end">今日</div></div>
+<div class="cap">登入與同步放在之後的設定裡提示，不擋第一次使用。未成年預設匿名＋六位代碼。</div>
+</div>
+<div class="lane"><b>B. 每日練習（今日分頁）</b>
+<div class="flow"><div class="st">今日清單<br><span class="sub">新字 N・複習 M・文章・預習</span></div><span class="ar">→</span><div class="st dec">這張卡學過？</div><span class="ar">否→</span><div class="st hi">① 預習<br><span class="sub">例句・發音・拆字・手打</span></div><span class="ar">→</span><div class="st">② 回想<br><span class="sub">選擇 / 拼寫 / 認得</span></div><span class="ar">→</span><div class="st">③ 標記 ○△×</div><span class="ar">→</span><div class="st dec">還有卡？</div><span class="ar">是→</span><div class="st">下一張</div></div>
+<div class="flow"><span style="width:180px"></span><span class="ar">是→</span><span class="sub">直接進 ② 回想</span><span style="width:250px"></span><span class="ar">否→</span><div class="st end">業績達成</div></div>
+<div class="flow"><span class="sub">規則：× 隔 4 題再考、△ 排到最後再考、答對的新字當場最後再看一次；到期複習先排，新字有自己的額度；休息日只出前段新字。</span></div>
+</div>
+<div class="lane"><b>C. 一張字的旅程（引擎）</b>
+<div class="flow"><div class="st">未學</div><span class="ar">→</span><div class="st">第 1 天</div><span class="ar">→</span><div class="st">第 2 天</div><span class="ar">→</span><div class="st">第 3 天</div><span class="ar">→</span><div class="st">第 4 天</div><span class="ar">→</span><div class="st">隔 7</div><span class="ar">→</span><div class="st">隔 15</div><span class="ar">→</span><div class="st">隔 30</div><span class="ar">→</span><div class="st end">畢業（每 60 天回來）</div></div>
+<div class="cap">預設「考前混合」；△ 退兩階、× 歸零；固定遍數方案不用難度係數。前段照日曆天，後段順延到讀書日。</div>
+</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>3 / 15</span></div>
+</div>
+
+<!-- 4 流程 C/D/E -->
+<div class="pg">
+<h2>4. 流程（二）文章、每週講義、同步</h2>
+<div class="lane"><b>D. 文章</b>
+<div class="flow"><div class="st">文章列表</div><span class="ar">→</span><div class="st hi">第一遍：只有播放器<br><span class="sub">內文隱藏</span></div><span class="ar">播完→</span><div class="st">看文章對照<br><span class="sub">逐字反白・點句看中譯</span></div><span class="ar">→</span><div class="st dec">練發音？</div><span class="ar">→</span><div class="st">回音練習<br><span class="sub">4–6 字・聽停唸聽・10 分鐘</span></div><span class="ar">或</span><div class="st">逐句跟讀 / 錄音</div><span class="ar">→</span><div class="st">讀完了 → 理解題<br><span class="sub">wpm 自動算</span></div><span class="ar">→</span><div class="st end">4 天、14 天後重讀</div></div>
+<div class="cap">「直接看文章」可跳過聽。答完題才開放「全部中譯」。自己的音檔可上傳，但沒有反白與回音練習。</div>
+</div>
+<div class="lane"><b>E. 每週講義</b>
+<div class="flow"><div class="st">老師給講義 PDF</div><span class="ar">→</span><div class="st">開發者整理成教材包更新<br><span class="sub">字組・拆字・文章・音檔</span></div><span class="ar">→</span><div class="st">App 收到教材更新</div><span class="ar">→</span><div class="st hi">設定：字組填上課日</div><span class="ar">→</span><div class="st">新字自動優先<br><span class="sub">每天約 X 個</span></div><span class="ar">→</span><div class="st">上課前一天：預習文章</div><span class="ar">→</span><div class="st">上課前：過一遍</div><span class="ar">→</span><div class="st end">上課日過，自動解除</div></div>
+<div class="cap">原本的複習與文章輪序照舊，講義只是插隊的新字與一個額外的預習項目。不做「只練這組」。</div>
+</div>
+<div class="lane"><b>F. 跨裝置同步（P1）</b>
+<div class="flow"><div class="st">設定 → 帳號</div><span class="ar">→</span><div class="st dec">登入方式</div><span class="ar">→</span><div class="st">Google</div><span class="ar">或</span><div class="st">匿名＋六位代碼</div><span class="ar">→</span><div class="st">本機進度上傳</div><span class="ar">→</span><div class="st">另一台輸入代碼 / 同帳號</div><span class="ar">→</span><div class="st end">兩邊自動同步<br><span class="sub">離線可練，每張卡取較新者</span></div></div>
+<div class="cap">本機 Drift 為真相；沒登入也能完整使用，備份檔匯出匯入仍保留。</div>
+</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>4 / 15</span></div>
+</div>
+
+<!-- 5 RWD -->
+<div class="pg">
+<h2>5. RWD：同一個畫面「今日」在三個尺寸</h2>
+<div class="row" style="align-items:flex-end">
+<div class="wf">
+<div class="frame phone"><div class="bar"><span>今日</span><span>Ａ－ Ａ＋ ☾</span></div><div class="body">
+<div class="box hi"><b>今天要做什麼　9/10 · 第 5 個讀書日 · 連續 3 天</b><br>🔤 新字 8 ＋ 複習 23 ＝ 31<br>📘 英檢 2-10：還有 40 字，每天 10<br>📖 今天沒有排文章<br><span class="sub">業績 新字 3/8 複習 12/23</span></div>
+<div class="box"><b>① 建立印象</b><br><span style="font-size:11px;font-weight:700">consultant</span><br>con·sul·tant 🔊<br>拆字 con-(一起)＋sult(商議)＋-ant(人)<br>同字根 consult<br><i>The company hired a consultant…</i><br>公司聘了一位顧問…<div class="box dim">照著打一次</div><span class="btn pri">記住了，考我</span></div>
+</div><div class="tabs"><span class="on">今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div></div>
+<div class="cap">手機 &lt;600：單欄、底部分頁、卡片全寬</div></div>
+<div class="wf">
+<div class="frame tablet"><div class="hsplit"><div class="side"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div>
+<div class="main"><div class="row"><div class="col"><div class="box"><b>① 建立印象</b><br><span style="font-size:11px;font-weight:700">consultant</span> con·sul·tant 🔊<br>拆字 con-＋sult＋-ant<br><i>The company hired a consultant…</i><div class="box dim">照著打一次</div><span class="btn pri">記住了，考我</span></div></div>
+<div class="col" style="max-width:110px"><div class="box hi"><b>今天</b><br>新字 8＋複習 23<br>📘 講義 每天 10<br>業績 15/31</div><div class="box">熟悉度 7 格<br>已練 0 次</div></div></div></div></div></div>
+<div class="cap">平板 600–1024：左側 rail、卡片＋右側清單</div></div>
+<div class="wf">
+<div class="frame desk"><div class="hsplit"><div class="nav"><div class="on">今日</div><div>字庫</div><div>文章</div><div>行事曆</div><div>設定</div><div style="margin-top:20px;color:#888">學生：小安 ▾</div><div style="color:#888">教材：英檢中級</div></div>
+<div class="main"><div class="box"><b>① 建立印象 · 第一次見到這個字</b><br><span style="font-size:13px;font-weight:700">consultant</span>　con·sul·tant 🔊　<span class="tag">看得懂就好</span><br>拆字 con-(一起)＋sult(商議)＋-ant(人)　同字根 consult<br><i>The company hired a consultant to improve its sales.</i><br>公司聘了一位顧問來改善銷售。<div class="box dim">照著把它打一次</div><span class="btn pri">記住了，考我</span>　<span class="btn">🔊 單字</span><span class="btn">🔊 整句</span><span class="btn">🎧 跟讀</span><span class="btn">● 錄音</span></div>
+<div class="sub">鍵盤：Enter 下一步 · 1–4 選項 · 1/2/3 ＝ ○△×</div></div>
+<div class="aside"><div class="box hi"><b>今天</b><br>新字 8＋複習 23<br>📘 英檢 2-10 每天 10<br>📖 無文章<br>業績 15/31</div><div class="box"><b>統計</b><br>學過 210 生疏 40<br>穩定 120 畢業 50</div><div class="box"><b>7 天內到期</b><br>明天 18 · 本週 96</div></div></div></div>
+<div class="cap">桌機 &gt;1024：左導覽（含學生／教材）＋主區＋右資訊欄</div></div>
+</div>
+<div class="notes" style="margin-top:6px"><b>規則</b>：內容順序三個尺寸一樣，只有排列不同；練習卡最寬 640px 置中；右欄在平板收成可展開的抽屜；字級跟隨系統與 A－A＋。</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>5 / 15</span></div>
+</div>
+
+<!-- 6 選學生 / 選教材 -->
+<div class="pg">
+<h2>6. 啟動：選學生、選教材</h2>
+<div class="row">
+<div class="wf"><div class="frame phone"><div class="bar"><span>單字練習台</span></div><div class="body">
+<h3 style="margin-top:8px">誰要練習？</h3>
+<div class="box hi">👧 小安　<span class="sub">上次 9/9 · 連續 3 天</span></div>
+<div class="box">👦 弟弟　<span class="sub">上次 9/7</span></div>
+<div class="box dim">＋ 新增學生</div>
+<div class="sub" style="margin-top:10px"><span class="n">1</span>每位學生在每套教材各有獨立進度<br><span class="n">2</span>長按可改名、刪除（先強制備份）</div>
+</div></div><div class="cap">選學生（有兩位以上才顯示）</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>← 選教材</span></div><div class="body">
+<div class="sub">小安 · 目前：英檢中級</div>
+<h3>高中</h3><div class="box hi">學測 L1–L4　<span class="sub">749 字 · 5 篇</span></div>
+<h3>英檢</h3><div class="box">英檢中級　<span class="sub">2-5～2-10 · 221 字 · 2 篇</span> <span class="tag">每週更新</span></div>
+<h3>多益</h3><div class="box dim">TOEIC 入門　<span class="sub">籌備中</span></div>
+<h3>國中小</h3><div class="box dim">國中 1200　<span class="sub">籌備中</span></div>
+<div class="sub" style="margin-top:6px"><span class="n">3</span>依考試分群、依程度排序<br><span class="n">4</span>切換教材不清進度，各自到期各自算</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span class="on">設定</span></div></div><div class="cap">選教材（設定內，首次啟動也會經過）</div></div>
+<div class="col"><h3>說明</h3><ul class="notes">
+<li><span class="n">1</span>教材包從伺服器或內建載入；有更新時教材列顯示「有新講義」</li>
+<li><span class="n">2</span>刪除學生前先下載備份，避免誤刪</li>
+<li><span class="n">3</span>目錄來自 <code>courses.json</code>：id、名稱、考試類別、程度、字數、文章數、版本</li>
+<li><span class="n">4</span>同時開兩套教材時，今日清單分兩段顯示（先英檢講義，再學測），額度共用</li>
+<li>首次啟動接著問：讀書日（預設二三四五）、每日新字（預設 8）、有沒有 v1 備份要匯入</li>
+</ul>
+<div class="q">要確認：一個學生能不能同時練兩套教材（額度共用）？還是一次只開一套（切換）？目前畫的是「可同時，額度共用」。</div>
+</div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>6 / 15</span></div>
+</div>
+
+<!-- 7 練習卡三段 -->
+<div class="pg">
+<h2>7. 今日：練習卡的三段（手機）</h2>
+<div class="row">
+<div class="wf"><div class="frame phone"><div class="bar"><span>今日 · 12 / 31</span><span>■</span></div><div class="body">
+<div class="box"><b>① 建立印象 · 第一次見到</b><br><span style="font-size:12px;font-weight:700">predict</span><br>pre·dict 🔊　<span class="tag">要會拼寫</span><br><div class="box hi">拆字 <b>pre-</b>前 ＋ <b>dict</b>說<br>同字根 indicate、condition <i>未學</i></div><i>Nobody can predict the weather.</i><br>沒有人能預測天氣。<div class="box dim">照著把它打一次</div><span class="btn pri">記住了，考我</span><br><span class="btn">🔊 單字</span><span class="btn">🔊 整句</span><span class="btn">🎧 跟讀</span><span class="btn">● 錄音</span></div>
+</div><div class="tabs"><span class="on">今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">① 預習：只有第一次見到的字</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>今日 · 13 / 31</span><span>■</span></div><div class="body">
+<div class="box"><b>② 回想 · 選擇</b>　<span class="sub">第 3 次抽查 · 第 2 遍</span><br><i>Nobody can ______ the weather.</i><br>沒有人能預測天氣。
+<div class="box">1　predict</div><div class="box">2　protect</div><div class="box">3　pretend</div><div class="box">4　prepare</div>
+<span class="sub">🔊 聽例句　提示：pre·d___</span></div>
+<div class="box dim"><b>拼寫模式</b>：輸入框＋提示鍵<br><b>只求認得</b>：看句子想中文 → 翻面</div>
+</div><div class="tabs"><span class="on">今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">② 回想：依模式出題，鍵盤 1–4</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>今日 · 13 / 31</span><span>■</span></div><div class="body">
+<div class="box hi">✓ 答對了　<span class="sub">建議 ○</span></div>
+<div class="box"><span style="font-size:12px;font-weight:700">predict</span> pre·dict 🔊<br>拆字 pre-＋dict　同字根 indicate<br>v. 預測<br><i>Nobody can predict the weather.</i><br>熟悉度 第 2 遍 ▮▮▯▯▯▯▯▯　已練 2 次</div>
+<div class="row"><div class="box hi" style="flex:1;text-align:center">○ 會了<br><span class="sub">7 天後再考</span></div><div class="box" style="flex:1;text-align:center">△ 有卡點<br><span class="sub">1 天後</span></div><div class="box" style="flex:1;text-align:center">× 不會<br><span class="sub">明天立刻補</span></div></div>
+<span class="sub">🔊 整句　🐢 慢速　🎧 跟讀　● 錄音 ▶ 播我的</span>
+</div><div class="tabs"><span class="on">今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">③ 對答案：三顆標記，下次間隔即時顯示</div></div>
+</div>
+<div class="notes"><b>互動細節</b>：進新字自動唸一次（可關）；徽章可點切換 要會拼寫↔看得懂就好；× 的字 4 題後回籠、△ 排最後、答對新字當場再看一次；頂端「12 / 31」是本場進度，右上 ■ 結束本場（進度已存）。</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>7 / 15</span></div>
+</div>
+
+<!-- 8 字庫 -->
+<div class="pg">
+<h2>8. 字庫（平板）</h2>
+<div class="row">
+<div class="wf"><div class="frame tablet" style="width:420px;height:250px"><div class="hsplit"><div class="side"><span>今日</span><span style="font-weight:700">字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div>
+<div class="main"><div class="row"><div class="box" style="flex:1">🔍 搜尋英文或中文</div><div class="box">篩選：全部 ▾</div><div class="box">字組：英檢 2-10 ▾</div></div>
+<div class="sub">篩選：全部 / 生疏 / 退步過 / 今天到期 / 未學 / 已畢業 / 要會拼寫 / 看得懂就好 / <b>依字根／字尾分組</b> / 字組</div>
+<div class="box"><b>consultant</b> 顧問 <span class="tag">看得懂</span>　▯▯▯▯▯▯▯▯ 未學</div>
+<div class="box"><b>consistent</b> 一致的 <span class="tag">拼寫</span>　▮▮▯▯▯▯▯▯ 第 2 遍 · 練 2 · 下次 9/12</div>
+<div class="box hi"><b>construction</b> 建築 <span class="tag">拼寫</span>　▮▯▯▯▯▯▯▯ 剛認識 · 退 1</div>
+<div class="box"><b>convey</b> 傳達　▯▯▯▯▯▯▯▯ 未學</div>
+<div class="box dim"><b>分組檢視</b>：字根 fac（做）15 字 ▸　cap（抓）14 字 ▸　sta（站）14 字 ▸ …　字首 re- ▸　字尾 -tion ▸</div>
+<div class="sub">整組切換 要會拼寫／看得懂：<span class="btn">英檢 2-10</span><span class="btn">學測 L3–4</span></div></div>
+<div class="aside"><b>consistent</b><br>con·sis·tent 🔊<br>adj. 一致的；穩定的<br>拆字 con-＋sist＋-ent<br>同字根 consist、assist、insist、resist<br><i>Her test scores have been consistent…</i><br><div class="ln"></div>熟悉度 第 2 遍<br>已練 2 · 退 0<br>下次 9/12<br><span class="btn">要會拼寫 ↔</span></div></div></div>
+<div class="cap">平板：列表＋右側字卡；手機點列開浮層；桌機同平板但列更寬</div></div>
+<div class="col"><h3>說明</h3><ul class="notes">
+<li>排序：退步多的在前，其次熟悉度低的，再字母序；「字組」篩選時照教材原順序（＝講義的「過一遍」）</li>
+<li>分組檢視把同字根的字放一起，一組可展開，未學的字標灰</li>
+<li>右側字卡等於對答案卡的靜態版：發音、拆字、同字根、例句、統計、徽章切換</li>
+<li>搜尋同時比對英文與中文</li>
+</ul></div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>8 / 15</span></div>
+</div>
+
+<!-- 9 文章 -->
+<div class="pg">
+<h2>9. 文章：列表、先聽、看文章（手機）</h2>
+<div class="row">
+<div class="wf"><div class="frame phone"><div class="bar"><span>文章閱讀</span></div><div class="body">
+<div class="box hi"><b>今天排的</b><br>📖 Flowers That Carry Meaning<br><span class="sub">第 2 次重讀 · 上次 118 wpm</span> <span class="btn">去讀</span></div>
+<div class="box">📘 <b>上課前預習</b>（英檢 2-10，9/17 上課）<br>Who Are the YouTubers? <span class="btn">去聽去讀</span><br>Short Videos, Short Attention <span class="btn">去聽去讀</span></div>
+<h3>全部</h3>
+<div class="box">The Real Cost of a New Phone<br><span class="sub">英檢中級 · 已聽 2 遍 · 最佳 132 wpm · 讀過 2 次 · 下次 9/20</span></div>
+<div class="box">When It Rains for a Month<br><span class="sub">還沒讀過</span></div>
+<div class="box">Stars, Detours, and Dinner<br><span class="sub">還沒讀過</span></div>
+<div class="box dim">我存的文章（貼上的）</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span class="on">文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">列表</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>← The Real Cost of a New Phone</span></div><div class="body">
+<div class="sub">203 字 · 最佳 132 wpm · 已聽 2 遍</div>
+<div class="box hi"><b>第一遍 · 先聽，不看文字</b><br><span class="sub">先洗耳朵：不用聽懂每個字，抓「在講什麼」就好。</span></div>
+<div class="box">▶ ──────●────── 0:31 / 1:17　<span class="sub">內建 · 美國口音</span><br><span class="btn">📁 用自己的音檔</span></div>
+<div class="box dim" style="height:70px;text-align:center;padding-top:26px">（內文隱藏）</div>
+<span class="btn pri" style="opacity:.5">聽完一遍再看文章</span> <span class="btn">直接看文章</span>
+<div class="sub"><span class="n">1</span>播到底才亮起，可重聽累計遍數</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span class="on">文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">先聽（內文隱藏）</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>← The Real Cost of a New Phone</span></div><div class="body">
+<div class="box"><b>第二遍 · 邊看邊聽，對照漏掉的地方</b></div>
+<div class="box">▶ ───●───────── 0:12 / 1:17　<span class="btn">🔁 再聽一次</span></div>
+<span class="btn">🔁 回音練習</span><span class="btn">🎧 逐句跟讀</span><span class="btn">● 錄音</span>
+<div class="box" style="font-family:Georgia,serif;font-size:8.5px;line-height:1.6">Most of us replace our phones every two or three years. <span style="background:#fff3b0">The old one goes into a drawer, and <mark style="background:#ffd60a">after</mark> a while it is thrown away.</span><br><span style="display:block;border-left:2px solid #3a7;padding-left:4px;color:#555;font-size:7.5px">舊的那支被丟進抽屜，過一陣子就扔掉了。</span>That is how <u>electronic</u> waste begins.<br><br>E-waste is not a small problem…</div>
+<span class="btn pri">讀完了，看理解題</span><span class="btn">挑生字建卡</span><span class="btn" style="opacity:.5">全部中譯</span>
+<div class="sub"><span class="n">2</span>逐字反白＋當前句淡底　<span class="n">3</span>點句展開中譯　<span class="n">4</span>底線＝字庫有的字，點了看單字</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span class="on">文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">看文章（逐字反白、點句中譯）</div></div>
+</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>9 / 15</span></div>
+</div>
+
+<!-- 10 回音練習 / 題目 -->
+<div class="pg">
+<h2>10. 文章：回音練習、理解題（手機）</h2>
+<div class="row">
+<div class="wf"><div class="frame phone"><div class="bar"><span>← 回音練習</span><span>■ 結束</span></div><div class="body">
+<div class="box hi"><b>第 3 / 36 段 · 第 1 輪 · 02:14 / 10:00</b><br><span style="font-family:Georgia,serif;font-size:11px;font-weight:700">The old one goes into a</span><br><span class="sub">② 停——先別出聲，聽心裡的回音</span></div>
+<span class="btn">🔁 這段再一次</span><span class="btn pri">下一段 →</span><span class="btn">← 上一段</span>
+<div class="box" style="font-family:Georgia,serif;font-size:8.5px;line-height:1.6;color:#bbb">Most of us replace our phones every two or three years. <span style="color:#222;background:#ffe9a0">The old one goes into a</span> drawer, and after a while it is thrown away. That is how electronic waste begins.</div>
+<div class="sub">聽完<b>先停</b>，不要馬上開口。照著心裡的回音唸，注意重音與語調。同一段唸到不用想就溜出來，再按下一段。</div>
+<div class="sub" style="margin-top:6px"><span class="n">1</span>四步：聽 → 停 1.5 秒 → 唸 → 再聽，三輪後停下等你<br><span class="n">2</span>十分鐘自動結束，記住段數<br><span class="n">3</span>只有內建音檔可用</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span class="on">文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">回音練習面板＋內文其他字淡出</div></div>
+<div class="wf"><div class="frame phone"><div class="bar"><span>← The Real Cost of a New Phone</span></div><div class="body">
+<div class="sub">從打開文章到讀完：4 分 12 秒 · <b>116 wpm</b> · 上次最佳 132 · 下次重讀 9/14<br><span style="font-size:7px">含點中譯與跟讀的時間，第一次偏低正常</span></div>
+<h3>理解題</h3>
+<div class="box"><b>1.</b> What happens to most e-waste?<div class="box">A　It is properly recycled.</div><div class="box hi">B　It ends up in landfills.</div><div class="box">C　It is returned to manufacturers.</div><div class="box">D　It is sold to other countries.</div><span class="sub" style="color:#3a7">答對了。文章說只有一小部分被妥善回收。</span></div>
+<div class="box dim"><b>2.</b> Why does the writer say old devices are valuable? …</div>
+<span class="btn">全部中譯</span><span class="btn">挑生字建卡</span><span class="btn">← 回文章列表</span>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span class="on">文章</span><span>行事曆</span><span>設定</span></div></div><div class="cap">理解題（wpm 自動）</div></div>
+<div class="col"><h3>逐句跟讀（同一頁的另一顆按鈕）</h3><ul class="notes">
+<li>整句為單位：聽 → 停 → 唸 → 再聽，狀態列即時顯示 ①②③④ 與第幾句</li>
+<li>當前句淡黃底，自動捲動</li>
+<li>錄音／播我的：錄下自己唸的，與原音比對</li>
+</ul>
+<h3>自己的音檔</h3><ul class="notes">
+<li>「用自己的音檔」選檔後存在本機（原生：App 文件夾；Web：IndexedDB）</li>
+<li>優先於內建；訊息標示「沒有逐字反白與回音練習」</li>
+<li>可移除</li>
+</ul>
+<div class="q">要確認：回音練習每段預設三輪就停，還是自動往下？目前是三輪後停下等你按。</div>
+</div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>10 / 15</span></div>
+</div>
+
+<!-- 11 行事曆 -->
+<div class="pg">
+<h2>11. 複習行事曆（手機＋桌機）</h2>
+<div class="row">
+<div class="wf"><div class="frame phone"><div class="bar"><span>複習行事曆</span></div><div class="body">
+<div class="sub">未來 7 天複習 96 字 · 第 2 週 71 · 還沒學過 512 · 累計 5 個讀書日，連續 3 天</div>
+<div class="box dim"><b>這張表是「當天要複習的舊字」</b>，不含新字。新字前 4 天照日曆天出現，休息日只做這些。</div>
+<div class="box hi">9/10 週四 今天　複習 23 ＋新字 8 ＝ 31<br>📘 預習 英檢 2-10：YouTubers、Short Videos（9/11 上課）</div>
+<div class="box">9/11 週五　複習 18 ＋新字 8　📖 Flowers（第 2 次重讀）</div>
+<div class="box dim">9/12 週六　🌙 休息日，前段新字 12 個露臉</div>
+<div class="box dim">9/13 週日　🌙 休息日，不排進度</div>
+<div class="box">9/14 週一　複習 0 ＋新字 8</div>
+<div class="box">9/15 週二　複習 31 ＋新字 8　⚠ 超過上限</div>
+<div class="box">9/16 週三 …</div>
+</div><div class="tabs"><span>今日</span><span>字庫</span><span>文章</span><span class="on">行事曆</span><span>設定</span></div></div><div class="cap">手機：列表式，點日期展開字</div></div>
+<div class="wf"><div class="frame desk" style="height:230px"><div class="hsplit"><div class="nav"><div>今日</div><div>字庫</div><div>文章</div><div class="on">行事曆</div><div>設定</div></div>
+<div class="main"><div class="sub">2026 年 9 月　◀ ▶　<span class="btn">展開全部</span></div>
+<table style="font-size:7.5px"><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr>
+<tr><td>7<br>複 12</td><td style="color:#aaa">8 🌙</td><td>9<br>複 20</td><td style="background:#fff3b0">10 今天<br>複 23＋新 8<br>📘 預習</td><td>11<br>複 18＋新 8<br>📖 重讀</td><td style="color:#aaa">12 🌙<br>前段 12</td><td style="color:#aaa">13 🌙</td></tr>
+<tr><td>14<br>新 8</td><td style="color:#aaa">15 🌙</td><td>16<br>複 31 ⚠</td><td>17<br>複 22＋新 8<br>📘 上課</td><td>18<br>複 19</td><td style="color:#aaa">19 🌙</td><td style="color:#aaa">20 🌙</td></tr></table>
+<div class="sub">點某天：右側列出那天的字（退步多的在前）與文章</div></div>
+<div class="aside"><b>9/16 週三</b><br>複習 31 字 ⚠ 超過上限 60？<br><div class="ln"></div>consistent 一致的 ·退1<br>predict 預測<br>landfill 垃圾掩埋場<br>…<br><div class="ln"></div>📖 無文章</div></div></div>
+<div class="cap">桌機：月曆格＋右側當日明細</div></div>
+</div>
+<div class="notes"><b>桌機月曆是新的</b>（v1 只有列表）。手機維持列表，平板兩者切換。休息日灰底、預習與上課日有 📘 標記、超過複習上限的日子有 ⚠。</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>11 / 15</span></div>
+</div>
+
+<!-- 12 設定 -->
+<div class="pg">
+<h2>12. 設定（桌機；手機為同順序的長頁）</h2>
+<div class="row">
+<div class="frame desk" style="width:560px;height:265px"><div class="hsplit"><div class="nav"><div>今日</div><div>字庫</div><div>文章</div><div>行事曆</div><div class="on">設定</div><div style="margin-top:8px;font-size:7.5px;color:#666">教材與字組<br>學習計畫<br>作答與聲音<br>帳號與同步<br>備份與重置</div></div>
+<div class="main" style="font-size:8px">
+<div class="box"><b>教材</b>　英檢中級 ▾　<span class="btn">換教材</span><br><b>字組</b>（勾＝排進今日）<br>☑ 英檢 2-10　48 字　上課日 <span class="tag">2026-09-17</span> <span class="btn">過一遍</span><br><span class="sub">　還有 40 字，5 個讀書日，每天約 8 · 文章 2 篇預習排在 9/16</span><br>☑ 英檢 2-7　50 字　上課日 <span class="tag">—</span> <span class="btn">過一遍</span><br>☑ 學測 L3–4　327 字<br>☐ 作文 · 因果文句型　7 字</div>
+<div class="box"><b>學習計畫</b>　每日新字 [ 8 ]　讀書日 ☐一 ☑二 ☑三 ☑四 ☑五 ☐六 ☐日　目標完成日 [2027-01-22]<br>排程方案 考前混合 ▾　☑ 新字前段不順延　☑ 答對新字當場再看　☑ 同字根連著背<br><div class="box hi">試算：起始 9/6（第 5 個讀書日）· 未學 512 · 每週 32 · 學完 2027-01-06 · 畢業預估 2027-05-02 · 每日負擔約 31<br>目標反推：距 134 天（76 讀書日）→ 每日至少 7 · 建議方案 考前混合</div></div>
+<div class="box"><b>作答</b> 自動 / 選擇 / 拼寫 / 只求認得　<b>聲音</b> 口音 美國 ▾ 語速 0.85 ▾ ☑ 進新字自動唸 <span class="btn">試聽</span></div>
+</div>
+<div class="aside"><b>帳號與同步</b><br><span class="sub">未登入：進度只在這台</span><br><span class="btn">用 Google 登入</span><br><span class="btn">匿名＋六位代碼</span><br><span class="sub">登入後兩台自動同步，離線也能練</span><div class="ln"></div><b>備份</b><br><span class="btn">下載備份檔</span><span class="btn">從檔案還原</span><br><span class="sub">匯入 v1 備份也在這</span><div class="ln"></div><b>重置</b><br><span class="btn">清除進度</span><span class="btn">完全重置</span><br><span class="sub">按兩次才執行</span></div></div></div>
+<div class="col"><h3>說明</h3><ul class="notes">
+<li>五個群組同一頁，桌機左側有錨點；手機是長頁，改任一項下方試算即時更新</li>
+<li>字組列＝v1.7 的字組開關＋上課日＋過一遍，講義有新內容時該列標「有新講義」</li>
+<li>帳號：未成年預設匿名＋代碼；Google 登入為選項。登入不是必要條件</li>
+<li>匯入 v1 備份：辨識 <code>vocab-trainer-backup</code> 格式，合併不覆蓋</li>
+<li>字級與主題在頂欄（A－ A＋ ☾），不在設定裡</li>
+</ul>
+<div class="q">要確認：目標完成日要不要跟著教材各自一個？目前是每個學生一個全域目標日。</div>
+</div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>12 / 15</span></div>
+</div>
+
+<!-- 13 找出生字 / 貼上字卡 -->
+<div class="pg">
+<h2>13. 加字：找出生字、貼上字卡（平板）</h2>
+<div class="row">
+<div class="wf"><div class="frame tablet" style="width:330px;height:240px"><div class="hsplit"><div class="side"><span>今日</span><span>字庫</span><span>文章</span><span>行事曆</span><span>設定</span></div><div class="main">
+<div class="sub"><b>找出生字</b>　貼文章 → 找出生字 → 勾選 → 建卡／排入下一批</div>
+<div class="box dim" style="height:26px">（貼上英文文章⋯⋯）</div><span class="btn pri">找出生字</span><span class="btn">存進文章庫</span>
+<div class="sub">挑出 14 個字（字庫已有 6、新字 8）</div>
+<div class="box">☑ <b>landfill</b> <span class="tag">字庫已有 · 未學</span> 垃圾掩埋場<br><span class="sub">The rest ends up in landfills…</span></div>
+<div class="box">☐ <b>recycle</b> <span class="tag">字庫已有 · 第 3 遍</span></div>
+<div class="box hi">☑ <b>mercury</b> <span class="tag">字典</span> [ 水銀；水星 ] <span class="btn">🌐 線上查</span><br><span class="sub">…such as lead and mercury can slowly pollute…</span><br>[ 例句中譯（選填） ] <span class="btn">翻例句</span></div>
+<div class="box">☐ <b>serotonin</b> <span class="tag">要填中文</span> [ ] <span class="btn">🌐 線上查</span></div>
+<span class="btn pri">建卡／排入下一批</span><span class="btn">全部勾選</span>
+</div></div></div><div class="cap">找出生字</div></div>
+<div class="wf"><div class="frame tablet" style="width:250px;height:240px"><div class="hsplit"><div class="main">
+<div class="sub"><b>貼上字卡</b></div>
+<div class="sub">一行一張：單字 | 中文 | 詞性 | 例句 | 例句中譯 | 筆記 | 音節 | P或R</div>
+<div class="box dim" style="height:70px;font-family:monospace;font-size:7px">consult | 諮詢 | v. | I always consult my parents. | 我總是請教父母 | | con·sult | P<br>convey | 傳達 | v. | …</div>
+來源／字組名稱 [ 英檢中級 2-11 ]<br><span class="btn pri">建立字卡</span>
+<div class="sub" style="margin-top:6px">建了 20 張卡，字組「英檢中級 2-11」，到設定填上課日。</div>
+</div></div></div><div class="cap">貼上字卡（來源名稱＝字組）</div></div>
+<div class="col"><ul class="notes">
+<li>比對順序：字庫（含變化形）→ 教材包字典 → 空白（線上查）</li>
+<li>字庫已學的字只顯示不能勾；未學的勾了排到下一批新字（pin）</li>
+<li>新字建卡：deck＝「我的文章」、看得懂就好、例句為文章原句</li>
+<li>自己建的字沒有內建音檔，用系統語音；教材包更新後可補</li>
+<li>Android／iOS：可用「分享到單字練習台」把網頁或 PDF 文字直接送進找出生字（v2 新增）</li>
+</ul></div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>13 / 15</span></div>
+</div>
+
+<!-- 14 平台差異 -->
+<div class="pg">
+<h2>14. 三個平台的差異</h2>
+<table>
+<tr><th style="width:120px">項目</th><th>Web（GitHub Pages / PWA）</th><th>Android</th><th>iOS</th></tr>
+<tr><td>取得方式</td><td>開網址；可「加到主畫面」變 PWA</td><td>Play 商店（先內測）</td><td>App Store（TestFlight 先）；需 Apple 開發者帳號</td></tr>
+<tr><td>本機儲存</td><td>Drift on IndexedDB（sqlite3.wasm）</td><td colspan="2">Drift on SQLite 檔案</td></tr>
+<tr><td>音檔</td><td>首次播放下載、瀏覽器快取；PWA 可預先快取本教材</td><td colspan="2">教材包下載到 App 文件夾，完全離線</td></tr>
+<tr><td>自己的音檔</td><td>IndexedDB</td><td colspan="2">App 文件夾；可從檔案 App／分享匯入</td></tr>
+<tr><td>語音退回</td><td>Web Speech</td><td>系統 TTS（Google 語音）</td><td>系統 TTS（可下載增強語音）</td></tr>
+<tr><td>錄音</td><td>MediaRecorder（webm）</td><td>m4a</td><td>m4a；需麥克風權限說明</td></tr>
+<tr><td>自動播放</td><td>需使用者先互動一次</td><td colspan="2">無限制</td></tr>
+<tr><td>分享匯入</td><td>無</td><td colspan="2">系統分享表 → 找出生字</td></tr>
+<tr><td>通知</td><td>無（PWA 通知先不做）</td><td colspan="2">本機提醒「今天的字」（P2，可關）</td></tr>
+<tr><td>同步</td><td colspan="3">Firebase Auth＋Firestore，同一套；未登入也可用</td></tr>
+<tr><td>首次載入</td><td>2–4 MB，之後快取</td><td colspan="2">安裝後即開</td></tr>
+<tr><td>版面</td><td>依視窗寬度切換三種版型</td><td>手機版型；平板依寬度切平板版型</td><td>iPhone 手機版型；iPad 平板版型，支援分割畫面</td></tr>
+</table>
+<div class="notes" style="margin-top:8px"><b>共用比例</b>：引擎與畫面 100% 共用；平台分岔集中在 storage、io、audio 三個資料夾各兩個檔案（web.dart／native.dart），估計不到 100 行。</div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>14 / 15</span></div>
+</div>
+
+<!-- 15 要確認 -->
+<div class="pg">
+<h2>15. 請您確認的事</h2>
+<div class="row"><div class="col">
+<ol class="notes" style="font-size:10.5px">
+<li><b>同時開兩套教材</b>：一位學生能不能同時練學測與英檢講義（額度共用），還是一次一套？（第 6 頁）</li>
+<li><b>目標完成日</b>：全域一個，還是每套教材各一個？（第 12 頁）</li>
+<li><b>回音練習</b>：三輪後停下等按，還是自動往下？（第 10 頁）</li>
+<li><b>登入方式</b>：匿名＋六位代碼為預設、Google 為選項，可以嗎？要不要 Apple 登入（iOS 上架若提供第三方登入就必須有）？</li>
+<li><b>桌機月曆格</b>：要做，還是桌機也用列表？（第 11 頁）</li>
+<li><b>本機提醒通知</b>（原生）：要不要做「今天的字還沒做」的提醒？預設關。</li>
+<li><b>教材更新方式</b>：App 啟動時檢查伺服器上的教材版本自動更新，還是只隨 App 版本更新？</li>
+<li><b>老師端</b>：v2 不做；v3 再議。確認？</li>
+<li><b>上架順序</b>：Web → Android → iOS。iOS 需要開發者帳號（年費）與 Mac 簽章，是否現在就要？</li>
+</ol>
+</div>
+<div class="col" style="max-width:300px">
+<h3>對應文件</h3>
+<ul class="notes">
+<li>PRD：docs/01_PRD.md</li>
+<li>規格：docs/02_產品規格書.md（每個規則的數值都在這）</li>
+<li>技術：docs/03_技術文件.md</li>
+<li>執行：docs/04_執行計畫.md</li>
+<li>使用說明（v1.7）：docs/使用說明.md</li>
+</ul>
+<h3>下一步</h3>
+<ul class="notes">
+<li>您回覆上面 9 點</li>
+<li>我更新規格書與這份線框，再開始階段 0（專案骨架）</li>
+<li>視覺稿（配色、字體、圖示）在階段 2 畫面做出來後再定，不在這份的範圍</li>
+</ul>
+</div></div>
+<div class="foot"><span>單字練習台 v2 Wireframes</span><span>15 / 15</span></div>
+</div>
+
+</body></html>
