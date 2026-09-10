@@ -22,21 +22,21 @@ assert(prevStudyDay('2026-09-15')==='2026-09-11','週二的上一個讀書日是
 assert(daysBetween('2026-09-09','2027-01-22')===135,'到學測 135 天');
 // 方案
 assert(earlyLen()===4&&GRADn()===7,'mix 前段 4、畢業 box 7');
-S.plan='ch16';assert(earlyLen()===5&&GRADn()===15&&spanOf('ch16')===70,'ch16 前段 5、16 遍、跨度 70');
-assert(spanOf('ch10')===86&&spanOf('ch8')===78,'固定遍數法 10 遍 86 天、6-8 遍 78 天');
+S.plan='f16';assert(earlyLen()===5&&GRADn()===15&&spanOf('f16')===70,'f16 前段 5、16 遍、跨度 70');
+assert(spanOf('f10')===86&&spanOf('f8')===78,'固定 10 遍 86 天、6-8 遍 78 天');
 assert(bestPlan(135)==='mix','剩 135 天建議 mix = '+bestPlan(135));
 assert(bestPlan(60)==='s8','剩 60 天建議 s8 = '+bestPlan(60));
-assert(bestPlan(100)==='ch10','剩 100 天建議 ch10 = '+bestPlan(100));
+assert(bestPlan(100)==='f10','剩 100 天建議 f10 = '+bestPlan(100));
 assert(bestPlan(20)==='s4','剩 20 天建議 s4 = '+bestPlan(20));
 // applyRule：自適應
 S.plan='mix';let r={box:3,ease:2.5,reps:5,streak:2,lapses:0};
 applyRule(r,'o',false);assert(r.box===4&&r.ease>2.5&&nextGap(r)===Math.round(7*r.ease/2.5),'mix ○ 升一階、gap 依 ease');
 r={box:3,ease:2.5,reps:5};applyRule(r,'t',false);assert(r.box===1&&r.lapses===1,'mix △ 退兩階、退步+1');
 r={box:3,ease:2.5,reps:5};applyRule(r,'x',false);assert(r.box===0,'mix × 歸零');
-// applyRule：固定遍數法固定
-S.plan='ch8';r={box:3,ease:2.5,reps:5};applyRule(r,'t',false);assert(r.box===3&&r.ease===2.5,'ch8 △ 同格、係數不動');
-r={box:3,ease:2.5,reps:5};applyRule(r,'x',false);assert(r.box===2,'ch8 × 退一格');
+// applyRule：固定遍數
+S.plan='f8';r={box:3,ease:2.5,reps:5};applyRule(r,'t',false);assert(r.box===3&&r.ease===2.5,'f8 △ 同格、係數不動');
+r={box:3,ease:2.5,reps:5};applyRule(r,'x',false);assert(r.box===2,'f8 × 退一格');
 r={box:0,ease:2.5,reps:1};applyRule(r,'x',true);assert((r.lapses||0)===0,'同場複看不算退步');
-r={box:7,ease:2.9,reps:9};applyRule(r,'o',false);assert(r.box===7&&nextGap(r)===30,'ch8 畢業停在最後一格 30 天');
+r={box:7,ease:2.9,reps:9};applyRule(r,'o',false);assert(r.box===7&&nextGap(r)===30,'f8 畢業停在最後一格 30 天');
 assert(previewGap({box:0,ease:2.5,reps:0},'o')===1,'新字答對預覽 1 天');
 S.plan='mix';assert(previewGap({box:5,ease:2.5,reps:6},'o')===31,'box5 答對→box6 隔 30 天 = '+previewGap({box:5,ease:2.5,reps:6},'o'));

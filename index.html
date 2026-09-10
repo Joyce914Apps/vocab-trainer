@@ -1352,17 +1352,17 @@ function renderDayPick(){
   });
 }
 /* 間隔階梯（天）：1,1,1,1 → 7 → 15 → 30 → 60
-   前四天連續，取自固定遍數的遞減背誦法6~8 遍版的前段 —— 遺忘曲線最陡的就是這四天。
+   前四天連續 —— 遺忘曲線最陡的就是這四天。
    後段交給自適應（難度係數），不像固定 16 遍那樣不分難易一律走完。*/
 /* ═══ 排程方案 ═══
-   間隔階梯不再是固定常數，而是可選的方案。固定遍數法三個版本取自《遞減背誦法》講義：
+   間隔階梯不再是固定常數，而是可選的方案。三個固定遍數版本：
    16 遍（起步者）、10 遍（英檢初級／多益 600）、6~8 遍（英檢中級／多益 700），固定遍數、不看對錯。
-   「考前混合」是原本的作法：固定遍數法前段 + 艾賓浩斯式自適應後段。兩個衝刺版給區間短的人。 */
+   「考前混合」是原本的作法：連續前段 + 自適應後段。兩個衝刺版給區間短的人。 */
 const PLANS={
  mix: {name:'考前混合',   ladder:[1,1,1,1,7,15,30,60],             adaptive:true,  who:'學測、四個月以上'},
- ch16:{name:'固定遍數法 16 遍', ladder:[1,1,1,1,1,2,2,3,3,7,7,7,7,7,10,10],adaptive:false, who:'起步者、國中小、三個月以上'},
- ch10:{name:'固定遍數法 10 遍', ladder:[1,1,1,1,1,7,7,7,30,30],           adaptive:false, who:'英檢初級、多益 600'},
- ch8: {name:'固定遍數法 6–8 遍',ladder:[1,1,1,1,7,7,30,30],               adaptive:false, who:'英檢中級、多益 700'},
+ f16: {name:'固定 16 遍', ladder:[1,1,1,1,1,2,2,3,3,7,7,7,7,7,10,10],adaptive:false, who:'起步者、國中小、三個月以上'},
+ f10: {name:'固定 10 遍', ladder:[1,1,1,1,1,7,7,7,30,30],           adaptive:false, who:'英檢初級、多益 600'},
+ f8:  {name:'固定 6–8 遍',ladder:[1,1,1,1,7,7,30,30],               adaptive:false, who:'英檢中級、多益 700'},
  s8:  {name:'衝刺 8 週',  ladder:[1,1,1,1,7,7,15],                  adaptive:true,  who:'剩兩到三個月'},
  s4:  {name:'衝刺 4 週',  ladder:[1,1,1,1,7],                       adaptive:true,  who:'剩一個月內，只求認得'},
 };
@@ -1403,7 +1403,7 @@ function planWhy(){
     間隔是 <span class="mono">${L.join(' → ')}</span> 天，共 ${L.length} 遍，一個字從第一次見到畢業約 ${c} 天。
     新字會在第 ${cum.slice(0,E).join('、')} 天<b>連續出現 ${E} 次</b>，之後隔 ${L.slice(E).join('、')} 天各一次。
     ${P.adaptive?'△ 退兩階（多半掉回連續那段）、× 歸零重來；每個字有自己的難度係數，一直答對會拉長間隔、答錯縮短。'
-                :'固定遍數（固定遍數）：△ 同一格再走一次、× 退一格，不用難度係數，重點是每天有業績。'}<br>`;
+                :'固定遍數：△ 同一格再走一次、× 退一格，不用難度係數，重點是每天有業績。'}<br>`;
 }
 let repeats={},again={};
 const MODEWHY={
@@ -1474,7 +1474,7 @@ function buildQueue(){
   due=due.sort((a,b)=>((b.lapses||0)-(a.lapses||0))||(a.due<b.due?-1:1))
          .slice(0,S.revCap||60);
   const room=rest?0:Math.max(0,(S.goal||12));
-  /* 挑新字：照字組順序，但同字根的未學字拉到相鄰位置一起背（固定遍數法「一串一串，有邏輯」） */
+  /* 挑新字：照字組順序，但同字根的未學字拉到相鄰位置一起背（一串一串、有邏輯地背） */
   const dueOf=r=>deckDue(r.deck)||'9999';
   const pool=all.filter(r=>!r.seen).sort((a,b)=>(dueOf(a)<dueOf(b)?-1:dueOf(a)>dueOf(b)?1:0)||((b.pin?1:0)-(a.pin?1:0))),nw=[],used=new Set();   // 上課日近的字組先，再來是從文章挑出來的字
   for(const r of pool){
@@ -1859,7 +1859,7 @@ async function doMark(m){
     const at=(m==='x')?Math.min(queue.length,idx+4):queue.length;
     queue.splice(at,0,r);marks.splice(at,0,null);
   }else if(m==='o'&&firstTime&&S.sameDay!==false&&!again[r.id]){
-    /* 答對的新字也在當場最後再看一次：對應艾賓浩斯的短間隔、固定遍數法「晚一點再背」 */
+    /* 答對的新字也在當場最後再看一次：對應短間隔複習 */
     again[r.id]=1;queue.push(r);marks.push(null);
   }
 
@@ -2717,6 +2717,7 @@ function renderSheet(){
     if(!S.artEvery)S.artEvery=3;
     if(!S.sources)S.sources=[];
     if(!S.days||!S.days.length)S.days=[2,3,4,5];
+    S.plan={ch16:'f16',ch10:'f10',ch8:'f8'}[S.plan]||S.plan;   // 舊版方案 id
     if(!PLANS[S.plan])S.plan='mix';
     if(S.strictEarly===undefined)S.strictEarly=true;
     if(S.sameDay===undefined)S.sameDay=true;
