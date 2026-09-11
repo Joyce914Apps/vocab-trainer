@@ -355,7 +355,8 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
     <b>排程方案</b> <select id="planSel" class="tbtn" style="padding:5px 8px"></select><br>
     <label><input type="checkbox" id="strictEarly"> 新字前段不順延：前幾天照日曆天出現，休息日只做這些字（約 5 分鐘）</label><br>
     <label><input type="checkbox" id="sameDay"> 答對的新字，當場最後再看一次</label><br>
-    <label><input type="checkbox" id="groupRoots"> 同字根的新字連著背（predict、indicate、condition 會排在一起）</label>
+    <label><input type="checkbox" id="groupRoots"> 同字根的新字連著背（predict、indicate、condition 會排在一起）</label><br>
+    <label><input type="checkbox" id="spellByEar"> 拼寫題用聲音出題（聽寫：只播例句，不給中文與挖空句，聽到就打出來；準備聽力測驗時再開）</label>
     <div id="planBox" style="margin:12px 0 4px"></div><br>
     <b>讀書日</b>　<span id="dayPick"></span><br>
     只在勾選的日子練習。到期日落在其他天會自動順延到下一個讀書日 ——
@@ -1413,13 +1414,15 @@ const MODEWHY={
  auto:'自動：標「看得懂就好」的字只考選擇；標「要會拼寫」的字，爬到第 3 階起每三次考一次拼寫，退步兩次以上的一律拼寫。點卡片上的徽章可以隨時改。',
  choice:'選擇：挖空句子＋四個選項，和學測詞彙題、文意選填同一個形狀。約 20 秒一字。',
  spell:'拼寫：要自己把字打出來。最慢也最紮實，中譯英與作文靠這個。約 40 秒一字。',
- recog:'只求認得：看句子想中文，翻面自評。最快，約 10 秒一字。跳完舞太累的日子用這個，不要整學期都用。'};
+ recog:'只求認得：看句子想中文，翻面自評。最快，約 10 秒一字。跳完舞太累的日子用這個，不要整學期都用。',
+ listen:'聽辨：只播例句的聲音，四選一選出是哪個字。練「聽得出來」。要練「聽到就寫得出來」，到設定開「拼寫題用聲音出題」。'};
 function quizType(r){
   const m=(S&&S.mode)||'auto';
-  if(m!=='auto')return m;
+  const ear=t=>(t==='spell'&&S&&S.spellByEar)?'dictate':t;   // 設定「拼寫題用聲音出題」：拼寫改成聽寫打字
+  if(m!=='auto')return ear(m);
   if(r.kind!=='p')return 'choice';          // 標成「看得懂就好」的字永遠不考拼寫
-  if((r.lapses||0)>=2)return 'spell';       // 退步兩次以上的頑固字一定要拼
-  if((r.box||0)>=earlyLen()&&((r.reps||0)%3===0))return 'spell';
+  if((r.lapses||0)>=2)return ear('spell');  // 退步兩次以上的頑固字一定要拼
+  if((r.box||0)>=earlyLen()&&((r.reps||0)%3===0))return ear('spell');
   return 'choice';
 }
 function distract(r,n){
@@ -1464,7 +1467,7 @@ function seedInto(recs){
 }
 function freshState(){
   const on={};allDecks().forEach(([n])=>on[n]=true);
-  return {recs:seedInto({}),sources:[],goal:8,revCap:60,artEvery:3,days:[2,3,4,5],plan:'mix',strictEarly:true,sameDay:true,groupRoots:true,deckDue:{},targetDate:'',doneDays:{},startDate:null,theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
+  return {recs:seedInto({}),sources:[],goal:8,revCap:60,artEvery:3,days:[2,3,4,5],plan:'mix',strictEarly:true,sameDay:true,groupRoots:true,spellByEar:false,deckDue:{},targetDate:'',doneDays:{},startDate:null,theme:'light',fs:17,cid:0,on,mode:'auto',rate:0.85,autoSay:true,arts:{},read:{}};
 }
 function buildQueue(){
   const t=today();
@@ -1782,6 +1785,24 @@ function renderQuiz(){
     return;
   }
 
+  /* 聽寫打字：只給聲音，不給中文、不給挖空句；判定與拼寫相同 */
+  const dictate=ty==='dictate';
+  if(dictate){
+    $('stage').innerHTML=`<div class="card">
+    <div class="step">② 回想 · 聽寫 · ${head}</div>
+    <p class="prompt" style="margin:8px 0">聽例句，把聽到的<b>目標字</b>打出來。不確定可以再聽，或按提示看中文。</p>
+    <div class="row"><button class="btn" id="playQ">🔊 再聽一次</button><button class="btn ghost" id="slowQ">🐢 慢速</button></div>
+    <input class="typebox" id="inp" autocomplete="off" spellcheck="false" placeholder="聽到的字">
+    <div class="row">
+      <button class="btn" id="okB">送出</button>
+      <button class="btn ghost" id="hintB">給我提示</button>
+      <button class="btn ghost" id="giveB">想不出來</button>
+    </div>
+    <p class="prompt" id="hintTxt"></p>
+  </div>`;
+    saySent(r);
+    $('playQ').onclick=()=>saySent(r);$('slowQ').onclick=()=>saySent(r,{rate:0.6});
+  }else
   /* 拼寫 */
   $('stage').innerHTML=`<div class="card">
     <div class="step">② 回想 · 拼寫 · ${head}</div>
@@ -1800,7 +1821,7 @@ function renderQuiz(){
   inp.onkeydown=e=>{if(e.key==='Enter')submit();};
   $('okB').onclick=submit;
   $('hintB').onclick=()=>{hinted=true;
-    $('hintTxt').textContent=`${r.en[0]}${'_'.repeat(Math.max(0,r.en.length-1))}　共 ${r.en.length} 個字母`;};
+    $('hintTxt').textContent=`${dictate?r.zh+'　·　':''}${r.en[0]}${'_'.repeat(Math.max(0,r.en.length-1))}　共 ${r.en.length} 個字母`;};
   $('giveB').onclick=()=>{ans='';sug='x';phase='res';render();};
   function submit(){
     ans=inp.value.trim();
@@ -2170,7 +2191,7 @@ function bindReset(){
     window.scrollTo(0,0);
   });
   if($('rsAll'))arm($('rsAll'),'完全重置',async()=>{
-    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap,accent:S.accent,days:S.days,plan:S.plan,strictEarly:S.strictEarly,sameDay:S.sameDay,groupRoots:S.groupRoots,targetDate:S.targetDate};
+    const keep={theme:S.theme,fs:S.fs,rate:S.rate,autoSay:S.autoSay,mode:S.mode,goal:S.goal,revCap:S.revCap,accent:S.accent,days:S.days,plan:S.plan,strictEarly:S.strictEarly,sameDay:S.sameDay,groupRoots:S.groupRoots,spellByEar:S.spellByEar,targetDate:S.targetDate};
     S=freshState();Object.assign(S,keep);
     await save(S);
     buildQueue();phase='pre';ans='';hinted=false;
@@ -2270,6 +2291,7 @@ function renderPlan(){
   if($('strictEarly'))$('strictEarly').checked=S.strictEarly!==false;
   if($('sameDay'))$('sameDay').checked=S.sameDay!==false;
   if($('groupRoots'))$('groupRoots').checked=S.groupRoots!==false;
+  if($('spellByEar'))$('spellByEar').checked=!!S.spellByEar;
   if($('targetDate'))$('targetDate').value=S.targetDate||'';
   const on=r=>S.on[r.deck||'我的']!==false,all=Object.values(S.recs).filter(on),t=today();
   const unl=all.filter(r=>!r.seen).length,learning=all.filter(r=>r.seen&&(r.box||0)<GRADn()).length,grad=all.filter(r=>r.seen&&(r.box||0)>=GRADn()).length;
@@ -2841,6 +2863,7 @@ function renderSheet(){
     if(S.sameDay===undefined)S.sameDay=true;
     if(S.groupRoots===undefined)S.groupRoots=true;
     if(!S.deckDue)S.deckDue={};
+    if(S.spellByEar===undefined)S.spellByEar=false;
     if(!S.doneDays){                          // 舊進度：從作答紀錄回推讀書日與起始日
       S.doneDays={};Object.values(S.recs).forEach(r=>(r.log||[]).forEach(([d])=>{S.doneDays[d]=(S.doneDays[d]||0)+1;}));
       const ds=Object.keys(S.doneDays).sort();if(ds.length)S.startDate=ds[0];
@@ -2857,6 +2880,7 @@ function renderSheet(){
   if($('strictEarly'))$('strictEarly').onchange=async e=>{S.strictEarly=e.target.checked;await save(S);buildQueue();render();renderSheet();renderCal();};
   if($('sameDay'))$('sameDay').onchange=async e=>{S.sameDay=e.target.checked;await save(S);renderPlan();};
   if($('groupRoots'))$('groupRoots').onchange=async e=>{S.groupRoots=e.target.checked;await save(S);buildQueue();render();renderSheet();};
+  if($('spellByEar'))$('spellByEar').onchange=async e=>{S.spellByEar=e.target.checked;await save(S);if(phase==='quiz')render();};
   document.documentElement.dataset.theme=S.theme||'light';
   document.documentElement.style.setProperty('--fs',(S.fs||17)+'px');
   $('themeBtn').textContent=S.theme==='dark'?'淺色':'深色';
