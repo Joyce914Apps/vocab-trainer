@@ -644,7 +644,9 @@ blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
 <h2>3. 帳號與學生</h2>
 <ul>
 <li>一個登入帳號＝一位學生（或一位老師）。家長替孩子用：家長建一人班，孩子用自己的 LINE／Google 登入</li>
-<li>進度以（帳號 × 教材）為單位獨立；<strong>班級講義與公用教材可同時開</strong>（已定），每日額度共用，今日清單先講義後公用</li>
+<li><strong>進度以「字」為單位、跨教材共用</strong>：同一個字（以原形 lemma 為鍵）不論出現在學測、英檢講義或自己貼的卡，都只有一筆進度，不會因為同時開兩套教材而複習兩次。教材只是「引用」這個字並附自己的例句；複習時顯示最近學過的那套教材的例句，其餘例句在字卡可切換</li>
+<li>老師上稿時系統標出「這 N 個字已在公用教材或其他講義」，不重複建卡，但仍列入該講義的「過一遍」清單與上課日優先（未學者）</li>
+<li><strong>班級講義與公用教材可同時開</strong>（已定），每日額度共用，今日清單先講義後公用</li>
 <li>登出保留本機資料；換帳號登入會另建本機資料</li>
 <li>刪除帳號需二次確認，且先強制下載備份</li>
 </ul>
@@ -709,7 +711,7 @@ blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
 </code></pre>
 <p><code>tools/cards2json.dart</code> 負責轉成上面的 JSON，並檢查：單字不重複、id 不與既有衝突、例句包含該字或其變化形。</p>
 <h2>5. 進度資料</h2>
-<p>每（檔案 × 教材 × 卡片）一筆：</p>
+<p>每（帳號 × 字）一筆，鍵為 lemma；教材與卡片透過 lemma 對應到同一筆：</p>
 <pre><code>cardId, box, ease, reps, lapses, streak, seen, due(yyyy-mm-dd), last(yyyy-mm-dd),
 kindOverride(p/r/null), updatedAt(ISO, 同步用)
 </code></pre>
