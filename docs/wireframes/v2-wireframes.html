@@ -542,37 +542,32 @@ table{border-collapse:collapse;font-size:9.5px;width:100%}th,td{border:1px solid
 
 <!-- 15 要確認 -->
 <div class="pg">
-<h2>18. 請您確認的事</h2>
+<h2>18. 已定案（2026-09-11）</h2>
 <div class="row"><div class="col">
-<ol class="notes" style="font-size:10.5px">
-<li><b>同時開兩套教材</b>：一位學生能不能同時練學測與英檢講義（額度共用），還是一次一套？（第 6 頁）</li>
-<li><b>目標完成日</b>：全域一個，還是每套教材各一個？（第 12 頁）</li>
-<li><b>回音練習</b>：三輪後停下等按，還是自動往下？（第 10 頁）</li>
-<li><b>訪客提示</b>：今日卡片的「加入班級／登入同步」提示只在前三天顯示，之後收進設定，可以嗎？（第 6 頁）</li>
-<li><b>LINE 登入</b>：需要申請 LINE Login channel（用您現有的 LINE Developers 帳號即可）；Apple 登入需要開發者帳號，是否現在申請？</li>
-<li><b>AI 上稿</b>：v2.1 的 AI 產例句與改寫要接哪家模型、費用由誰付？v2.0 先由開發者代做，可以嗎？（第 15 頁）</li>
-<li><b>桌機月曆格</b>：要做，還是桌機也用列表？（第 11 頁）</li>
-<li><b>本機提醒通知</b>（原生）：要不要做「今天的字還沒做」的提醒？預設關。</li>
-<li><b>教材更新方式</b>：App 啟動時檢查伺服器上的教材版本自動更新，還是只隨 App 版本更新？</li>
-<li><b>老師儀表板的欄位</b>：連續天數、本週業績、講義完成率、中譯點最多的句子、回音分鐘——夠嗎？要不要看到每個字的○△×？（第 16 頁）</li>
-<li><b>上架順序</b>：Web → Android → iOS。iOS 需要開發者帳號（年費）與 Mac 簽章，是否現在就要？</li>
-</ol>
+<table>
+<tr><th>項目</th><th>決定</th></tr>
+<tr><td>不登入試用</td><td>允許；班級／同步／老師身分才登入；提示只顯示前三天</td></tr>
+<tr><td>登入方式</td><td>Google／LINE／Apple；申請流程見 docs/07</td></tr>
+<tr><td>iOS 帳號</td><td>用公司既有開發者帳號</td></tr>
+<tr><td>AI 上稿</td><td>v2.0 開發者代做；v2.1 接 Claude API（Opus 5），費用由平台付；評估見 docs/06</td></tr>
+<tr><td>每個字的 ○△×</td><td>儀表板要看到，由累積紀錄推導（規則見規格書 §3a），不是使用者最後一次點的</td></tr>
+<tr><td>同時開兩套教材</td><td>可以，額度共用</td></tr>
+<tr><td>目標完成日</td><td>全域一個；沒設定＝程度提升模式，不做反推</td></tr>
+<tr><td>回音練習</td><td>三輪後停下等按</td></tr>
+<tr><td>行事曆</td><td>一律月曆格，視覺稿用 Claude Design</td></tr>
+<tr><td>本機提醒</td><td>要，FCM＋Web Push，預設開可關</td></tr>
+<tr><td>教材更新</td><td>啟動時檢查伺服器版本自動更新</td></tr>
+</table>
 </div>
 <div class="col" style="max-width:300px">
-<h3>對應文件</h3>
-<ul class="notes">
-<li>PRD：docs/01_PRD.md</li>
-<li>規格：docs/02_產品規格書.md（每個規則的數值都在這）</li>
-<li>技術：docs/03_技術文件.md</li>
-<li>執行：docs/04_執行計畫.md</li>
-<li>使用說明（v1.7）：docs/使用說明.md</li>
-</ul>
 <h3>下一步</h3>
 <ul class="notes">
-<li>您回覆上面 9 點</li>
-<li>我更新規格書與這份線框，再開始階段 0（專案骨架）</li>
-<li>視覺稿（配色、字體、圖示）在階段 2 畫面做出來後再定，不在這份的範圍</li>
+<li>Firebase 專案、Google 登入、LINE channel、Apple 設定（docs/07 的順序）</li>
+<li>v2 階段 0：專案骨架（docs/04）</li>
+<li>視覺稿：階段 2 畫面出來後用 Claude Design</li>
 </ul>
+<h3>對應文件</h3>
+<ul class="notes"><li>docs/05 決定紀錄　docs/06 AI 評估　docs/07 申請流程</li></ul>
 </div></div>
 <div class="foot"><span>單字練習台 v2 Wireframes</span><span>18 / 18</span></div>
 </div>
