@@ -726,7 +726,7 @@ kindOverride(p/r/null), updatedAt(ISO, 同步用)
 <h2>7. 同步（P0）</h2>
 <ul>
 <li>登入方式：Google、LINE（Cloud Function 驗證 LINE access token 後簽發 Firebase custom token）、Apple</li>
-<li>Firestore 結構：<code>users/{uid}/courses/{cid}/cards/{cardId}</code>，<code>review_log</code> 為子集合；<code>classes/{cid}</code>、<code>lessons/{lid}</code> 見第 0 節</li>
+<li>Firestore 結構：<code>users/{uid}/words/{lemma}</code>（跨教材共用的進度），<code>review_log</code> 為子集合；教材卡片以 lemma 對應；<code>classes/{cid}</code>、<code>lessons/{lid}</code> 見第 0 節</li>
 <li>離線優先：本機 Drift 為真相，Firestore 開離線快取；每筆寫入帶 <code>updatedAt</code>，衝突取新者</li>
 <li>安全規則：<code>users/{uid}</code> 本人可寫；所屬班級的老師可讀 <code>progress</code> 彙總；<code>classes/{cid}</code> 老師可寫、成員可讀；<code>lessons/{lid}</code> 老師可寫、發布班級的成員可讀；<code>classes/{cid}/private</code> 只有老師</li>
 </ul>
@@ -991,9 +991,14 @@ int? requeueIndex({required Mark m, required int idx, required int queueLength, 
 <td>activeDeckIds(json), lastPracticedAt</td>
 </tr>
 <tr>
-<td>card_progress</td>
-<td>(profileId, courseId, cardId)</td>
-<td>box, ease, reps, lapses, streak, seen, due, last, kindOverride?, updatedAt</td>
+<td>word_progress</td>
+<td>(uid, lemma)</td>
+<td>box, ease, reps, lapses, streak, seen, due, last, kindOverride?, lastCourseId, updatedAt。<strong>跨教材共用</strong>：同一個字在多套教材出現只有一筆</td>
+</tr>
+<tr>
+<td>course_cards</td>
+<td>(courseId, cardId) → lemma</td>
+<td>教材卡片對進度的對應；同 lemma 在不同教材各有例句</td>
 </tr>
 <tr>
 <td>review_log</td>
@@ -1317,6 +1322,23 @@ CardWithProgress                      → Course.card × card_progress，practic
 <td>老師儀表板</td>
 <td>欄位維持，加「每個字的 ○△×」（推導值）</td>
 <td>線框 p14</td>
+</tr>
+</tbody>
+</table>
+<h2>2026-09-11（補）</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>決定</th>
+<th>落地位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>跨教材重複字</td>
+<td>進度以「字」為單位跨教材共用，不重複複習；教材只引用並附例句；上稿時標出已存在的字</td>
+<td>規格書 §3、§5、§7；技術文件 §3</td>
 </tr>
 </tbody>
 </table>
