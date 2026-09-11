@@ -142,6 +142,7 @@ Flutter 版會直接讀這個格式匯入舊進度。
 - [技術文件](docs/03_技術文件.md)：架構、srs_engine API、Drift 資料模型、平台分岔、測試與部署
 - [執行計畫](docs/04_執行計畫.md)：分階段檢查清單與完成定義
 - [v2 規格書 PDF](docs/單字練習台_v2_規格書.pdf)（合併第一至七章與使用說明）、[v2 線框 PDF](docs/wireframes/v2-wireframes.pdf)（21 頁）
+- [開發任務清單](docs/08_開發任務清單.md)：mockup 產出順序、M0–M5 里程碑、角色分工
 - [決定紀錄](docs/05_決定紀錄.md)、[AI 上稿模型評估](docs/06_AI上稿模型評估.md)、[帳號申請流程](docs/07_帳號申請流程.md)
 - [ADR](docs/adr/)：純 Dart 引擎、Firebase、不做 LIFF、教材 JSON 資料包
 

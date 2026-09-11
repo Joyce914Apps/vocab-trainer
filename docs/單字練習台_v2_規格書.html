@@ -21,8 +21,8 @@ blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
 </style></head><body>
 <div class="cover"><h1>單字練習台 v2 規格書</h1><div class="sub">Flutter Web／Android／iOS　·　學生與老師兩種角色　·　間隔重複、聽讀說寫、任務系統</div>
 <div class="meta">版本：2026-09-11　規劃階段（開發前）<br>對象：開發者、老師、審閱者<br>配套文件：v2 Wireframes（21 頁，另冊）<br>現行網頁版（v1.7.2，學測衝刺版）：https://joyce914apps.github.io/vocab-trainer/<br>Repo：https://github.com/Joyce914Apps/vocab-trainer</div></div>
-<div class="toc"><h1>目錄</h1><ol><li><a href="#c1">第一章　產品需求（PRD）</a></li><li><a href="#c2">第二章　產品規格</a></li><li><a href="#c3">第三章　技術架構</a></li><li><a href="#c4">第四章　執行計畫</a></li><li><a href="#c5">第五章　決定紀錄</a></li><li><a href="#c6">第六章　AI 上稿模型評估</a></li><li><a href="#c7">第七章　第三方登入與服務申請</a></li><li><a href="#c8">附錄　v1.7 使用說明（現行網頁版）</a></li></ol>
-<p style="margin-top:30px;color:#555;font-size:10pt">閱讀順序建議：先看第五章的決定紀錄了解已定案的事，再看第一、二章；技術與執行計畫給開發者；第六、七章是開工前的準備。教材品牌、作者與講義原始檔一律不出現在本書。</p></div>
+<div class="toc"><h1>目錄</h1><ol><li><a href="#c1">第一章　產品需求（PRD）</a></li><li><a href="#c2">第二章　產品規格</a></li><li><a href="#c3">第三章　技術架構</a></li><li><a href="#c4">第四章　執行計畫</a></li><li><a href="#c5">第五章　開發任務清單（設計與 RD）</a></li><li><a href="#c6">第六章　決定紀錄</a></li><li><a href="#c7">第七章　AI 上稿模型評估</a></li><li><a href="#c8">第八章　第三方登入與服務申請</a></li><li><a href="#c9">附錄　v1.7 使用說明（現行網頁版）</a></li></ol>
+<p style="margin-top:30px;color:#555;font-size:10pt">閱讀順序建議：先看第六章的決定紀錄了解已定案的事，再看第一、二章；技術、執行計畫與任務清單給 PM、設計、RD；第七、八章是開工前的準備。教材品牌、作者與講義原始檔一律不出現在本書。</p></div>
 <section class="chap" id="c1"><h1>第一章　產品需求（PRD）</h1><p>版本：2026-09-10 修訂 2（加入角色與登入）　｜　狀態：規劃中，預計 W2–W4 課餘時間開工　｜　v1（HTML）已上線：https://joyce914apps.github.io/vocab-trainer/</p>
 <h2>1. 背景與問題（Why）</h2>
 <p>v1 是為一位準備學測的高中生做的單一 HTML 工具，到 v1.7 已驗證的設計（v2 全部承襲）：三段式練習（預習→挖空回想→○△×）、前段連續的間隔階梯與七個可選方案、讀書日與前段不順延、拆字與同字根、四國口音內建音檔、文章先聽再看與逐字反白、逐句中譯、回音練習、每週講義的字組上課日與預習、找出生字的字典自動帶入。</p>
@@ -1280,7 +1280,571 @@ CardWithProgress                      → Course.card × card_progress，practic
 <li>更新 <code>~/914Apps/README.md</code> 的專案狀態</li>
 </ol>
 <h2>與 stock_ledger 的關係</h2>
-<p>兩個專案共用同一套結構與心智模型。srs_engine 是 portfolio_engine 的縮小版練習：先在這裡把「純 Dart 套件、測試先行、App 只做組裝」跑順，回頭做 stock_ledger 的計算引擎會更快。若兩者時間衝突，<strong>stock_ledger 優先</strong>。</p></section><section class="chap" id="c5"><h1>第五章　決定紀錄</h1><h2>2026-09-11（回覆線框第 18 頁）</h2>
+<p>兩個專案共用同一套結構與心智模型。srs_engine 是 portfolio_engine 的縮小版練習：先在這裡把「純 Dart 套件、測試先行、App 只做組裝」跑順，回頭做 stock_ledger 的計算引擎會更快。若兩者時間衝突，<strong>stock_ledger 優先</strong>。</p></section><section class="chap" id="c5"><h1>第五章　開發任務清單（設計與 RD）</h1><p>日期：2026-09-11　｜　依據：規格書 01–07、線框 21 頁　｜　里程碑（milestone）M0–M5＋v2.1</p>
+<h2>0. 怎麼用這份清單</h2>
+<ul>
+<li><strong>設計走在 RD 前一個里程碑</strong>：RD 做 M1 時，設計交 M2 的 mockup；RD 做 M2 時，設計交 M3、M4。</li>
+<li>每個里程碑有「完成定義」，達成才進下一個；做不完縮功能，不延時程。</li>
+<li>角色：<strong>PM</strong>（排程、驗收、決定）、<strong>設計</strong>（Claude Design 產 mockup，PM 審）、<strong>RD</strong>（Flutter、Firebase、Functions）、<strong>內容</strong>（教材包、講義上稿，目前是開發者）、<strong>Joyce</strong>（帳號申請、審核、驗收）。</li>
+<li>本專案 RD 與內容目前是同一人，設計用 Claude Design；清單仍按角色分，之後分工不用改。</li>
+</ul>
+<hr />
+<h2>1. UI mockup 的產出順序</h2>
+<p>先做設計系統，再做學生端手機畫面（最多人用、最先上線），再做 RWD 變體，最後老師端桌機。每張 mockup 交付：亮色＋深色、預設／載入中／空／錯誤／離線五種狀態（適用者）、可點區塊標註。</p>
+<h3>D0　設計系統（M0 前完成，一切的基礎）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D0-1</td>
+<td>色彩與字級 token</td>
+<td>主色、○△× 三色、螢光反白色、淡底、深色模式；字級 14–26 可縮放；行高</td>
+</tr>
+<tr>
+<td>D0-2</td>
+<td>元件</td>
+<td>按鈕（主／次／文字）、卡片、勾選、標籤、熟悉度小方塊、音訊列（播／慢速／跟讀／錄音）、播放器、進度圓點、輸入框、下拉、日期選擇、表格、底部分頁、側欄、抽屜、coach mark 氣泡、Toast</td>
+</tr>
+<tr>
+<td>D0-3</td>
+<td>圖示集</td>
+<td>五個分頁、音訊、任務六型、狀態</td>
+</tr>
+<tr>
+<td>D0-4</td>
+<td>版型網格</td>
+<td>手機／平板／桌機三斷點、練習卡 640px 置中、摺疊機三態的欄位規則（線框 p5、p6）</td>
+</tr>
+</tbody>
+</table>
+<h3>D1　學生端核心（手機直式，M2 用）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>畫面</th>
+<th>線框頁</th>
+<th>狀態要畫</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1-1</td>
+<td>首次引導三張卡＋coach mark 樣式</td>
+<td>p7</td>
+<td>三張、氣泡</td>
+</tr>
+<tr>
+<td>D1-2</td>
+<td>今日：訪客首頁（含前三天提示）、一般日、休息日、業績達成、講義提醒、預習提醒</td>
+<td>p8、p5</td>
+<td>六種</td>
+</tr>
+<tr>
+<td>D1-3</td>
+<td>練習卡：① 預習（含拆字、同字根、音訊列）② 回想 選擇／拼寫／聽寫打字 ③ 對答案（○△× 三鈕、下次間隔）</td>
+<td>p9</td>
+<td>五張</td>
+</tr>
+<tr>
+<td>D1-4</td>
+<td>答錯回籠與當場再看的提示樣式</td>
+<td>p9</td>
+<td>一張</td>
+</tr>
+<tr>
+<td>D1-5</td>
+<td>登入、選角色、加入班級</td>
+<td>p8</td>
+<td>三張</td>
+</tr>
+<tr>
+<td>D1-6</td>
+<td>選教材（班級講義＋公用教材，含「有新講義」）</td>
+<td>p8</td>
+<td>一張</td>
+</tr>
+<tr>
+<td>D1-7</td>
+<td>設定（長頁）：字組列含上課日與過一遍、學習計畫試算、方案、作答與聲音、帳號與同步、備份與重置</td>
+<td>p14</td>
+<td>一張長頁＋試算展開</td>
+</tr>
+<tr>
+<td>D1-8</td>
+<td>字庫：列表、篩選、分組檢視、字卡浮層</td>
+<td>p10</td>
+<td>三張</td>
+</tr>
+<tr>
+<td>D1-9</td>
+<td>文章列表（今天排的、預習、全部）</td>
+<td>p11</td>
+<td>一張</td>
+</tr>
+<tr>
+<td>D1-10</td>
+<td>文章頁三態：先聽（內文隱藏）、看文章（逐字反白、點句中譯、底線字）、理解題與 wpm</td>
+<td>p11、p12</td>
+<td>三張</td>
+</tr>
+<tr>
+<td>D1-11</td>
+<td>回音練習面板（四步狀態、段數、計時）＋逐句跟讀狀態列</td>
+<td>p12</td>
+<td>兩張</td>
+</tr>
+<tr>
+<td>D1-12</td>
+<td>自己的音檔上傳／移除</td>
+<td>p12</td>
+<td>一張</td>
+</tr>
+<tr>
+<td>D1-13</td>
+<td>行事曆月曆格（手機）＋當日抽屜</td>
+<td>p13</td>
+<td>兩張</td>
+</tr>
+<tr>
+<td>D1-14</td>
+<td>找出生字、貼上字卡</td>
+<td>p15</td>
+<td>兩張</td>
+</tr>
+<tr>
+<td>D1-15</td>
+<td>備份匯出／匯入、v1 匯入結果</td>
+<td>p14</td>
+<td>兩張</td>
+</tr>
+<tr>
+<td>D1-16</td>
+<td>通知樣式（推播內容、App 內提醒）</td>
+<td>§9a</td>
+<td>一張</td>
+</tr>
+</tbody>
+</table>
+<h3>D2　RWD 變體（M3 用）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>畫面</th>
+<th>線框頁</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D2-1</td>
+<td>今日、練習卡：平板兩欄、桌機三欄、手機橫式兩欄</td>
+<td>p5、p6</td>
+</tr>
+<tr>
+<td>D2-2</td>
+<td>字庫、文章頁、行事曆、設定：平板與桌機版</td>
+<td>p10–p14</td>
+</tr>
+<tr>
+<td>D2-3</td>
+<td>摺疊機：封面、內螢幕、半開（文章頁與練習卡）</td>
+<td>p6</td>
+</tr>
+<tr>
+<td>D2-4</td>
+<td>iPad 分割畫面 1/3、1/2</td>
+<td>p6</td>
+</tr>
+</tbody>
+</table>
+<h3>D3　老師端（桌機優先，M4 用）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>畫面</th>
+<th>線框頁</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D3-1</td>
+<td>老師首次導覽三步</td>
+<td>p7</td>
+</tr>
+<tr>
+<td>D3-2</td>
+<td>儀表板：本週卡、要注意、學生表、學生細節（含每字 ○△× 推導狀態）</td>
+<td>p16</td>
+</tr>
+<tr>
+<td>D3-3</td>
+<td>上稿三步：上傳、審核字卡表格、文章與發布</td>
+<td>p17</td>
+</tr>
+<tr>
+<td>D3-4</td>
+<td>班級：邀請碼、成員、預設值</td>
+<td>p18</td>
+</tr>
+<tr>
+<td>D3-5</td>
+<td>教材庫：我的講義、公用教材、指派</td>
+<td>p18</td>
+</tr>
+<tr>
+<td>D3-6</td>
+<td>任務表：範本編輯、本週表格子、點格看證據</td>
+<td>p19</td>
+</tr>
+<tr>
+<td>D3-7</td>
+<td>老師端手機版（卡片列表、表格橫捲）</td>
+<td>p16 註</td>
+</tr>
+</tbody>
+</table>
+<h3>D4　學生端任務系統（M4 用）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>畫面</th>
+<th>線框頁</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D4-1</td>
+<td>今日任務清單（六型＋自由＋外部英聽）</td>
+<td>p19</td>
+</tr>
+<tr>
+<td>D4-2</td>
+<td>逐句聽寫：聽、打整句、逐字比對、正確率與漏字清單</td>
+<td>p19 註</td>
+</tr>
+<tr>
+<td>D4-3</td>
+<td>跟述三部曲流程與錄音上傳</td>
+<td>§任務系統</td>
+</tr>
+<tr>
+<td>D4-4</td>
+<td>課外閱讀紀錄（書名、頁數、朗讀錄音）</td>
+<td>§任務系統</td>
+</tr>
+<tr>
+<td>D4-5</td>
+<td>外部英聽紀錄（來源、①②③、口說摘要錄音）</td>
+<td>§任務系統</td>
+</tr>
+<tr>
+<td>D4-6</td>
+<td>學生本週表（行事曆分頁）</td>
+<td>p19</td>
+</tr>
+</tbody>
+</table>
+<h3>D5　商店與網站</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>項目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D5-1</td>
+<td>App 圖示、啟動畫面、商店截圖（手機／平板各 5 張）、PWA 圖示</td>
+</tr>
+<tr>
+<td>D5-2</td>
+<td>隱私權政策頁、服務條款頁（GitHub Pages）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>2. 里程碑與任務</h2>
+<h3>M0　專案骨架與帳號（設計 D0；RD；Joyce）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+<th>完成定義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Joyce</td>
+<td>Firebase 專案；Google 登入；LINE Login channel（先送 Email 權限審核）；Apple：App ID、Services ID、Key、APNs Key；FCM VAPID（07 的順序）</td>
+<td>三種登入在 Firebase 都是「已啟用」</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>Flutter workspace：<code>app/</code> 與 <code>packages/srs_engine</code>；analysis_options 零警告；GitHub Actions（analyze、test、規則測試）</td>
+<td>CI 綠燈</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>基礎架構：GoRouter（<code>/s/*</code>、<code>/t/*</code>、守衛）、Riverpod、Drift（web／native 分岔）、主題與字級、版型切換（寬度＋displayFeatures）殼</td>
+<td>三個斷點與旋轉不丟狀態的空殼可跑</td>
+</tr>
+<tr>
+<td>設計</td>
+<td>D0 設計系統</td>
+<td>PM 審過，token 交 RD</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>確認 06 的 AI 費用歸屬、07 的隱私權政策草稿</td>
+<td>決定紀錄更新</td>
+</tr>
+</tbody>
+</table>
+<h3>M1　排程引擎（設計 D1-1～D1-7；RD）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+<th>完成定義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD</td>
+<td><code>srs_engine</code>：models、七個方案、<code>nextGap</code>、<code>applyRule</code>（自適應／固定）、<code>quizType</code>（含 dictate）、<code>buildQueue</code>（讀書日、前段不順延、上課日優先、pin、同字根相鄰）、<code>requeueIndex</code>、<code>derivedMark</code>、<code>suggestPlan</code>、<code>snapToStudyDay</code>、<code>previewItems</code></td>
+<td>單元測試 100%；v1 對照案例（v1 備份回放 30 字）零差異</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>拆字（morph）、教材包載入與驗證、<code>tools/cards2json.dart</code>（v1 → gsat 教材包：字、拆字、文章、逐句中譯、音檔路徑、講義文章對應）</td>
+<td>gsat.json 通過驗證</td>
+</tr>
+<tr>
+<td>內容</td>
+<td>英檢中級 2-5～2-10 轉成班級講義格式；公用教材 gsat</td>
+<td>兩套教材包可載入</td>
+</tr>
+<tr>
+<td>設計</td>
+<td>D1-1～D1-7</td>
+<td>PM 審過</td>
+</tr>
+</tbody>
+</table>
+<h3>M2　學生端 P0（設計 D1-8～D1-16；RD）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+<th>完成定義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD</td>
+<td>auth：訪客模式、三種登入、<code>mergeGuestInto</code>、角色、<code>lineAuth</code> Function</td>
+<td>三種登入可用，訪客進度併入</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>classes：建班、邀請碼、<code>joinClass</code> Function、成員；Firestore 規則＋emulator 測試</td>
+<td>規則測試綠燈</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>storage＋sync：word_progress（lemma 鍵）、review_log、settings、daily_stats；登入即同步、LWW、離線佇列</td>
+<td>兩台 30 秒內一致；離線 50 題後同步</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>onboarding：三張卡、coach mark、seen 記錄</td>
+<td>各只出現一次</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>practice：三段式、選擇／拼寫／聽寫打字、○△×、回籠、當場再看、鍵盤</td>
+<td>匯入 v1 備份後可完整練一場</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>courses、settings（字組上課日、試算、方案、聲音）、backup（v1/v2 匯入匯出）</td>
+<td></td>
+</tr>
+<tr>
+<td>RD</td>
+<td>audio：just_audio 播內建 mp3（含區段）、TTS 退回、錄音</td>
+<td></td>
+</tr>
+<tr>
+<td>設計</td>
+<td>D1-8～D1-16</td>
+<td></td>
+</tr>
+<tr>
+<td>PM</td>
+<td>驗收腳本：新手 10 分鐘走完引導到第一場練習</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>M3　Web 上線取代 v1（設計 D2；RD；Joyce）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+<th>完成定義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD</td>
+<td>library、calendar（月曆格三尺寸）、reading（先聽再看、逐字反白、逐句中譯、隱性 wpm、重讀、預習）、echo、shadow、own audio、scan、lessons（上課日、過一遍）</td>
+<td>功能與 v1.7.2 對等</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>版型：平板、桌機、手機橫式、摺疊機三態、iPad 分割；測試矩陣過</td>
+<td>不丟狀態</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>通知：FCM／Web Push 註冊、排程 Function</td>
+<td>收得到「今天有 N 個字到期」</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>教材版本檢查與背景更新；PWA manifest、離線快取</td>
+<td></td>
+</tr>
+<tr>
+<td>RD</td>
+<td>Actions build web → gh-pages；<code>legacy/</code> 導向</td>
+<td>新網址 5 秒內可操作</td>
+</tr>
+<tr>
+<td>Joyce</td>
+<td>手機實測（Safari／Chrome）、v1 使用者切換與匯入</td>
+<td>進度無損</td>
+</tr>
+<tr>
+<td>設計</td>
+<td>D2、D5-2</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>M4　老師端與任務系統（設計 D3、D4；RD）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+<th>完成定義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD</td>
+<td>teacher：儀表板（彙總查詢、要注意、每字 ○△× 推導）、班級、教材庫、老師導覽</td>
+<td>老師看得到班上每位學生</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>上稿三步介面（v2.0 由內容角色操作）、Storage 音檔、<code>genAudio</code>（Cloud Run）</td>
+<td>一份講義從上傳到發布 30 分鐘內</td>
+</tr>
+<tr>
+<td>RD</td>
+<td>任務系統：範本、指派、task_logs、本週表、學生今日清單、六型任務（課前聽計次、課後立即聽、跟述三部曲＋錄音、單字、逐句聽寫、課外閱讀）＋自由＋外部英聽、錄音上傳</td>
+<td>紙本進度表的每一格都有對應</td>
+</tr>
+<tr>
+<td>設計</td>
+<td>D3、D4</td>
+<td></td>
+</tr>
+<tr>
+<td>PM</td>
+<td>老師端驗收：Joyce 以老師身分跑一週</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>M5　原生上架（設計 D5-1；RD；Joyce）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+<th>完成定義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD</td>
+<td>Android build、Play 內測；iOS build、TestFlight；原生分享匯入、原生檔案匯入音檔</td>
+<td>兩個商店內測可裝</td>
+</tr>
+<tr>
+<td>Joyce</td>
+<td>商店資料、審核回覆（含 5.1.1 不強制登入說明）</td>
+<td>上架</td>
+</tr>
+<tr>
+<td>設計</td>
+<td>D5-1</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3>v2.1（M5 後）</h3>
+<table>
+<thead>
+<tr>
+<th>負責</th>
+<th>任務</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RD</td>
+<td>AI 上稿 Functions（例句、改寫、題目、中譯、拆字）＋輸出檢查；老師端「AI 產」；LINE 提醒；老師回評語；系統建議聽寫軌</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>AI 產出品質驗收（抽樣 20 字、2 篇）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. 依賴關係</h2>
+<pre><code>Joyce 帳號申請（M0）──► auth（M2）──► classes、sync（M2）──► teacher（M4）
+D0 設計系統 ──► D1 ──► RD M2 畫面
+srs_engine（M1）──► practice（M2）──► reading／echo（M3）──► 任務系統（M4）
+教材包工具（M1）──► gsat、講義（M1）──► 上稿介面（M4）
+版型殼（M0）──► RWD 變體（M3）
+</code></pre>
+<h2>4. 每個里程碑結束時 PM 要做的事</h2>
+<ol>
+<li>對照完成定義逐項驗收，未達者列入下一里程碑最前面</li>
+<li>更新 05 決定紀錄（若有新決定）與 README 路線圖</li>
+<li>重印規格書與線框 PDF</li>
+<li>Notion 開發筆記（去識別化）；stock_ledger 主線衝突時，本專案讓路</li>
+</ol></section><section class="chap" id="c6"><h1>第六章　決定紀錄</h1><h2>2026-09-11（回覆線框第 18 頁）</h2>
 <table>
 <thead>
 <tr>
@@ -1401,7 +1965,7 @@ CardWithProgress                      → Course.card × card_progress，practic
 <li>角色分流（學生／老師）、班級模型、老師儀表板與上稿、v2.0／v2.1 分期</li>
 <li>公開檔案不出現出版社、作者、講義原檔名、原文標題、商業品牌；出處放 private/</li>
 <li>不做「只練這組」；講義文章在上課前一天排預習</li>
-</ul></section><section class="chap" id="c6"><h1>第六章　AI 上稿模型評估</h1><p>日期：2026-09-11　｜　狀態：評估，v2.0 先由開發者代做，v2.1 才接 API</p>
+</ul></section><section class="chap" id="c7"><h1>第七章　AI 上稿模型評估</h1><p>日期：2026-09-11　｜　狀態：評估，v2.0 先由開發者代做，v2.1 才接 API</p>
 <h2>1. AI 在上稿裡做什麼</h2>
 <table>
 <thead>
@@ -1574,7 +2138,7 @@ CardWithProgress                      → Course.card × card_progress，practic
 <ul>
 <li>[ ] 費用由平台付（建議）還是老師自備金鑰？</li>
 <li>[ ] 改寫文章要不要限制長度與程度（例如英檢中級 180–220 字、CEFR B1）？建議要，放在提示裡。</li>
-</ul></section><section class="chap" id="c7"><h1>第七章　第三方登入與服務申請</h1><p>日期：2026-09-11。三者都在 v2 階段 0 前完成，因為登入是 P0。</p>
+</ul></section><section class="chap" id="c8"><h1>第八章　第三方登入與服務申請</h1><p>日期：2026-09-11。三者都在 v2 階段 0 前完成，因為登入是 P0。</p>
 <h2>A. LINE Login channel</h2>
 <p>用您現有的 LINE Developers 帳號即可，和 line_bento_order 的 Messaging API channel 可以放在同一個 Provider 下。</p>
 <ol>
@@ -1619,7 +2183,7 @@ CardWithProgress                      → Course.card × card_progress，practic
 <h2>E. 隱私權政策與服務條款</h2>
 <p>三家登入與兩個商店都會要求公開的隱私權政策網址。放在 GitHub Pages 的 <code>/privacy</code> 即可，內容：收集什麼（登入身分、暱稱、練習進度）、用途、保存、刪除方式（App 內刪除帳號）、第三方服務（Firebase、LINE、Google、Apple）。這份我可以先擬草稿。</p>
 <h2>順序建議</h2>
-<p>Firebase 專案 → Google 登入（最快，先讓開發能跑）→ LINE Login channel（審核 Email 權限要等）→ Apple（上架前完成即可，但 Services ID 要在測 Web 登入前設好）→ FCM。</p></section><section class="chap" id="c8"><h1>附錄　v1.7 使用說明（現行網頁版）</h1><p>網址：https://joyce914apps.github.io/vocab-trainer/　手機、平板、電腦的瀏覽器都能開，不用安裝。進度存在<strong>這台裝置的這個瀏覽器</strong>裡，換裝置請看「備份」。</p>
+<p>Firebase 專案 → Google 登入（最快，先讓開發能跑）→ LINE Login channel（審核 Email 權限要等）→ Apple（上架前完成即可，但 Services ID 要在測 Web 登入前設好）→ FCM。</p></section><section class="chap" id="c9"><h1>附錄　v1.7 使用說明（現行網頁版）</h1><p>網址：https://joyce914apps.github.io/vocab-trainer/　手機、平板、電腦的瀏覽器都能開，不用安裝。進度存在<strong>這台裝置的這個瀏覽器</strong>裡，換裝置請看「備份」。</p>
 <hr />
 <h2>一、每天怎麼用（5 分鐘看懂）</h2>
 <ol>
