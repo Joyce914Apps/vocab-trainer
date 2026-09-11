@@ -1,0 +1,1633 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>單字練習台 v2 規格書</title>
+<style>
+@page{size:A4;margin:18mm 16mm 20mm 16mm}
+body{font-family:-apple-system,"PingFang TC","Noto Sans TC",Helvetica,sans-serif;font-size:10.5pt;line-height:1.6;color:#222;margin:0}
+.cover{height:250mm;display:flex;flex-direction:column;justify-content:center;page-break-after:always}
+.cover h1{font-size:30pt;margin:0 0 6px}.cover .sub{font-size:13pt;color:#555}.cover .meta{margin-top:40px;font-size:10.5pt;color:#444;line-height:2}
+.toc{page-break-after:always}.toc ol{font-size:12pt;line-height:2.2}.toc a{color:#222;text-decoration:none}
+.chap{page-break-before:always}
+h1{font-size:20pt;border-bottom:2px solid #222;padding-bottom:4px;margin:0 0 14px}
+h2{font-size:14.5pt;margin:22px 0 8px;border-left:4px solid #c9a400;padding-left:8px}
+h3{font-size:12pt;margin:16px 0 6px}
+table{border-collapse:collapse;width:100%;font-size:9.5pt;margin:8px 0;page-break-inside:auto}
+th,td{border:1px solid #bbb;padding:4px 6px;vertical-align:top;text-align:left}th{background:#f0f0f0}
+tr{page-break-inside:avoid}
+code{font-family:Menlo,Consolas,monospace;font-size:9pt;background:#f4f4f4;padding:1px 3px;border-radius:2px}
+pre{background:#f4f4f4;padding:8px 10px;border-radius:4px;font-size:9pt;white-space:pre-wrap;page-break-inside:avoid}
+pre code{background:none;padding:0}
+li{margin:2px 0}
+blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
+.foot{position:fixed;bottom:6mm;right:16mm;font-size:8pt;color:#888}
+</style></head><body>
+<div class="cover"><h1>單字練習台 v2 規格書</h1><div class="sub">Flutter Web／Android／iOS　·　學生與老師兩種角色　·　間隔重複、聽讀說寫、任務系統</div>
+<div class="meta">版本：2026-09-11　規劃階段（開發前）<br>對象：開發者、老師、審閱者<br>配套文件：v2 Wireframes（19 頁，另冊）<br>現行網頁版（v1.7.2，學測衝刺版）：https://joyce914apps.github.io/vocab-trainer/<br>Repo：https://github.com/Joyce914Apps/vocab-trainer</div></div>
+<div class="toc"><h1>目錄</h1><ol><li><a href="#c1">第一章　產品需求（PRD）</a></li><li><a href="#c2">第二章　產品規格</a></li><li><a href="#c3">第三章　技術架構</a></li><li><a href="#c4">第四章　執行計畫</a></li><li><a href="#c5">第五章　決定紀錄</a></li><li><a href="#c6">第六章　AI 上稿模型評估</a></li><li><a href="#c7">第七章　第三方登入與服務申請</a></li><li><a href="#c8">附錄　v1.7 使用說明（現行網頁版）</a></li></ol>
+<p style="margin-top:30px;color:#555;font-size:10pt">閱讀順序建議：先看第五章的決定紀錄了解已定案的事，再看第一、二章；技術與執行計畫給開發者；第六、七章是開工前的準備。教材品牌、作者與講義原始檔一律不出現在本書。</p></div>
+<section class="chap" id="c1"><h1>第一章　產品需求（PRD）</h1><p>版本：2026-09-10 修訂 2（加入角色與登入）　｜　狀態：規劃中，預計 W2–W4 課餘時間開工　｜　v1（HTML）已上線：https://joyce914apps.github.io/vocab-trainer/</p>
+<h2>1. 背景與問題（Why）</h2>
+<p>v1 是為一位準備學測的高中生做的單一 HTML 工具，到 v1.7 已驗證的設計（v2 全部承襲）：三段式練習（預習→挖空回想→○△×）、前段連續的間隔階梯與七個可選方案、讀書日與前段不順延、拆字與同字根、四國口音內建音檔、文章先聽再看與逐字反白、逐句中譯、回音練習、每週講義的字組上課日與預習、找出生字的字典自動帶入。</p>
+<p>但 v1 有四個結構性限制，改 HTML 解決不了：</p>
+<ol>
+<li><strong>進度綁在一台裝置的一個瀏覽器</strong>。換手機、換電腦、清瀏覽資料，進度就分家或消失。只能靠手動備份檔。</li>
+<li><strong>只有一個學生</strong>。第二位使用者要用，只能開另一個瀏覽器。</li>
+<li><strong>教材寫死在程式裡</strong>。新增一份講義要改 JavaScript 陣列。學測、英檢、TOEIC、國中小、自學教材沒辦法各自成套、各自選程度。</li>
+<li><strong>排程邏輯沒有測試</strong>。它是產品的核心，但目前只能靠人工試。</li>
+</ol>
+<h2>2. 目標與非目標</h2>
+<p><strong>目標</strong></p>
+<ul>
+<li>G0　兩種角色分流：學生（手機優先，練習）與老師（桌機優先，建班、上稿、發布、看進度）。<strong>不強制登入</strong>（App Store 5.1.1）：訪客可完整練習，加入班級、跨裝置同步、老師身分時才登入（Google／LINE／Apple），訪客進度併入帳號</li>
+<li>G1　同一個學生在手機、電腦、平板打開都是同一份進度，離線也能練，連線自動同步</li>
+<li>G2　學生可加入多個班級；每位學生在每套教材各有獨立進度</li>
+<li>G3　教材做成資料包，新增教材不改程式；每套教材有自己的考試類別與程度</li>
+<li>G4　排程引擎是純 Dart 套件，有完整單元測試，參數與理由寫在文件裡</li>
+<li>G5　v1 的備份檔可以直接匯入，舊使用者不掉進度</li>
+<li>G6　Flutter Web 先上線取代 v1；之後加 Android 只是多一個 build 目標</li>
+</ul>
+<p><strong>非目標（v2.0 不做，v2.1 做）</strong></p>
+<ul>
+<li>老師自助上稿與 AI 產例句／改寫／題目／中譯（v2.0 由開發者在同一介面代做，老師只審核與發布）</li>
+<li>LINE 推播提醒（v2.1）</li>
+</ul>
+<p><strong>非目標（v2 都不做）</strong></p>
+<ul>
+<li>LINE / LIFF 入口與推播（見 ADR-0003，與 line_bento_order 重複，不做）</li>
+<li>自動從 PDF 產生字卡（轉檔工具只吃已整理好的八欄文字）</li>
+<li>社群、排行榜、付費</li>
+</ul>
+<h2>3. 目標使用者與情境</h2>
+<table>
+<thead>
+<tr>
+<th>使用者</th>
+<th>情境</th>
+<th>需要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>準備學測／英檢的高中生（主要）</td>
+<td>平日晚上 30–60 分鐘，週末只有零碎時間，常在手機上練</td>
+<td>開了就能練、離線可用、進度不會丟、老師的講義自動出現</td>
+</tr>
+<tr>
+<td>老師／家教／家長</td>
+<td>每週一份講義，桌機上處理；想知道誰沒練、誰卡住</td>
+<td>上稿快、發布後學生端自動排、儀表板一眼看完</td>
+</tr>
+<tr>
+<td>準備 TOEIC／TOEFL／IELTS 的成人自學者</td>
+<td>通勤時用手機，回家用電腦</td>
+<td>跨裝置同步、能自己加教材</td>
+</tr>
+<tr>
+<td>國中小學生</td>
+<td>家長或家教陪同，用家裡共用的平板</td>
+<td>同一裝置切換學生、介面字大</td>
+</tr>
+<tr>
+<td>教材整理者（目前是開發者本人）</td>
+<td>拿到講義後把單字整理成字卡</td>
+<td>有明確的資料格式與轉檔工具</td>
+</tr>
+</tbody>
+</table>
+<h2>4. 使用者故事（核心）</h2>
+<ul>
+<li>US1　身為學生，我在手機練完 20 個字，晚上打開電腦，複習行事曆顯示的是同一份進度。</li>
+<li>US2　身為家長，我在家裡平板上切換到弟弟的檔案，他的進度和姊姊的完全分開。</li>
+<li>US3　身為學生，我從「學測 L3–4」切換到「英檢中級」，兩套教材的到期複習分開計算，不會互相搶額度。</li>
+<li>US4　身為教材整理者，我把一份新講義轉成 JSON 放進 <code>data/courses/</code>，push 之後所有使用者下次開啟就看得到。</li>
+<li>US5　身為 v1 使用者，我上傳舊的備份檔，749 個字的熟悉度、複習日期、退步紀錄全部保留。</li>
+<li>US6　身為學生，沒有網路時我照樣練習，恢復連線後進度自動上傳，不需要按任何按鈕。</li>
+<li>US7　身為老師，我上傳講義後審核字卡、設上課日、發布，學生端隔天就排進去，不用我一個一個通知。</li>
+<li>US8　身為老師，我打開儀表板就知道誰三天沒練、誰在哪幾句卡住，可以在課堂上針對那幾句講。</li>
+<li>US9　身為家長，我替孩子建一個一人班，孩子用自己的 LINE 登入，我看得到他的進度但改不了他的練習。</li>
+</ul>
+<h2>5. 功能清單與優先級</h2>
+<table>
+<thead>
+<tr>
+<th>優先</th>
+<th>功能</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>排程引擎（srs_engine）</td>
+<td>間隔階梯、難度係數、同場回籠、出題模式判斷；純 Dart，100% 測試覆蓋</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>教材包載入</td>
+<td>讀 <code>courses.json</code> 目錄與各教材 JSON；程度與考試類別篩選</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>今日練習</td>
+<td>三段式流程、四種作答方式、○△× 標記、鍵盤快捷鍵</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>本機儲存</td>
+<td>Drift；Web 用 IndexedDB、原生用 SQLite；離線優先</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>訪客模式與登入</td>
+<td>訪客可完整使用；Google／LINE／Apple 登入；登入時併入本機進度；學生／老師分流的路由與權限</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>班級</td>
+<td>老師建班、邀請碼、學生加入；講義發布到班級；Firestore 規則</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>同步</td>
+<td>登入即同步（原 P1 提前）：Firestore 離線快取、每張卡 LWW</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>老師儀表板</td>
+<td>班級總覽、每位學生、要注意清單；資料來自學生端既有欄位</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>v1 備份匯入</td>
+<td>讀 <code>vocab-trainer-backup</code> v1 格式</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>Flutter Web 部署</td>
+<td>GitHub Pages，取代 v1</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>上稿介面</td>
+<td>上傳／貼文字 → 抽字 → 審核 → 文章 → 產音檔 → 發布；v2.0 由開發者操作</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>AI 上稿（v2.1）</td>
+<td>產例句、改寫文章、出題、逐句中譯，老師可改</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>LINE 提醒（v2.1）</td>
+<td>老師從儀表板對學生發提醒</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>字庫與複習行事曆</td>
+<td>依熟悉度篩選、未來 30 天到期數</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>設定</td>
+<td>每日新字上限、複習上限、作答方式、語速、字體大小</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>教材轉檔工具</td>
+<td><code>tools/cards2json.dart</code>：八欄文字 → 教材 JSON，含格式驗證</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>教材包內容</td>
+<td>拆字表、四國 mp3 與逐字時間點、逐句中譯隨教材包出貨</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>講義流程</td>
+<td>字組上課日、優先排程、上課前預習、過一遍</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>任務系統</td>
+<td>老師建範本、指派六種每日任務（課前聽、課後立即聽、跟述三部曲、單字、聽寫、課外閱讀）、本週表、錄音上傳、儀表板完成率</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>逐句聽寫</td>
+<td>文章逐句聽打、逐字比對、漏字清單</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>文章閱讀</td>
+<td>先聽再看、逐字反白、逐句中譯、隱性 wpm、題目、重讀排程</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>語音</td>
+<td>內建 mp3 播放（just_audio）、回音練習、逐句跟讀、錄音對照（record）、自己的音檔</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>找出生字</td>
+<td>內建字典、線上查、字庫字排入下一批</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>列印今日</td>
+<td>填空練習紙</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Android 版</td>
+<td>同一套程式碼，加原生 Drift 初始化</td>
+</tr>
+</tbody>
+</table>
+<h2>6. 成功指標</h2>
+<ul>
+<li>排程引擎測試通過率 100%，且 v1 的排程行為在引擎測試中有對照案例（同輸入同輸出）</li>
+<li>v1 使用者匯入備份後，抽查 20 個字的 box／ease／due 與 v1 一致</li>
+<li>手機瀏覽器首次載入 5 秒內可操作（4G），第二次 2 秒內</li>
+<li>離線練習 50 題後恢復連線，30 秒內另一裝置看到更新</li>
+<li>新增一套教材不需要改任何 Dart 程式碼</li>
+</ul>
+<h2>7. 風險與對策</h2>
+<table>
+<thead>
+<tr>
+<th>風險</th>
+<th>對策</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>搶走 stock_ledger 主線時間</td>
+<td>只用 W2–W4 課餘；P0 做完就上線，P1/P2 排到 W8 之後</td>
+</tr>
+<tr>
+<td>Flutter Web 首次載入慢</td>
+<td>用 <code>--wasm</code> 或 CanvasKit 擇優；教材 JSON 延遲載入；預設字體不內嵌</td>
+</tr>
+<tr>
+<td>未成年使用者的帳號與個資</td>
+<td>用 LINE／Google 登入，不自管密碼；只存暱稱與進度；老師只能讀所屬班級學生的彙總與進度，不能讀備份內容</td>
+</tr>
+<tr>
+<td>教材版權</td>
+<td>老師上傳的原文與 PDF 存在班級私有空間，永不進公開資料與 repo；只有 AI 改寫版（老師勾選同意）可進公用教材</td>
+</tr>
+<tr>
+<td>後端與 AI 費用</td>
+<td>v2.0 後端只有 Auth、Firestore、LINE 驗證的 Function，免費額度內；v2.1 的 AI 按用量計費，一份講義數十元內，由老師端設定的金鑰或平台代付（待決）</td>
+</tr>
+<tr>
+<td>同步衝突</td>
+<td>進度以「卡片」為單位，取最後作答時間較新者（LWW），不做合併；作答紀錄 append-only</td>
+</tr>
+<tr>
+<td>教材版權</td>
+<td>例句改寫或自寫；雜誌文章一律原創改寫；教材包標明來源</td>
+</tr>
+<tr>
+<td>v1 與 v2 並存期混亂</td>
+<td>上線當天 v1 移到 <code>legacy/</code>，Pages 只留 v2；v1 的網址自動導向</td>
+</tr>
+</tbody>
+</table>
+<h2>8. 里程碑</h2>
+<table>
+<thead>
+<tr>
+<th>里程碑</th>
+<th>內容</th>
+<th>預計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td><code>packages/srs_engine</code> 完成＋測試＋設計文件</td>
+<td>W2</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>登入與角色、班級、App 骨架、教材包載入、今日練習、本機儲存＋同步、v1 匯入</td>
+<td>W3</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>Flutter Web 上線 GitHub Pages，取代 v1</td>
+<td>W4</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>老師儀表板、上稿介面（開發者操作）、字庫、行事曆、設定</td>
+<td>W8 後</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>文章、語音、Android／iOS 版</td>
+<td>視 stock_ledger 進度</td>
+</tr>
+<tr>
+<td>v2.1</td>
+<td>老師自助上稿＋AI、LINE 提醒</td>
+<td>M5 之後</td>
+</tr>
+</tbody>
+</table>
+<p>對應 Notion 週次以 stock_ledger 主線為準，本專案不佔用主線任務時段。</p></section><section class="chap" id="c2"><h1>第二章　產品規格</h1><p>本文件定義畫面、流程、規則與資料格式。排程規則的數值全部承襲 v1，理由見 <code>01_PRD.md</code> 與 README「設計決策」。</p>
+<h2>0. 角色與權限</h2>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>入口</th>
+<th>能做</th>
+<th>不能做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>學生</td>
+<td>手機優先，底部 5 分頁</td>
+<td>練習、看文章、加入班級、選公用教材、備份</td>
+<td>看別人的進度、改講義</td>
+</tr>
+<tr>
+<td>老師／家長</td>
+<td>桌機優先，左側 4 項（儀表板、講義、班級、教材庫）</td>
+<td>建班、邀請、上稿、發布、設上課日、看所屬班級學生的彙總與進度、指派公用教材</td>
+<td>讀學生備份內容、改學生的練習設定</td>
+</tr>
+<tr>
+<td>開發者</td>
+<td>老師介面＋教材庫管理</td>
+<td>維護公用教材、v2.0 代老師上稿</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>登入：<strong>不強制</strong>（App Store 5.1.1）。啟動直接進訪客的「今日」，資料存本機；加入班級、跨裝置同步、老師身分時才登入（Google／LINE／Apple，iOS 必備 Apple）。登入時把訪客的本機進度併入帳號（每張卡取 updatedAt 較新者）。首次登入選角色；同一帳號可兼老師與家長身分。訪客的「加入班級／登入同步」提示只在前三天顯示於今日卡片，之後收進設定。</p>
+<p>班級模型：<code>teachers/{uid}</code> → <code>classes/{cid}</code>（邀請碼、預設讀書日與方案）→ <code>members</code>；<code>lessons/{lid}</code>（屬於老師，發布到一或多個班級，含字組、文章、音檔路徑、上課日）；學生進度在 <code>users/{uid}/…</code>，老師對所屬班級學生有讀權限。原文 PDF 存 <code>classes/{cid}/private/</code>，永不公開。</p>
+<h2>1. 資訊架構</h2>
+<pre><code>啟動 → 今日（訪客，直接可練）
+├── 需要時登入（加入班級／設定的帳號區／我是老師）
+├── 學生：加入班級（代碼）→ 講義自動出現 → 主畫面（底部 5 個分頁）
+└── 老師：建立班級 → 老師首頁（儀表板／講義／班級／教材庫）
+
+學生主畫面
+    ├── 今日        三段式練習
+    ├── 字庫        依熟悉度／字組篩選，點開看卡片
+    ├── 文章        閱讀＋跟讀（P2）
+    ├── 行事曆      未來 30 天到期數、逾期
+    └── 設定        教材選擇、額度、作答方式、聲音、帳號與同步、備份、重置
+</code></pre>
+<p>教材切換放在「設定」而不是主畫面，因為一位學生大多數時候只練一套；切換是低頻操作。</p>
+<h2>2. 核心流程：今日練習</h2>
+<pre><code>buildQueue()
+  到期複習（due ≤ 今天，依退步次數多→少、到期早→晚排序，取前 revCap）
+  ＋ 新字（未學過，依教材順序，取前 goal）
+→ 逐題：
+  未學過的字：預習（顯示例句、音節拆解、手打一次）→ 回想 → 標記
+  學過的字　：直接回想 → 標記
+→ 標記後：
+  ○　box +1、ease +0.10（上限 2.9）
+  △　box −2（下限 0）、ease −0.15（下限 1.3）、reps&gt;1 則 lapses +1
+  ×　box = 0、ease −0.30（下限 1.3）、reps&gt;1 則 lapses +1
+  due = snap(今天 + max(1, round(LADDER[box] × ease / 2.5)))
+       snap：若落在休息日，順延到下一個讀書日（最多往後找 14 天）
+  同場回籠：非 ○ 且該字本場回籠 &lt; 2 次 → × 插到 4 題後、△ 插到隊尾
+</code></pre>
+<h3>排程方案（v1.2 起，v2 承襲）</h3>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>名稱</th>
+<th>間隔（天）</th>
+<th>自適應</th>
+<th>跨度</th>
+<th>適合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mix</td>
+<td>考前混合（預設）</td>
+<td>1,1,1,1,7,15,30,60</td>
+<td>是</td>
+<td>116</td>
+<td>學測、四個月以上</td>
+</tr>
+<tr>
+<td>f16</td>
+<td>固定 16 遍</td>
+<td>1,1,1,1,1,2,2,3,3,7,7,7,7,7,10,10</td>
+<td>否</td>
+<td>70</td>
+<td>起步者、國中小</td>
+</tr>
+<tr>
+<td>f10</td>
+<td>固定 10 遍</td>
+<td>1,1,1,1,1,7,7,7,30,30</td>
+<td>否</td>
+<td>86</td>
+<td>英檢初級、多益 600</td>
+</tr>
+<tr>
+<td>f8</td>
+<td>固定 6–8 遍</td>
+<td>1,1,1,1,7,7,30,30</td>
+<td>否</td>
+<td>78</td>
+<td>英檢中級、多益 700</td>
+</tr>
+<tr>
+<td>e5</td>
+<td>經典 5 遍</td>
+<td>1,2,3,8,15</td>
+<td>否</td>
+<td>29</td>
+<td>一個月一輪、每天固定量（艾賓浩斯經典表：第 2、4、7、15、30 天）</td>
+</tr>
+<tr>
+<td>s8</td>
+<td>衝刺 8 週</td>
+<td>1,1,1,1,7,7,15</td>
+<td>是</td>
+<td>33</td>
+<td>剩兩到三個月</td>
+</tr>
+<tr>
+<td>s4</td>
+<td>衝刺 4 週</td>
+<td>1,1,1,1,7</td>
+<td>是</td>
+<td>11</td>
+<td>剩一個月內</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>box 到達 <code>ladder.length - 1</code> 視為畢業，之後以最後一格的間隔持續複習</li>
+<li>前段長度 <code>earlyLen</code> = 階梯開頭連續 1 的個數（4 或 5）</li>
+<li>自適應方案：○ box+1、ease+0.10；△ box−2、ease−0.15；× box=0、ease−0.30；間隔 = ladder[box] × ease / 2.5</li>
+<li>固定遍數方案：○ box+1；△ box 不變（同格再走一次）；× box−1；不用 ease</li>
+<li>切換方案時保留每個字的 box，之後的間隔改查新階梯</li>
+<li>目標日建議：跨度 ≤ 剩餘天數 × 0.9 的最長方案；沒有則衝刺 4 週</li>
+</ul>
+<h3>同場再看</h3>
+<ul>
+<li>答錯（△×）：既有規則，× 插到 4 題後、△ 插到隊尾，每字每場最多兩次</li>
+<li>答對的<strong>新字</strong>（第一次作答）：排到隊尾再看一次；第二次答對只記錄，不推進 box、不改到期日；第二次答錯照一般規則處理但不計退步</li>
+</ul>
+<h3>讀書日與前段</h3>
+<ul>
+<li><code>strictEarly</code>（預設開）：box &lt; earlyLen 的字到期日照日曆天，不順延；休息日打開 App 只出這些字，並顯示預估分鐘數</li>
+<li>關閉時：所有到期日都順延到下一個讀書日，休息日不排任何進度</li>
+</ul>
+<h3>拆字與同字根（v1.3）</h3>
+<ul>
+<li><code>MORPH</code> 表：word → <code>'pre-|前;cept=cap|抓;-ion|名詞'</code>。form 結尾 <code>-</code> 為字首、開頭 <code>-</code> 為字尾、其餘為字根；<code>form=key</code> 把不同拼法歸到同一字根群。人工整理，只收有把握的分析</li>
+<li>預習卡與對答案卡：音節拆解下方顯示「拆字」與「同字根」（字庫裡同鍵的字，最多 8 個，標未學）。回想卡不顯示，避免洩漏字義</li>
+<li>字庫篩選「依字根／字尾分組」：字根群（≥2 字）→ 字首 → 字尾，每群一個可展開列</li>
+<li><code>groupRoots</code>（預設開）：挑新字時，同字根的未學字拉到相鄰位置，不超過每日額度</li>
+<li>v2 教材包：拆字資料放在卡片的 <code>morph</code> 欄位，同一格式</li>
+</ul>
+<h3>音檔（v1.4）</h3>
+<ul>
+<li>內建：<code>audio/w/&lt;slug&gt;_&lt;accent&gt;.mp3</code>（單字）、<code>audio/s/&lt;slug&gt;_&lt;accent&gt;.mp3</code>（例句）、<code>audio/a/&lt;artId&gt;_&lt;accent&gt;.mp3</code>（整篇）、<code>audio/a/&lt;artId&gt;_s&lt;n&gt;_&lt;accent&gt;.mp3</code>（逐句，分句規則與 App 相同）。accent ∈ en-US / en-GB / en-AU / en-CA</li>
+<li>產生：<code>tools/gen_audio.py</code>（神經網路語音，四國口音各一個女聲），ffmpeg 壓成 32 kbps 單聲道（文章 48 kbps）</li>
+<li>播放：<code>sayAudio(kind,key,txt)</code> 先放 mp3，<code>onerror</code>（404、離線）退回 <code>speak()</code> 瀏覽器語音；速度跟設定的語速</li>
+<li>文章流程（v1.4.1）：打開文章先只有播放器與「第一遍 · 先聽不看文字」提示，內文隱藏；音檔播到底 <code>onended</code> 才啟用「看文章對照」並累計 <code>read[id].listens</code>；可「直接看文章」跳過。看文章後才有再聽一次、逐句跟讀、理解題。<strong>沒有計時按鈕</strong>：<code>reveal()</code> 記 <code>rd.t0</code>，<code>finishArt()</code> 算 wpm（含點中譯與跟讀時間，第一次偏低是基準線），仍記最佳與重讀排程</li>
+<li>逐字反白（v1.5.1）：<code>gen_audio.py</code> 用 <code>boundary='WordBoundary'</code> 串流取得每字 offset／duration，存 <code>&lt;id&gt;_&lt;accent&gt;.words.json</code>（[起秒, 迄秒, 文字]）；App 的 <code>bodyHTML</code> 把每個字包成 <code>.tw[data-i][data-s]</code>，<code>alignWords()</code> 依序正規化配對（實測 100% 對齊），<code>karaTick()</code> 用 requestAnimationFrame 二分搜尋當前字，加 <code>.lit</code>，同句加 <code>.lit-s</code>，超出視窗則 scrollIntoView。自己上傳的音檔沒有時間點，不反白</li>
+<li>逐句中譯（v1.5.2）：<code>ARTZH[artId][k]</code> 人工翻譯，句序與 <code>rd.sens</code> 一致（建檔時 assert）。<code>bodyHTML</code> 每句包 <code>.sen[data-s]</code>，點句展開 <code>.senzh</code>（一次一句；點 <code>.kw</code> 不觸發），記錄 <code>read[id].zhOpened[k]</code>。「全部中譯」在 <code>finishArt</code> 後才啟用。v2 教材包：文章的 <code>sentences_zh</code> 陣列</li>
+<li>文章頁：<code>&lt;audio controls&gt;</code> 播放器；「用自己的音檔」把檔案存進 IndexedDB（<code>vocab_audio/own</code>，key = 文章 id，上限 60 MB），優先於內建；可移除</li>
+<li>v2：音檔路徑寫進教材包（<code>audio</code> 欄位或約定命名），Flutter 用 just_audio 播放，PWA 快取常用音檔</li>
+</ul>
+<h3>每週講義與字組上課日（v1.6）</h3>
+<ul>
+<li>貼上字卡：<code>deck = 來源名稱</code>（原本全部進「匯入字卡」），字組開關自動出現</li>
+<li><code>S.deckDue[deck] = 'yyyy-mm-dd'</code>；<code>deckDue(n)</code> 只在日期 ≥ 今天時有效</li>
+<li><code>buildQueue</code> 挑新字：先依 <code>deckDue</code> 由近到遠，再 <code>pin</code>，再字組原順序；仍受每日額度限制</li>
+<li>字組列顯示「上課日 · 還有 N 字，M 個讀書日，每天約 X 個」，X &gt; goal 時警示；今日卡片列出所有有效上課日的字組</li>
+<li>「過一遍」：字庫篩選 <code>deck:&lt;name&gt;</code>，依字組原順序列出，不排序、不影響排程</li>
+<li>預習：<code>LESSON_ARTS[deck]</code> 對應文章；<code>previewItems()</code> 算預習日 = 上課日前一天，往前找最近的讀書日（已過則今天）。今日卡片與行事曆在該日多一項「上課前預習」，不影響 <code>artPlan</code> 的一般輪序與重讀</li>
+<li>不做「只練這組」：會暫停其他字組的複習</li>
+<li>v2：教材包的 deck 加 <code>lesson_date</code>，profile 層可覆寫</li>
+</ul>
+<h3>找出生字（v1.5）</h3>
+<ul>
+<li>比對順序：字庫（含 <code>base()</code> 變化形）→ <code>data/dict.json</code>（<code>w</code> 字→[中文, 詞性]，<code>l</code> 變化形→原形）→ 空白（可線上查）</li>
+<li>字庫已有：顯示熟悉度標籤；未學者可勾選，<code>pin=true</code>；<code>buildQueue</code> 挑新字時 pin 者優先，仍受每日額度限制</li>
+<li>新字：建卡時 <code>deck='我的文章'</code>、<code>kind='r'</code>、<code>pin=true</code>、例句為文章原句、<code>exz</code> 選填</li>
+<li>線上查：免費翻譯 API（<code>langpair=en|zh-TW</code>），回傳含 QUERY LENGTH／LIMIT 視為失敗</li>
+<li>字典來源：開源英漢字典（MIT，見 THIRD_PARTY_NOTICES.md）取有考試標籤或語料庫前 15,000 的純小寫字，簡轉繁，每字最多兩個詞性、各三個義項</li>
+</ul>
+<h3>回音練習（v1.7）</h3>
+<ul>
+<li>需要內建音檔的逐字時間點；<code>echoChunks()</code> 依 <code>.tw</code> 順序切段：滿 6 字、或 ≥4 字遇標點、或句尾就斷，&lt;3 字的尾巴併入前一段（上限 8 字）</li>
+<li>每段四步：<code>echoPlay</code> 用 <code>currentTime</code> 播 s−0.06 到 e+0.12 → 停 1.5 秒（聽回音）→ 模仿（max(1.5s, 字數×0.52s)）→ 再播；三輪後停下等使用者按「再一次」或「下一段」</li>
+<li>面板顯示段數、輪數、計時；十分鐘自動結束；<code>read[id].echoAt</code> 記錄段數、<code>echoMin</code> 累計分鐘</li>
+<li>內文加 <code>.echo</code> 時其他字淡出，當前段 <code>.ech</code> 反白</li>
+<li>單字跟讀與逐句跟讀改為四步：聽 → 停 1.5 秒 → 唸 → 再聽</li>
+</ul>
+<h3>任務系統（老師指派，v2.0）</h3>
+<p>把老師的紙本「每周在家學習進度表」數位化：<strong>老師建立一週任務表 → 學生每天做完自動打勾填日期 → 老師看到同一張表</strong>。一列一種任務，一格一天，休息日打 X；「不可跳格」由系統保證：前一天沒做的項目以「補做」顯示。</p>
+<p>六種任務類型：</p>
+<table>
+<thead>
+<tr>
+<th>類型</th>
+<th>老師設定</th>
+<th>學生動作</th>
+<th>完成判定</th>
+<th>證據</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>課前聽</td>
+<td>單元（預設下一堂講義）、每天幾軌（2）、開始日（上課前 8 週）、目標遍數（5）</td>
+<td>整軌播完，可邊聽邊跟</td>
+<td>每軌播到底計一次</td>
+<td>遍數</td>
+</tr>
+<tr>
+<td>課後立即聽</td>
+<td>單元（正在上的）</td>
+<td>上課日當天播一遍</td>
+<td>播到底</td>
+<td>系統紀錄</td>
+</tr>
+<tr>
+<td>跟述三部曲</td>
+<td>單元、每天幾軌（2）、是否錄音</td>
+<td>① 只聽 ② 回音練習（看文字） ③ 不看文字跟述並錄音</td>
+<td>三步完成</td>
+<td>錄音檔</td>
+</tr>
+<tr>
+<td>單字</td>
+<td>每日新字、複習上限（沿用排程）</td>
+<td>現有練習</td>
+<td>業績達成</td>
+<td>○△×</td>
+</tr>
+<tr>
+<td>聽寫</td>
+<td>軌（老師挑或系統建議）、次數上限（3）</td>
+<td>逐句聽、打整句、逐字比對</td>
+<td>全部句子送出</td>
+<td>正確率、漏字清單</td>
+</tr>
+<tr>
+<td>課外閱讀</td>
+<td>每天頁數（10／20）、是否朗讀錄音</td>
+<td>填書名、頁數、上傳一頁朗讀；不查字典</td>
+<td>頁數達標＋錄音</td>
+<td>錄音、書名</td>
+</tr>
+</tbody>
+</table>
+<p>| 外部英聽 | 每週幾集、素材清單（老師在班級設定維護：節目名或連結） | 填來源與集數；勾 ① 不看字幕聽大意 ② 開字幕找沒聽出來的字 ③ 口說摘要三句並錄音（可略） | ①② 勾選；③ 錄音 | 錄音、來源 |</p>
+<p>另有「自由任務」：老師輸入文字，學生勾選，可拍照。外部英聽的素材由 App 外的平台播放，App 只記錄與收錄音，不代管內容。</p>
+<ul>
+<li>單元＝講義（lesson），軌＝文章（article）。系統依上課日自動分「已上過／正在上／下一堂」，課前聽指向下一堂，聽寫與跟述只能挑已上過的</li>
+<li>老師端：任務表<strong>範本</strong>（建一次，每堂課套用到新的一週）、指派到班級或個別學生並可調量、本週表（同紙本格子，點格看證據）、儀表板加本週完成率與聽寫正確率</li>
+<li>學生端：今日卡片改成任務清單（每項有進度與「去做」）、本週表、錄音上傳</li>
+<li>任務系統不改排程引擎，是架在既有功能上的清單與勾選層</li>
+</ul>
+<h3>逐句聽寫（v2.0，任務系統的一種）</h3>
+<ul>
+<li>用逐句 mp3：播一句（最多 3 次，可慢速）→ 打整句 → 逐字比對（正規化大小寫與標點）→ 標出漏字、錯字、多字</li>
+<li>一篇做完顯示正確率與漏字清單；漏字若是字庫字，可一鍵排入下一批；漏掉的句子可直接跳到回音練習</li>
+<li>記錄 <code>read[id].dictation = {date, acc, missed[]}</code></li>
+</ul>
+<h3>每日業績</h3>
+<ul>
+<li><code>doneDays</code>：有作答的日期集合，起始日 = 最早的一天</li>
+<li>今日卡片顯示：第 N 個讀書日、連續天數（休息日不斷鏈）、新字與複習各完成幾個、達成打勾</li>
+<li>行事曆摘要顯示累計讀書日與連續天數</li>
+</ul>
+<h3>讀書日</h3>
+<p>每位學生設定一週哪幾天讀書（預設二三四五，至少一天）。所有到期日（單字、文章重讀）都經過 <code>snap</code> 順延；休息日打開 App 顯示「今天是休息日」而不排進度。行事曆的休息日列淡化顯示，新字預估只算在讀書日。每週實際新字量 = goal × 讀書日天數，UI 要明示這個數字。</p>
+<h3>作答方式</h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>規則</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>auto（預設）</td>
+<td>kind = r → choice；lapses ≥ 2 → spell；box ≥ earlyLen 且 reps % 3 == 0 → spell；其餘 choice</td>
+</tr>
+<tr>
+<td>choice</td>
+<td>挖空例句＋四選一。干擾項優先同教材同詞性，其次同教材，其次首字母相同且長度相近</td>
+</tr>
+<tr>
+<td>spell</td>
+<td>手打完整單字，Levenshtein 距離 ≤ 1 視為 △ 候選</td>
+</tr>
+<tr>
+<td>dictate</td>
+<td>聽寫打字：只播例句，不給中文與挖空句，打出目標字；判定同 spell。由設定 <code>spellByEar</code> 把 spell 轉成 dictate，不是獨立模式</td>
+</tr>
+</tbody>
+</table>
+<h3>學習計畫試算（設定頁）</h3>
+<p>改任一輸入（每日新字、讀書日、方案、目標日、字組開關）即時更新：起始日與累計讀書日、字庫（未學／學習中／畢業）、每週新字、新字學完日（依讀書日逐日數）、全部畢業預估（學完日 + 方案跨度，順延到讀書日）、每日負擔（新字 + 未來兩週讀書日平均複習）、一個字的旅程（由階梯產生的文字）、目標反推（每日至少幾個、建議方案、一鍵套用）。</p>
+<h2>3. 帳號與學生</h2>
+<ul>
+<li>一個登入帳號＝一位學生（或一位老師）。家長替孩子用：家長建一人班，孩子用自己的 LINE／Google 登入</li>
+<li>進度以（帳號 × 教材）為單位獨立；<strong>班級講義與公用教材可同時開</strong>（已定），每日額度共用，今日清單先講義後公用</li>
+<li>登出保留本機資料；換帳號登入會另建本機資料</li>
+<li>刪除帳號需二次確認，且先強制下載備份</li>
+</ul>
+<h2>3a. 老師端</h2>
+<ul>
+<li><strong>儀表板</strong>：本週卡（學生數、有練人數、平均連續）、講義卡（完成率、文章預習）、要注意（3 天沒練、本週退步 ≥10、講義每日需求超過上限）；學生表（連續、本週新字／複習、講義進度、文章、回音分鐘、最近）；點學生看細節（熟悉度分布、中譯點最多的句子、退步最多的字、<strong>每個字的 ○△×</strong>）</li>
+<li><strong>每個字的 ○△×（推導值）</strong>：不是使用者最後一次點的標記，而是由累積紀錄算出的狀態，規則：</li>
+<li>× 生疏：<code>lapses ≥ 2</code>，或最近 5 次作答有 2 次以上 ×，或 box = 0 且 reps ≥ 2</li>
+<li>△ 卡點：不符 × 且（box &lt; earlyLen，或最近 5 次有 △／×，或 lapses = 1）</li>
+<li>○ 穩定：box ≥ earlyLen 且最近 5 次全 ○ 且 lapses = 0</li>
+<li>未學：seen = false</li>
+<li>儀表板可依這個狀態篩選（例如列出某講義所有 × 的字），也是「退步最多」的來源。引擎提供 <code>derivedMark(progress, recentLog)</code> 純函式，App 與儀表板共用</li>
+<li><strong>上稿（三步）</strong>：① 上傳 PDF／貼文字（掃描檔提示改貼文字）② 審核字卡：抽字（字庫比對＋字典），勾選、改中文、P／R、例句（v2.1 可 AI 產）③ 文章（貼原文僅班級可見，或 AI 改寫）、題目、逐句中譯、產音檔（伺服器，四國口音＋逐字時間點）、設上課日、發布到班級</li>
+<li><strong>班級</strong>：改名、邀請碼、LINE 分享連結、預設讀書日／每日新字／方案、成員名單與移出</li>
+<li><strong>教材庫</strong>：我的講義（草稿／已發布）、公用教材（指派給班級）</li>
+<li>發布後可修改，學生端下次啟動更新，已學進度不受影響</li>
+</ul>
+<h2>4. 教材包（Course Pack）</h2>
+<h3>目錄 <code>data/courses.json</code></h3>
+<pre><code class="language-json">{
+  &quot;version&quot;: 1,
+  &quot;courses&quot;: [
+    { &quot;id&quot;: &quot;gsat&quot;,      &quot;name&quot;: &quot;學測&quot;,     &quot;exam&quot;: &quot;gsat&quot;,  &quot;level&quot;: &quot;高中&quot;,   &quot;file&quot;: &quot;courses/gsat.json&quot;,      &quot;words&quot;: 749 },
+    { &quot;id&quot;: &quot;gept-int&quot;,  &quot;name&quot;: &quot;英檢中級&quot;, &quot;exam&quot;: &quot;gept&quot;,  &quot;level&quot;: &quot;中級&quot;,   &quot;file&quot;: &quot;courses/gept-int.json&quot;,  &quot;words&quot;: 0 },
+    { &quot;id&quot;: &quot;self-study&quot;, &quot;name&quot;: &quot;自學教材&quot;,   &quot;exam&quot;: &quot;other&quot;, &quot;level&quot;: &quot;自學&quot;,   &quot;file&quot;: &quot;courses/self-study.json&quot;, &quot;words&quot;: 0 }
+  ]
+}
+</code></pre>
+<p><code>exam</code> 列舉：<code>gsat</code>、<code>gept</code>、<code>toeic</code>、<code>toefl</code>、<code>ielts</code>、<code>elementary</code>、<code>junior</code>、<code>other</code>。UI 依 <code>exam</code> 分群、依 <code>level</code> 排序。</p>
+<h3>教材 <code>data/courses/&lt;id&gt;.json</code></h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;gsat&quot;,
+  &quot;name&quot;: &quot;學測&quot;,
+  &quot;version&quot;: &quot;2026-09-09&quot;,
+  &quot;decks&quot;: [
+    {
+      &quot;id&quot;: &quot;l34&quot;,
+      &quot;name&quot;: &quot;學測 L3–4 高頻字&quot;,
+      &quot;defaultKind&quot;: &quot;p&quot;,
+      &quot;cards&quot;: [
+        {
+          &quot;id&quot;: &quot;b0&quot;,
+          &quot;en&quot;: &quot;abandon&quot;, &quot;pos&quot;: &quot;v.&quot;, &quot;zh&quot;: &quot;放棄；拋棄&quot;,
+          &quot;ex&quot;: &quot;They abandoned the plan.&quot;, &quot;exz&quot;: &quot;他們放棄了那個計畫。&quot;,
+          &quot;form&quot;: &quot;abandoned&quot;, &quot;note&quot;: &quot;&quot;, &quot;syl&quot;: &quot;aban·don&quot;, &quot;fam&quot;: [&quot;abandonment&quot;], &quot;kind&quot;: &quot;p&quot;,
+          &quot;morph&quot;: &quot;ab-|離開;band|禁令&quot;
+        }
+      ]
+    }
+  ],
+  &quot;articles&quot;: [ { &quot;id&quot;: &quot;a1&quot;, &quot;title&quot;: &quot;...&quot;, &quot;level&quot;: &quot;英檢中級&quot;, &quot;tag&quot;: &quot;...&quot;, &quot;body&quot;: &quot;...&quot;, &quot;questions&quot;: [] } ],
+  &quot;sources&quot;: [ { &quot;id&quot;: &quot;s0&quot;, &quot;name&quot;: &quot;...&quot;, &quot;file&quot;: &quot;...&quot;, &quot;date&quot;: &quot;2026-08-19&quot;, &quot;note&quot;: &quot;...&quot; } ]
+}
+</code></pre>
+<ul>
+<li><code>id</code> 在教材內唯一且<strong>永不改變</strong>，進度靠它對應。gsat 教材沿用 v1 的 <code>b&lt;i&gt;</code>、<code>d&lt;deck&gt;_&lt;i&gt;</code> 編號，讓 v1 備份可直接對應</li>
+<li><code>kind</code>：<code>p</code> 要會拼寫、<code>r</code> 看得懂就好；卡片沒填則用 deck 的 <code>defaultKind</code></li>
+<li>卡片欄位除 <code>id</code>、<code>en</code>、<code>zh</code> 外皆可省略</li>
+</ul>
+<h3>八欄文字格式（給 AI 與人工整理用，與 v1 相同）</h3>
+<pre><code>單字 | 中文 | 詞性 | 英文例句 | 例句中譯 | 用法筆記 | 音節拆解 | P或R
+</code></pre>
+<p><code>tools/cards2json.dart</code> 負責轉成上面的 JSON，並檢查：單字不重複、id 不與既有衝突、例句包含該字或其變化形。</p>
+<h2>5. 進度資料</h2>
+<p>每（檔案 × 教材 × 卡片）一筆：</p>
+<pre><code>cardId, box, ease, reps, lapses, streak, seen, due(yyyy-mm-dd), last(yyyy-mm-dd),
+kindOverride(p/r/null), updatedAt(ISO, 同步用)
+</code></pre>
+<p>作答紀錄另存 <code>review_log</code>（append-only）：<code>cardId, date, mark(o/t/x), mode, elapsedMs</code>。v1 只留最近 14 筆，v2 全留，行事曆與統計靠它。</p>
+<p>自訂字卡（使用者在裝置上貼的）存在檔案層，內容與進度都在本機／雲端，不進教材包。</p>
+<h2>6. 備份與匯入</h2>
+<ul>
+<li><strong>匯出</strong>：<code>{ format: "vocab-trainer-backup", version: 2, profile, courses: { &lt;courseId&gt;: { progress, customCards, log } }, settings }</code></li>
+<li><strong>匯入 v1</strong>：讀 <code>version: 1</code> 的 <code>state.recs</code>，id 以 <code>b</code>、<code>d</code> 開頭者對應 gsat 教材；以 <code>u</code> 開頭者轉成自訂字卡；<code>state.sources</code> 中 <code>own: true</code> 者一併帶入；<code>goal</code>、<code>revCap</code>、<code>mode</code>、<code>rate</code> 進設定</li>
+<li>匯入採<strong>合併</strong>而非覆蓋：同一張卡取 <code>updatedAt</code>（v1 用 <code>last</code>）較新者</li>
+</ul>
+<h2>7. 同步（P0）</h2>
+<ul>
+<li>登入方式：Google、LINE（Cloud Function 驗證 LINE access token 後簽發 Firebase custom token）、Apple</li>
+<li>Firestore 結構：<code>users/{uid}/courses/{cid}/cards/{cardId}</code>，<code>review_log</code> 為子集合；<code>classes/{cid}</code>、<code>lessons/{lid}</code> 見第 0 節</li>
+<li>離線優先：本機 Drift 為真相，Firestore 開離線快取；每筆寫入帶 <code>updatedAt</code>，衝突取新者</li>
+<li>安全規則：<code>users/{uid}</code> 本人可寫；所屬班級的老師可讀 <code>progress</code> 彙總；<code>classes/{cid}</code> 老師可寫、成員可讀；<code>lessons/{lid}</code> 老師可寫、發布班級的成員可讀；<code>classes/{cid}/private</code> 只有老師</li>
+</ul>
+<h2>8. 設定項</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>預設</th>
+<th>範圍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每日新字 goal</td>
+<td>8</td>
+<td>3–60 任意整數</td>
+</tr>
+<tr>
+<td>讀書日 days</td>
+<td>二三四五</td>
+<td>一週 1–7 天</td>
+</tr>
+<tr>
+<td>排程方案 plan</td>
+<td>mix</td>
+<td>六選一</td>
+</tr>
+<tr>
+<td>目標完成日 targetDate</td>
+<td>空</td>
+<td><strong>全域一個</strong>（例如考試日）；空＝「程度提升」模式，試算不做反推與建議方案</td>
+</tr>
+<tr>
+<td>新字前段不順延 strictEarly</td>
+<td>開</td>
+<td></td>
+</tr>
+<tr>
+<td>答對新字當場再看 sameDay</td>
+<td>開</td>
+<td></td>
+</tr>
+<tr>
+<td>同字根新字連著背 groupRoots</td>
+<td>開</td>
+<td></td>
+</tr>
+<tr>
+<td>拼寫題用聲音出題 spellByEar</td>
+<td>關</td>
+<td>開＝spell 改為 dictate</td>
+</tr>
+<tr>
+<td>每日複習上限 revCap</td>
+<td>60</td>
+<td>10–200</td>
+</tr>
+<tr>
+<td>作答方式 mode</td>
+<td>auto</td>
+<td>auto / choice / spell（recog、listen 已移除，舊值轉 auto）</td>
+</tr>
+<tr>
+<td>語速 rate</td>
+<td>0.85</td>
+<td>0.6 / 0.85 / 1.0</td>
+</tr>
+<tr>
+<td>進新字自動朗讀</td>
+<td>開</td>
+<td></td>
+</tr>
+<tr>
+<td>文章間隔 artEvery</td>
+<td>3 天</td>
+<td>1–14</td>
+</tr>
+<tr>
+<td>字體大小</td>
+<td>17</td>
+<td>14–22</td>
+</tr>
+<tr>
+<td>主題</td>
+<td>跟隨系統</td>
+<td>亮 / 暗 / 系統</td>
+</tr>
+</tbody>
+</table>
+<h2>9a. 通知</h2>
+<ul>
+<li>FCM（Android／iOS）＋ Web Push（PWA，VAPID）。預設開，設定可關</li>
+<li>內容由 Cloud Function 在每個讀書日的固定時間（預設 19:00，可改）依到期數送：「今天有 N 個字到期，新字 M 個」；講義上課前一天加一句「明天上課，先聽兩篇文章」</li>
+<li>老師端 v2.1 可對學生發 LINE 提醒（Messaging API），與推播分開</li>
+</ul>
+<h2>9b. 行事曆</h2>
+<ul>
+<li>三個尺寸一律月曆格；點某天顯示當日明細（手機以底部抽屜）。視覺稿由 Claude Design 產出，不在規格內</li>
+</ul>
+<h2>9c. 教材更新</h2>
+<ul>
+<li>App 啟動時讀伺服器的 <code>courses.json</code> 版本與班級 <code>lessons</code> 的 <code>updatedAt</code>，比本機新就背景下載並提示「教材已更新」；已學進度不受影響</li>
+</ul>
+<h2>9. 無障礙與裝置</h2>
+<ul>
+<li>最小可用寬度 360px；選項按鈕高度 ≥ 44px</li>
+<li>鍵盤：Enter 送出／下一步，1–4 選項，○△× 對應 1 2 3</li>
+<li>深色模式跟隨系統</li>
+<li>所有文字可放大到 22px 不破版</li>
+</ul></section><section class="chap" id="c3"><h1>第三章　技術架構</h1><h2>1. 架構總覽</h2>
+<p>結構比照 <code>stock_ledger</code>：純 Dart 引擎套件與 Flutter App 分離，App 內 Clean Architecture + Feature-First。</p>
+<pre><code>vocab_trainer/
+├── packages/
+│   └── srs_engine/            純 Dart，零 Flutter 依賴，單元測試主戰場
+│       ├── lib/src/
+│       │   ├── ladder.dart        LADDER、levelOf、nextGap
+│       │   ├── grader.dart        applyMark：○△× → 新的 box/ease/due/lapses
+│       │   ├── mode.dart          quizType：依 kind/lapses/box/reps 決定作答方式
+│       │   ├── queue.dart         buildQueue、同場回籠插入
+│       │   └── models.dart        CardProgress、Mark、QuizMode（immutable）
+│       └── test/
+├── app/
+│   ├── lib/
+│   │   ├── core/
+│   │   │   ├── storage/           Drift database；web.dart / native.dart 條件匯入
+│   │   │   ├── io/                備份檔存取；web.dart / native.dart
+│   │   │   ├── audio/             TTS、錄音封裝
+│   │   │   └── router.dart        GoRouter
+│   │   └── features/
+│   │       ├── auth/              登入（Google／LINE／Apple）、角色、路由守衛
+│   │       ├── classes/           班級：建立、邀請碼、加入、成員
+│   │       ├── teacher/           儀表板、上稿三步、教材庫（桌機優先）
+│   │       ├── courses/           教材目錄載入、教材切換
+│   │       ├── practice/          今日練習（三段式流程、四種作答）
+│   │       ├── library/           字庫
+│   │       ├── calendar/          複習行事曆
+│   │       ├── reading/           文章（P2）
+│   │       ├── settings/
+│   │       ├── backup/            匯出、匯入 v1/v2
+│   │       └── sync/              Firebase（P1）
+│   └── web/                       index.html、manifest、icons
+├── data/
+│   ├── courses.json
+│   └── courses/*.json
+├── tools/
+│   └── cards2json.dart            八欄文字 → 教材 JSON
+├── legacy/index.html              v1（上線 v2 當天搬入）
+└── docs/
+</code></pre>
+<p>依賴方向：<code>presentation → domain ← data</code>，<code>app → srs_engine</code>。引擎不知道 Drift、Firebase、Flutter 的存在。</p>
+<p>狀態管理 Riverpod 3（原生寫法，不用 codegen，與 line_bento_order 一致）。路由 GoRouter。</p>
+<h2>2. srs_engine API</h2>
+<pre><code class="language-dart">/// 排程方案：間隔階梯 + 是否自適應（七個內建：mix / f16 / f10 / f8 / e5 / s8 / s4，見產品規格書）
+@immutable
+class SchedulePlan { final String id; final String name; final List&lt;int&gt; ladder; final bool adaptive; }
+const plans = &lt;String, SchedulePlan&gt;{ ... };
+/// 剩 remainingDays 天時建議的方案：跨度 ≤ 0.9 × remainingDays 的最長者
+SchedulePlan suggestPlan(int remainingDays);
+
+enum Mark { ok, hard, miss }          // ○ △ ×
+enum QuizMode { auto, choice, spell, recog }
+enum CardKind { production, recognition }   // p / r
+
+@immutable
+class CardProgress {
+  final String cardId;
+  final int box; final double ease; final int reps; final int lapses; final int streak;
+  final bool seen; final DateTime? due; final DateTime? last;
+  final CardKind kind;
+  const CardProgress.fresh(String cardId, {CardKind kind = CardKind.production});
+}
+
+/// 目前熟悉度階層 0–8（0 未學、8 畢業）
+int levelOf(CardProgress p);
+
+/// 下次間隔天數：max(1, round(ladder[box] * ease / 2.5))
+int nextGap(CardProgress p);
+
+/// 讀書日順延：若 date 不在 studyDays（0=日…6=六），往後找最近的讀書日（最多 14 天）
+DateTime snapToStudyDay(DateTime date, Set&lt;int&gt; studyDays);
+
+/// 套用一次作答，回傳新的進度（純函式，today 由外部注入以便測試）
+/// isAgain：同場再看的第二次作答（答對不推進、答錯不計退步）
+/// strictEarly：前段（box &lt; earlyLen）照日曆天，不順延到讀書日
+CardProgress applyMark(CardProgress p, Mark m, DateTime today,
+  {required SchedulePlan plan, required Set&lt;int&gt; studyDays, bool isAgain = false, bool strictEarly = true});
+
+/// 依設定與進度決定作答方式
+QuizMode quizType(CardProgress p, QuizMode setting);
+
+/// 由累積紀錄推導的狀態（未學／○穩定／△卡點／×生疏），儀表板與字庫共用；規則見產品規格書 §3a
+DerivedMark derivedMark(CardProgress p, List&lt;ReviewLogEntry&gt; recent);
+
+/// 建立今日隊列：到期複習（排序、上限）＋ 新字（上限）
+List&lt;String&gt; buildQueue({
+  required Iterable&lt;CardProgress&gt; all,
+  required DateTime today,
+  required int goal, required int revCap,
+});
+
+/// 同場回籠：回傳插入位置（null 表示不回籠）
+int? requeueIndex({required Mark m, required int idx, required int queueLength, required int timesRequeued});
+</code></pre>
+<p>所有函式純粹、無 IO、無隨機（干擾項與洗牌在 App 層，引擎只給規則），因此測試不需 mock。</p>
+<h3>引擎以外、v1 已有而 v2 要搬的純邏輯</h3>
+<table>
+<thead>
+<tr>
+<th>模組</th>
+<th>內容</th>
+<th>v1 位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>morph</td>
+<td>拆字表解析、同字根查詢、分組</td>
+<td><code>morphOf / rootKeys / siblings / morphGroupsHTML</code></td>
+</tr>
+<tr>
+<td>lesson</td>
+<td>字組上課日、優先排序、預習日（上課前一天往前找讀書日）</td>
+<td><code>deckDue / deckPlanLine / previewItems</code></td>
+</tr>
+<tr>
+<td>echo</td>
+<td>依逐字時間點切 4–6 字片段、四步狀態機、十分鐘計時</td>
+<td><code>echoChunks / echoRun</code></td>
+</tr>
+<tr>
+<td>karaoke</td>
+<td>時間點對齊內文、二分搜尋當前字</td>
+<td><code>alignWords / karaTick</code></td>
+</tr>
+<tr>
+<td>scan</td>
+<td>字庫比對（含變化形）、字典查詢、線上查</td>
+<td><code>libFind / bigLookup / lookupOnline</code></td>
+</tr>
+</tbody>
+</table>
+<p>這些都是純函式或狀態機，放在 <code>packages/srs_engine</code> 或 <code>packages/content_tools</code>，一樣先寫測試。</p>
+<h2>3. 資料模型（Drift）</h2>
+<table>
+<thead>
+<tr>
+<th>表</th>
+<th>主鍵</th>
+<th>欄位摘要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>profiles</td>
+<td>id</td>
+<td>name, createdAt, lastUsedAt, cloudUid?</td>
+</tr>
+<tr>
+<td>course_progress</td>
+<td>(profileId, courseId)</td>
+<td>activeDeckIds(json), lastPracticedAt</td>
+</tr>
+<tr>
+<td>card_progress</td>
+<td>(profileId, courseId, cardId)</td>
+<td>box, ease, reps, lapses, streak, seen, due, last, kindOverride?, updatedAt</td>
+</tr>
+<tr>
+<td>review_log</td>
+<td>autoId</td>
+<td>profileId, courseId, cardId, date, mark, mode, elapsedMs</td>
+</tr>
+<tr>
+<td>custom_cards</td>
+<td>(profileId, id)</td>
+<td>courseId?, en, zh, pos, ex, exz, note, syl, kind, sourceId, updatedAt</td>
+</tr>
+<tr>
+<td>custom_sources</td>
+<td>(profileId, id)</td>
+<td>name, file, date, note</td>
+</tr>
+<tr>
+<td>settings</td>
+<td>profileId</td>
+<td>goal, revCap, mode, rate, autoSay, artEvery, fontSize, theme, studyDays(json), planId, targetDate, strictEarly, sameDay</td>
+</tr>
+<tr>
+<td>daily_stats</td>
+<td>(profileId, date)</td>
+<td>newDone, reviewDone（每日業績與連續天數由此算）</td>
+</tr>
+<tr>
+<td>article_progress</td>
+<td>(profileId, articleId)</td>
+<td>reads(json: date, wpm, score), nextDue</td>
+</tr>
+</tbody>
+</table>
+<p>教材內容<strong>不進資料庫</strong>，每次啟動從 <code>data/courses/*.json</code> 讀（Web 用 fetch、原生用 assets），以 <code>courseId + cardId</code> 與進度 join。</p>
+<p>平台分岔：</p>
+<pre><code class="language-dart">// core/storage/db.dart
+import 'db_native.dart' if (dart.library.js_interop) 'db_web.dart';
+</code></pre>
+<p>Web 用 <code>drift/wasm.dart</code>（需 <code>sqlite3.wasm</code> 與 <code>drift_worker.js</code> 放進 <code>web/</code>），原生用 <code>drift/native.dart</code>。</p>
+<h2>4. 教材載入</h2>
+<pre><code>CourseCatalogRepository.load()        → 讀本機 courses.json；啟動時比對伺服器版本，較新則背景更新並通知
+CourseRepository.load(courseId)       → 讀單一教材 JSON，解析成 Course(decks, cards, articles, sources)
+ActiveCourse (Riverpod)               → 目前 profile 選定的教材
+CardWithProgress                      → Course.card × card_progress，practice 用這個
+</code></pre>
+<p>教材 JSON 的解析用 <code>json_serializable</code> 或手寫 <code>fromJson</code>，以 <code>tools/validate_course.dart</code> 在 CI 驗證格式。</p>
+<h2>5. 登入、班級與同步（P0）</h2>
+<ul>
+<li><code>firebase_auth</code>：Google（<code>google_sign_in</code>）、Apple（<code>sign_in_with_apple</code>）、LINE（<code>flutter_line_sdk</code> 取得 access token → Cloud Function <code>lineAuth</code> 驗證後 <code>createCustomToken</code>）。Web 端 LINE／Apple 走網頁授權</li>
+<li>訪客：未登入時 Drift 以本機 guest id 存資料；登入後 <code>mergeGuestInto(uid)</code> 逐卡比較 updatedAt 併入，再清掉 guest 資料</li>
+<li>角色存 <code>users/{uid}.role</code>（student／teacher），路由守衛：未登入一律 <code>/s/*</code>（訪客），老師功能需登入且 role=teacher</li>
+<li>班級：<code>classes/{cid}</code>（ownerUid、name、code、defaults）、<code>classes/{cid}/members/{uid}</code>；加入用邀請碼經 Function <code>joinClass</code> 寫入（避免學生自行寫任意班級）</li>
+<li>講義：<code>lessons/{lid}</code>（ownerUid、classIds[]、deck、articles、audio 路徑、lessonDate、status）；音檔放 Storage <code>lessons/{lid}/audio/</code>；原文 PDF 放 <code>classes/{cid}/private/</code>（規則只有 owner）</li>
+<li>上稿 Functions（v2.1）：<code>extractWords</code>、<code>genSentences</code>／<code>rewriteArticle</code>／<code>genQuestions</code>／<code>translate</code>（LLM）、<code>genAudio</code>（edge-tts 在 Cloud Run 跑，附逐字時間點）</li>
+<li><code>cloud_firestore</code>（<code>persistenceEnabled: true</code>）</li>
+<li>上傳：<code>card_progress</code> 每次寫入後同步寫一筆到 Firestore；離線時由 Firestore SDK 排隊</li>
+<li>下載：登入或啟動時拉 <code>updatedAt &gt; lastSyncAt</code> 的文件合併進 Drift，衝突取 <code>updatedAt</code> 較新者</li>
+<li><code>review_log</code> 只上傳不下載合併（append-only，重複無害）</li>
+<li>匿名帳號認領：另一裝置輸入六位代碼 → Cloud Function 驗證後回傳 custom token → 登入同一 uid</li>
+</ul>
+<h2>6. 語音（P2）</h2>
+<ul>
+<li>內建 mp3（教材包附）：<code>just_audio</code> 播放，支援 <code>setClip</code> 播區段（回音練習）、<code>setSpeed</code> 語速；離線快取常用檔（PWA / 原生檔案快取）</li>
+<li>退回方案 <code>flutter_tts</code>：Web 走 Web Speech，原生走系統 TTS</li>
+<li>錄音 <code>record</code>：Web 產 webm，原生產 m4a；只存記憶體，不落地</li>
+<li>自己的音檔：原生存 app 文件夾，Web 存 IndexedDB；沒有時間點，不反白、不能回音練習</li>
+<li>產生腳本沿用 <code>tools/gen_audio.py</code>（edge-tts，四國口音，整篇附逐字時間點）</li>
+</ul>
+<h2>7. 測試策略</h2>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>工具</th>
+<th>重點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>srs_engine</td>
+<td><code>test</code></td>
+<td>每個函式的邊界（box 0/top、ease 上下限、lapses 只在 reps&gt;1 累加）、六個方案的 applyMark 對照、時區（本地日期）、<strong>v1 對照案例</strong>（v1 的 <code>tests/scheduler.test.js</code> 24 案例先移植）（從 v1 抽 30 個字的作答序列，驗證 v2 算出相同 box/ease/due）</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>drift</code> in-memory、<code>fake_cloud_firestore</code></td>
+<td>匯入 v1 備份、合併規則、離線→上線</td>
+</tr>
+<tr>
+<td>domain</td>
+<td><code>test</code></td>
+<td>use case 組合</td>
+</tr>
+<tr>
+<td>presentation</td>
+<td><code>flutter_test</code> widget test</td>
+<td>今日練習的三段流程、鍵盤快捷鍵</td>
+</tr>
+<tr>
+<td>教材</td>
+<td><code>tools/validate_course.dart</code></td>
+<td>id 唯一、必填欄位、例句含目標字</td>
+</tr>
+</tbody>
+</table>
+<p>CI：GitHub Actions，<code>flutter analyze</code>（零警告）、<code>dart test</code>、<code>flutter test</code>、教材驗證、Firestore 規則測試（emulator），通過才 build web。</p>
+<h2>8. 部署</h2>
+<pre><code class="language-bash">flutter build web --release --base-href /vocab-trainer/ --pwa-strategy offline-first
+</code></pre>
+<ul>
+<li>Actions 把 <code>app/build/web</code> 推到 <code>gh-pages</code> 分支，Pages 來源改成該分支</li>
+<li><code>legacy/index.html</code> 在 v2 上線後保留 30 天，頁首加「新版在這裡」連結</li>
+<li>PWA：<code>manifest.json</code> 設好名稱與圖示，手機可加到主畫面</li>
+</ul>
+<h2>9. 里程碑對應</h2>
+<table>
+<thead>
+<tr>
+<th>里程碑</th>
+<th>交付</th>
+<th>驗收</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1 引擎</td>
+<td><code>packages/srs_engine</code> + 測試 + <code>docs/engine.md</code></td>
+<td><code>dart test</code> 全綠；v1 對照案例通過</td>
+</tr>
+<tr>
+<td>M2 App 骨架</td>
+<td>profiles / courses / practice / storage / backup</td>
+<td>匯入 v1 備份後可練習，重開 App 進度仍在</td>
+</tr>
+<tr>
+<td>M3 上線</td>
+<td>Actions 部署、legacy 導向</td>
+<td>手機開網址 5 秒內可操作</td>
+</tr>
+<tr>
+<td>M4 同步</td>
+<td>sync feature、Firestore 規則</td>
+<td>兩台裝置 30 秒內一致</td>
+</tr>
+<tr>
+<td>M5 延伸</td>
+<td>reading（先聽再看、逐字反白、逐句中譯、回音練習）/ audio / Android</td>
+<td>Play 內測</td>
+</tr>
+</tbody>
+</table>
+<h2>10. ADR 索引</h2>
+<ul>
+<li><a href="#">ADR-0001 排程引擎做成純 Dart 套件</a></li>
+<li><a href="#">ADR-0002 後端用 Firebase 而非自建 API</a></li>
+<li><a href="#">ADR-0003 不做 LIFF 入口</a></li>
+<li><a href="#">ADR-0004 教材做成 JSON 資料包</a></li>
+</ul></section><section class="chap" id="c4"><h1>第四章　執行計畫</h1><p>原則：<strong>P0 做完就上線</strong>，不等 P1/P2。每個階段有明確的「完成定義」，做不完就縮功能，不延時程。本專案只用 stock_ledger 主線以外的時間。</p>
+<h2>開工前要先決定的事</h2>
+<ul>
+<li>[ ] Firebase 專案：新開一個（帳號規則與 stock_ledger 不同）</li>
+<li>[ ] LINE Login channel、Apple（公司帳號下建 App ID／Services ID／Key）、Google OAuth client（流程見 07）</li>
+<li>[ ] Firebase Cloud Messaging：APNs Key、VAPID key</li>
+<li>[x] 不強制登入（App Store 5.1.1）：訪客完整可用，登入併入進度</li>
+<li>[x] v2.1 的 AI 模型：Claude Opus 5，費用由平台付（見 06）；v2.0 代做用 Claude Code</li>
+<li>[ ] 第一批教材：公用 gsat（從 v1 轉）＋ 班級講義 英檢中級 2-5～2-10（從 v1 轉成 lessons）</li>
+<li>[ ] v1 使用者的切換日：v2 上線後通知，並確認她已下載備份</li>
+</ul>
+<h2>階段 0：專案骨架（半天）</h2>
+<ul>
+<li>[ ] <code>flutter create</code> app 與 <code>dart create -t package</code> srs_engine，melos 或 pubspec workspace 管理</li>
+<li>[ ] analysis_options 用 <code>flutter_lints</code> 加專案規則，零警告</li>
+<li>[ ] GitHub Actions：analyze + test，先不部署</li>
+<li>[ ] <code>legacy/</code> 資料夾建立（先不搬 v1）</li>
+</ul>
+<p>完成定義：<code>melos run analyze</code> 與 <code>melos run test</code> 在 CI 綠燈。</p>
+<h2>階段 1：srs_engine（M1，W2）</h2>
+<ul>
+<li>[ ] models：<code>CardProgress</code>、<code>Mark</code>、<code>QuizMode</code>、<code>CardKind</code></li>
+<li>[ ] <code>ladder.dart</code>：<code>levelOf</code>、<code>nextGap</code></li>
+<li>[ ] <code>grader.dart</code>：<code>applyMark</code>，含 ease 上下限、box 下限、lapses 條件</li>
+<li>[ ] <code>mode.dart</code>：<code>quizType</code></li>
+<li>[ ] <code>queue.dart</code>：<code>buildQueue</code>、<code>requeueIndex</code></li>
+<li>[ ] 測試：邊界案例 + <strong>v1 對照案例</strong>（用 v1 備份檔抽 30 個字的 log 回放）</li>
+<li>[ ] <code>docs/engine.md</code>：每個參數的來源與理由（從 README 設計決策展開）</li>
+</ul>
+<p>完成定義：測試全綠、覆蓋率 100%、對照案例零差異。</p>
+<h2>階段 2：App P0（M2，W3）</h2>
+<ul>
+<li>[ ] features/auth：訪客模式、三種登入、登入時併入本機進度、角色選擇、路由守衛；Function <code>lineAuth</code></li>
+<li>[ ] features/classes：建班、邀請碼、加入（Function <code>joinClass</code>）、成員；Firestore 規則＋emulator 測試</li>
+<li>[ ] core/storage：Drift schema、web/native 分岔、migration；core/sync：登入即同步、每張卡 LWW、離線佇列</li>
+<li>[ ] 帳號刪除（含強制備份）</li>
+<li>[ ] features/courses：目錄載入、教材 JSON 解析、<code>tools/cards2json.dart</code> 把 v1 的 W/EXTRA/META/MORPH/ARTS/ARTZH/SRC/LESSON_ARTS 轉成 <code>data/courses/gsat.json</code>（含拆字、逐句中譯、音檔路徑、講義文章對應）</li>
+<li>[ ] features/practice：三段式、四種作答、干擾項、鍵盤、○△× 建議</li>
+<li>[ ] features/backup：匯出 v2、匯入 v1/v2、合併規則</li>
+<li>[ ] features/settings：P0 需要的四項（goal、revCap、mode、字體）</li>
+</ul>
+<p>完成定義：匯入 v1 備份後能完整練一場，關掉重開進度仍在；<code>flutter analyze</code> 零警告。</p>
+<h2>階段 3：上線（M3，W4）</h2>
+<ul>
+<li>[ ] Actions 加 build web + 推 gh-pages</li>
+<li>[ ] Pages 來源切到 gh-pages；v1 搬到 <code>legacy/index.html</code> 並加導向</li>
+<li>[ ] PWA manifest、圖示</li>
+<li>[ ] 手機實測：Safari iOS、Chrome Android，首次載入時間記錄進 README</li>
+<li>[ ] 通知 v1 使用者切換，確認匯入成功</li>
+</ul>
+<p>完成定義：新網址可用、v1 使用者進度無損、README 更新為 v2。</p>
+<h2>階段 4：老師端與 P1（M4，W8 後）</h2>
+<ul>
+<li>[ ] features/teacher：儀表板（彙總查詢、要注意規則）、班級管理、教材庫</li>
+<li>[ ] 上稿三步介面（v2.0 由開發者操作：抽字、審核、文章、產音檔、發布）</li>
+<li>[ ] features/library、features/calendar（三尺寸月曆格）</li>
+<li>[ ] core/notify：FCM／Web Push 註冊、Function 排程提醒</li>
+<li>[ ] 教材版本檢查與背景更新</li>
+<li>[ ] 設定其餘項目</li>
+</ul>
+<p>完成定義：兩台裝置 30 秒內一致；離線 50 題後恢復連線自動同步。</p>
+<h2>階段 4a：任務系統（M4 內）</h2>
+<ul>
+<li>[ ] 資料：assignment_templates、assignments（週、班級／學生、任務列）、task_logs（日期、證據）</li>
+<li>[ ] 老師端：範本編輯、套用到週、指派、本週表格子、聽證據</li>
+<li>[ ] 學生端：今日任務清單、本週表、錄音上傳（Storage）、課外閱讀紀錄</li>
+<li>[ ] 儀表板：本週完成率、連續未完成、聽寫正確率</li>
+</ul>
+<h2>階段 4b：v2.1（M5 之後）</h2>
+<ul>
+<li>[ ] AI 上稿 Functions：genSentences、rewriteArticle、genQuestions、translate；老師端「AI 產」按鈕</li>
+<li>[ ] LINE 提醒（Messaging API）</li>
+<li>[ ] 老師自助上稿開放</li>
+</ul>
+<h2>階段 5：延伸（M5，視主線進度）</h2>
+<ul>
+<li>[ ] features/reading：先聽再看、逐字反白、逐句中譯、隱性 wpm、重讀排程、上課前預習</li>
+<li>[ ] core/audio：just_audio 播內建 mp3（區段播放）、回音練習狀態機、逐句跟讀、錄音、自己的音檔</li>
+<li>[ ] features/scan：找出生字（內建字典 <code>data/dict.json</code>、線上查、字庫字排入下一批）</li>
+<li>[ ] features/lessons：字組上課日、優先排程、過一遍</li>
+<li>[ ] 列印今日</li>
+<li>[ ] Android build、Play 內測</li>
+<li>[ ] 第二、三套教材包</li>
+</ul>
+<h2>每階段結束要做的事</h2>
+<ol>
+<li>README 的路線圖勾選</li>
+<li><code>docs/</code> 若有決策改變，補一份 ADR</li>
+<li>Notion 開發筆記記錄踩到的坑（去識別化）</li>
+<li>更新 <code>~/914Apps/README.md</code> 的專案狀態</li>
+</ol>
+<h2>與 stock_ledger 的關係</h2>
+<p>兩個專案共用同一套結構與心智模型。srs_engine 是 portfolio_engine 的縮小版練習：先在這裡把「純 Dart 套件、測試先行、App 只做組裝」跑順，回頭做 stock_ledger 的計算引擎會更快。若兩者時間衝突，<strong>stock_ledger 優先</strong>。</p></section><section class="chap" id="c5"><h1>第五章　決定紀錄</h1><h2>2026-09-11（回覆線框第 18 頁）</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>決定</th>
+<th>落地位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不登入試用</td>
+<td>允許。訪客可完整使用，加入班級／同步／老師身分才登入</td>
+<td>規格書 §0、線框 p2/3/6</td>
+</tr>
+<tr>
+<td>訪客提示</td>
+<td>今日卡片的「加入班級／登入同步」只顯示前三天，之後收進設定</td>
+<td>規格書 §0</td>
+</tr>
+<tr>
+<td>登入方式</td>
+<td>Google、LINE、Apple；申請流程見 07</td>
+<td>07_帳號申請流程</td>
+</tr>
+<tr>
+<td>iOS 開發者帳號</td>
+<td>用公司既有帳號，個人帳號先不申請</td>
+<td>07 §B</td>
+</tr>
+<tr>
+<td>AI 上稿</td>
+<td>v2.0 由開發者代做（Claude Code＋Pro 訂閱）；v2.1 接 Claude API，Pro 訂閱不能直接串</td>
+<td>06_AI上稿模型評估</td>
+</tr>
+<tr>
+<td>每個字的 ○△×</td>
+<td>老師儀表板要看到，但<strong>不是使用者最後一次點的標記，而是由累積紀錄推導</strong>（規則見規格書 §3a）</td>
+<td>規格書 §3a、線框 p14</td>
+</tr>
+<tr>
+<td>同時開兩套教材</td>
+<td>可以，每日額度共用，今日清單先講義後公用</td>
+<td>規格書 §3</td>
+</tr>
+<tr>
+<td>目標完成日</td>
+<td>全域一個（例如考試日）；沒設定就是「程度提升」模式，試算不顯示學完日反推</td>
+<td>規格書 §8</td>
+</tr>
+<tr>
+<td>回音練習</td>
+<td>三輪後停下等按</td>
+<td>已是現況</td>
+</tr>
+<tr>
+<td>行事曆</td>
+<td>一律月曆格（手機也是）；視覺稿之後用 Claude Design 出</td>
+<td>線框 p11</td>
+</tr>
+<tr>
+<td>本機提醒通知</td>
+<td>要：FCM（Android／iOS）＋ Web Push；預設開，可關</td>
+<td>規格書 §10、07 §D</td>
+</tr>
+<tr>
+<td>教材更新</td>
+<td>App 啟動時檢查伺服器上的教材版本，自動更新</td>
+<td>規格書 §4、技術文件 §4</td>
+</tr>
+<tr>
+<td>老師儀表板</td>
+<td>欄位維持，加「每個字的 ○△×」（推導值）</td>
+<td>線框 p14</td>
+</tr>
+</tbody>
+</table>
+<h2>2026-09-10</h2>
+<ul>
+<li>角色分流（學生／老師）、班級模型、老師儀表板與上稿、v2.0／v2.1 分期</li>
+<li>公開檔案不出現出版社、作者、講義原檔名、原文標題、商業品牌；出處放 private/</li>
+<li>不做「只練這組」；講義文章在上課前一天排預習</li>
+</ul></section><section class="chap" id="c6"><h1>第六章　AI 上稿模型評估</h1><p>日期：2026-09-11　｜　狀態：評估，v2.0 先由開發者代做，v2.1 才接 API</p>
+<h2>1. AI 在上稿裡做什麼</h2>
+<table>
+<thead>
+<tr>
+<th>任務</th>
+<th>輸入</th>
+<th>輸出</th>
+<th>每份講義的量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>產例句與中譯</td>
+<td>單字、詞性、中文、講義原句（若有）</td>
+<td>一句例句＋中譯，用法筆記</td>
+<td>40–60 字</td>
+</tr>
+<tr>
+<td>改寫文章</td>
+<td>原文（僅班級可見）</td>
+<td>同主題原創文章 180–220 字，去品牌</td>
+<td>1–2 篇</td>
+</tr>
+<tr>
+<td>出理解題</td>
+<td>改寫後文章</td>
+<td>3 題四選一＋解析</td>
+<td>1–2 篇</td>
+</tr>
+<tr>
+<td>逐句中譯</td>
+<td>改寫後文章</td>
+<td>每句中譯（句數須與分句規則一致）</td>
+<td>12–17 句／篇</td>
+</tr>
+<tr>
+<td>拆字</td>
+<td>單字</td>
+<td>字首／字根／字尾＋中文，不確定就留空</td>
+<td>40–60 字</td>
+</tr>
+</tbody>
+</table>
+<p>全部是「文字進、文字出」的單次呼叫，不需要工具呼叫或代理迴圈。輸出用結構化格式（JSON schema）拿，程式直接寫入教材。</p>
+<h2>2. 訂閱與 API 是兩件事</h2>
+<p><strong>Claude Pro 訂閱不能直接串進 App。</strong> Pro／Max 是 claude.ai 與 Claude Code 的個人使用方案；App 後端要呼叫模型必須用 Claude API，在 Console（console.anthropic.com）另外開帳號、放儲值，按用量計費。兩者帳單分開。</p>
+<p>這對分期的意義：</p>
+<ul>
+<li><strong>v2.0（開發者代做）</strong>：就是現在的流程，您在 Claude Code 裡用 Pro 訂閱整理講義，不多花錢。</li>
+<li><strong>v2.1（老師自助）</strong>：Cloud Function 用 API key 呼叫，按量付費。金鑰放在後端，永遠不進 App。</li>
+</ul>
+<h2>3. Claude 模型與價格（API 牌價，2026-06 快取）</h2>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>模型 ID</th>
+<th>輸入 $/百萬 token</th>
+<th>輸出 $/百萬 token</th>
+<th>適合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Opus 5</td>
+<td><code>claude-opus-5</code></td>
+<td>5.00</td>
+<td>25.00</td>
+<td>預設。例句品質、改寫的自然度、中譯的準確度都最穩</td>
+</tr>
+<tr>
+<td>Claude Sonnet 5</td>
+<td><code>claude-sonnet-5</code></td>
+<td>2.00</td>
+<td>10.00</td>
+<td>省一半以上，例句與中譯品質仍好；改寫文章略平</td>
+</tr>
+<tr>
+<td>Claude Haiku 4.5</td>
+<td><code>claude-haiku-4-5</code></td>
+<td>1.00</td>
+<td>5.00</td>
+<td>拆字、簡單分類這類小任務</td>
+</tr>
+</tbody>
+</table>
+<p>快取讀取另有折扣；批次 API 半價但最長 24 小時才回，不適合老師等著看結果的上稿情境。</p>
+<h2>4. 一份講義的費用估算</h2>
+<p>以 2-10 這種規模（60 字、2 篇文章）估：</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>輸入 token</th>
+<th>輸出 token</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>例句＋中譯＋筆記 60 字（分 3 批）</td>
+<td>約 6,000</td>
+<td>約 5,000</td>
+</tr>
+<tr>
+<td>改寫 2 篇＋題目＋逐句中譯</td>
+<td>約 3,000</td>
+<td>約 3,500</td>
+</tr>
+<tr>
+<td>拆字 60 字</td>
+<td>約 1,500</td>
+<td>約 1,500</td>
+</tr>
+<tr>
+<td>合計</td>
+<td>約 10,500</td>
+<td>約 10,000</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>每份講義</th>
+<th>換算台幣（以 1:32）</th>
+<th>每週一份、一年</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Opus 5</td>
+<td>約 $0.30</td>
+<td>約 10 元</td>
+<td>約 500 元</td>
+</tr>
+<tr>
+<td>Sonnet 5</td>
+<td>約 $0.12</td>
+<td>約 4 元</td>
+<td>約 200 元</td>
+</tr>
+<tr>
+<td>混用（改寫用 Opus、其餘 Sonnet）</td>
+<td>約 $0.18</td>
+<td>約 6 元</td>
+<td>約 300 元</td>
+</tr>
+</tbody>
+</table>
+<p>音檔不用 AI，走現有的免費語音套件在伺服器產，費用是 Cloud Run 的執行時間，一份講義幾秒。</p>
+<p>結論：<strong>費用不是決策因素</strong>，一年不到一頓飯。決策因素是品質與由誰付。</p>
+<h2>5. 建議</h2>
+<ol>
+<li><strong>預設 Opus 5</strong>，全部任務用同一個模型。理由：講義內容會被學生反覆看、被老師署名發布，品質差異比每年 300 元重要；單一模型也讓快取與提示維護簡單。</li>
+<li><strong>費用由平台付</strong>（也就是您的 Console 帳戶），老師端不用設定金鑰。老師人數少、用量可預估；等有多位老師再考慮按班級計費。</li>
+<li><strong>多方選取不需要現在做</strong>。程式上把「呼叫模型」包成一個介面（輸入任務與資料、輸出 JSON），之後要換或加供應商只改那一層；但第一版只接一家，避免同時維護兩套提示與評估。其他供應商的價格請以各自官網為準，本文件不代為報價。</li>
+<li><strong>每個任務都有可驗證的輸出檢查</strong>：例句必須包含該字或其變化形、逐句中譯句數必須等於分句數、題目答案必須在選項內、改寫文章不得出現原文連續 8 字以上、品牌與人名黑名單。不過檢查的結果退回重產一次，再失敗就標給老師看。</li>
+<li><strong>老師永遠是最後一關</strong>：AI 產的內容以草稿呈現，老師可改，發布前要按確認。</li>
+</ol>
+<h2>6. 技術做法（v2.1 時實作）</h2>
+<ul>
+<li>Cloud Functions（Node／TypeScript）用官方 <code>@anthropic-ai/sdk</code>，模型 <code>claude-opus-5</code>，<code>thinking: {type: "adaptive"}</code>，長輸出用串流。</li>
+<li>結構化輸出：<code>output_config.format</code> 給 JSON schema，程式不用解析自由文字。</li>
+<li>提示快取：系統提示（格式規則、黑名單、範例）固定放前面，講義內容放後面，同一份講義的多次呼叫共用快取。</li>
+<li>每次呼叫記錄 <code>usage</code>，儀表板可看每份講義的實際花費。</li>
+<li>金鑰放 Secret Manager；Function 只接受已登入且 role 為 teacher 的呼叫。</li>
+</ul>
+<h2>7. 要決定的事</h2>
+<ul>
+<li>[ ] 費用由平台付（建議）還是老師自備金鑰？</li>
+<li>[ ] 改寫文章要不要限制長度與程度（例如英檢中級 180–220 字、CEFR B1）？建議要，放在提示裡。</li>
+</ul></section><section class="chap" id="c7"><h1>第七章　第三方登入與服務申請</h1><p>日期：2026-09-11。三者都在 v2 階段 0 前完成，因為登入是 P0。</p>
+<h2>A. LINE Login channel</h2>
+<p>用您現有的 LINE Developers 帳號即可，和 line_bento_order 的 Messaging API channel 可以放在同一個 Provider 下。</p>
+<ol>
+<li>到 developers.line.biz 登入，進入 Provider（沒有就建一個，名稱用品牌名，例如「914Apps」）。</li>
+<li>Create a new channel → <strong>LINE Login</strong>。填：Channel name（單字練習台）、description、App types 勾 <strong>Web app</strong> 與 <strong>Mobile app</strong>、Email address。</li>
+<li>建好後在 Basic settings 記下 <strong>Channel ID</strong> 與 <strong>Channel secret</strong>（放 Firebase Functions 的 Secret，不進 App）。</li>
+<li>LINE Login 分頁：</li>
+<li>Callback URL 填 Web 的回呼網址，開發期用 <code>http://localhost:xxxx/auth/line</code>，正式用 <code>https://&lt;你的網域&gt;/auth/line</code>。</li>
+<li>iOS bundle ID、Android package name 與 package signature（SHA-1 轉的）填進去，行動端 SDK 才能用。</li>
+<li>如果要拿學生的 Email（選用），在 Basic settings 申請 <strong>OpenID Connect email permission</strong>，要上傳隱私權政策網址，審核幾天。不拿 Email 也能運作，只用 LINE userId 當身分。</li>
+<li>Channel 預設是 Developing 狀態，只有管理員與測試者能登入；正式上線前在 Basic settings 按 <strong>Publish</strong>。</li>
+</ol>
+<p>程式端：App 用 <code>flutter_line_sdk</code> 取得 access token → Cloud Function 呼叫 <code>https://api.line.me/oauth2/v2.1/verify</code> 驗證 token 與 channel ID → <code>admin.auth().createCustomToken(lineUserId)</code> → App 用 custom token 登入 Firebase。Web 端走 LINE 的網頁授權流程，回呼後同一支 Function。</p>
+<h2>B. Apple</h2>
+<p>公司已有 Apple Developer Program 帳號，不用另外申請，但要在該帳號下做四件事（需要帳號的 Admin 或 App Manager 權限）：</p>
+<ol>
+<li><strong>App ID</strong>：Certificates, Identifiers &amp; Profiles → Identifiers → 新增 App ID（Bundle ID 例如 <code>com.914apps.vocabtrainer</code>），Capabilities 勾 <strong>Sign in with Apple</strong> 與 <strong>Push Notifications</strong>。</li>
+<li><strong>Services ID</strong>（給 Web 用）：Identifiers → 新增 Services ID，勾 Sign in with Apple，設定 Domains（你的網域）與 Return URLs（Firebase 的回呼 <code>https://&lt;project&gt;.firebaseapp.com/__/auth/handler</code>）。</li>
+<li><strong>Key</strong>：Keys → 新增，勾 Sign in with Apple，選上面的 App ID，下載 <code>.p8</code>（只能下載一次），記下 Key ID 與 Team ID。</li>
+<li><strong>Firebase</strong>：Authentication → Sign-in method → Apple → 啟用，填 Services ID、Team ID、Key ID、<code>.p8</code> 內容。</li>
+</ol>
+<p>另外：</p>
+<ul>
+<li>App Store 上架時 App Privacy 要填資料收集項目（Email／名稱／使用資料），與 5.1.1 相關的「不強制登入」已在設計裡。</li>
+<li>推播用 <strong>APNs Key</strong>（Keys → 勾 Apple Push Notifications service），上傳到 Firebase Cloud Messaging。</li>
+<li>公司帳號發布的 App，開發者名稱會顯示公司名；若希望顯示個人或品牌，要另開帳號，這是您說先不申請的那個。</li>
+</ul>
+<h2>C. Google</h2>
+<ol>
+<li>Firebase Console 建專案（新開一個，不與 stock_ledger 共用）。</li>
+<li>Authentication → Sign-in method → Google → 啟用；填支援 Email。</li>
+<li>Android：在 Firebase 專案加 Android App，填 package name 與 <strong>SHA-1／SHA-256</strong>（debug 與 release 各一組），下載 <code>google-services.json</code>（不進 git，用 CI 密鑰注入）。</li>
+<li>iOS：加 iOS App，填 bundle ID，下載 <code>GoogleService-Info.plist</code>（同上不進 git）。</li>
+<li>Web：加 Web App，取得 config；OAuth 同意畫面在 Google Cloud Console 設定，App 名稱、支援 Email、隱私權政策網址。</li>
+</ol>
+<h2>D. 通知（FCM／Web Push）</h2>
+<ol>
+<li>Firebase → Cloud Messaging：Android 自動可用；iOS 上傳 APNs Key；Web 產生 <strong>VAPID key pair</strong>。</li>
+<li>App 端 <code>firebase_messaging</code>；Web 需要 <code>firebase-messaging-sw.js</code> service worker。</li>
+<li>提醒內容由 Cloud Function 排程（每天讀書日的固定時間）依每位學生的到期數送出，例如「今天有 23 個字到期，新字 8 個」。使用者可在設定關閉。</li>
+</ol>
+<h2>E. 隱私權政策與服務條款</h2>
+<p>三家登入與兩個商店都會要求公開的隱私權政策網址。放在 GitHub Pages 的 <code>/privacy</code> 即可，內容：收集什麼（登入身分、暱稱、練習進度）、用途、保存、刪除方式（App 內刪除帳號）、第三方服務（Firebase、LINE、Google、Apple）。這份我可以先擬草稿。</p>
+<h2>順序建議</h2>
+<p>Firebase 專案 → Google 登入（最快，先讓開發能跑）→ LINE Login channel（審核 Email 權限要等）→ Apple（上架前完成即可，但 Services ID 要在測 Web 登入前設好）→ FCM。</p></section><section class="chap" id="c8"><h1>附錄　v1.7 使用說明（現行網頁版）</h1><p>網址：https://joyce914apps.github.io/vocab-trainer/　手機、平板、電腦的瀏覽器都能開，不用安裝。進度存在<strong>這台裝置的這個瀏覽器</strong>裡，換裝置請看「備份」。</p>
+<hr />
+<h2>一、每天怎麼用（5 分鐘看懂）</h2>
+<ol>
+<li>打開網頁，停在「<strong>今日</strong>」分頁。最上面的卡片告訴你今天要做什麼：新字幾個、複習幾個、有沒有文章、有沒有講義要預習。</li>
+<li>往下就是練習卡，照著做：</li>
+<li><strong>① 建立印象</strong>：第一次見到的字。看例句、聽發音、看拆字，把字<strong>手打一次</strong>，按「記住了，考我」。</li>
+<li><strong>② 回想</strong>：例句挖空，預設是四選一；要會拼寫的字到第四階起會出拼寫題。</li>
+<li><strong>③ 標記</strong>：程式會建議 ○△×，你可以改。○ 會了、△ 有卡點、× 不會。<strong>你比程式清楚剛剛是真會還是矇到</strong>。</li>
+<li>答錯的字幾題後會再出現一次，答對的新字當場最後再看一次。這是設計，不是重複。</li>
+<li>做到卡片說「今天的業績達成」就可以停。沒做完也沒關係，明天到期的字會自己排進來。</li>
+</ol>
+<p>鍵盤：Enter 送出／下一步，1–4 選選項，○△× 對應 1、2、3。</p>
+<h2>二、五個分頁</h2>
+<table>
+<thead>
+<tr>
+<th>分頁</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>今日</td>
+<td>每天的練習。頂端卡片是今天的清單與業績</td>
+</tr>
+<tr>
+<td>字庫</td>
+<td>所有字的熟悉度。可搜尋、篩選（生疏、退步過、今天到期、未學、已畢業、依字根／字尾分組、某個字組）</td>
+</tr>
+<tr>
+<td>文章閱讀</td>
+<td>先聽再看的閱讀與跟讀（見第四節）</td>
+</tr>
+<tr>
+<td>複習行事曆</td>
+<td>未來 30 天每天要複習幾個字、哪幾天休息、哪天有文章與講義預習</td>
+</tr>
+<tr>
+<td>設定與備份</td>
+<td>字組開關、每日新字、讀書日、方案、聲音、備份、重置（見第五節）</td>
+</tr>
+</tbody>
+</table>
+<p>另外「貼上字卡」分頁用來自己加字（見第六節），「教材來源」列出每份講義的字數與進度。</p>
+<h2>三、熟悉度與複習節奏</h2>
+<ul>
+<li>每個字有自己的「階」。答對升一階，下次出現的間隔變長；答錯退階，很快再出現。</li>
+<li>預設節奏：新字<strong>前四天每天出現</strong>，之後隔 7、15、30、60 天。前四天是遺忘最快的區段，所以不順延、休息日也會露臉（只做這些字，約 5 分鐘）。</li>
+<li>「已畢業」的字仍會每 60 天回來一次。</li>
+<li>字庫每個字下面有小方塊，越多綠色越熟。</li>
+</ul>
+<h2>四、文章閱讀</h2>
+<ol>
+<li>點一篇文章。先<strong>只有播放器</strong>，看不到文字。按播放，聽完一遍再按「聽完第 1 遍了，看文章對照」。想再聽幾遍都可以。</li>
+<li>看文章時，唸到的字會像螢光筆一樣<strong>逐字反白</strong>。看不懂的句子<strong>點一下</strong>出現中譯，再點收起。</li>
+<li>練發音有三種：</li>
+<li><strong>回音練習</strong>（建議）：4～6 個字一段。播 → <strong>停，先別出聲，聽心裡留下的回音</strong> → 照著回音唸 → 再播對照。同一段走三輪，溜了按「下一段」。每天十分鐘，時間到會自動結束，明天從那一段接著。</li>
+<li><strong>逐句跟讀</strong>：整句，聽 → 停 → 唸 → 再聽。</li>
+<li><strong>錄音／播我的</strong>：錄自己唸的，和原音比。</li>
+<li>讀完按「讀完了，看理解題」。答完題才能按「全部中譯」。閱讀速度（wpm）會自動算，不用按計時；第一次偏低是正常的，重讀那天的數字才是速度。</li>
+<li>每篇會排 4 天後、14 天後重讀。</li>
+</ol>
+<p><strong>自己的音檔</strong>：有老師的錄音可以按「用自己的音檔」上傳，只存在這台裝置，會優先播放，但沒有逐字反白與回音練習。</p>
+<h2>五、設定</h2>
+<ul>
+<li><strong>字組</strong>：勾選要練哪些。每週講義各是一組，旁邊填<strong>上課日</strong>，這組還沒學的字就會排到新字最前面，並顯示「還有 N 字、每天約 X 個」；講義的文章會在上課前一天出現「上課前預習」。<strong>不要為了趕講義關掉其他字組</strong>，複習會堆起來。按「過一遍」可以到字庫依講義順序看整組。</li>
+<li><strong>每日新字</strong>：3–60。<strong>讀書日</strong>：勾一週哪幾天讀。<strong>目標完成日</strong>：填了會反推每日新字與建議方案。下方的「學習計畫試算」會即時算出學完日、畢業預估、每日負擔。</li>
+<li><strong>排程方案</strong>：預設「考前混合」。另有固定 16／10／6–8 遍、經典 5 遍（第 2、4、7、15、30 天）、衝刺 8 週／4 週。換方案不會清進度。</li>
+<li><strong>作答方式</strong>：自動（預設）／選擇／拼寫。學測只有中譯英與作文需要拼得出來，所以預設選擇題。</li>
+<li><strong>拼寫題用聲音出題</strong>：打開後拼寫題不給中文與挖空句，只播例句，聽到就打出目標字（聽寫）。準備聽力測驗時再開，學測衝刺期關著。</li>
+<li><strong>聲音</strong>：口音（美、英、澳、加，多益英聽四種）、語速、進新字自動唸。單字、例句、文章都是內建的神經網路語音，離線才退回瀏覽器語音。</li>
+<li><strong>A－ A＋</strong>：整體字級。<strong>深色</strong>：切換主題。</li>
+</ul>
+<h2>六、加字</h2>
+<ul>
+<li><strong>貼文章找生字</strong>：把文章貼進「貼上字卡」按「找出生字」。字庫已有的字會標熟悉度，勾未學的按「排入下一批」；新字自動帶入中文，字典沒有的按「線上查」，例句用文章那一句，也可「翻例句」。</li>
+<li><strong>貼上字卡</strong>：一行一張，<code>單字 | 中文 | 詞性 | 例句 | 例句中譯 | 用法筆記 | 音節 | P或R</code>，來源名稱就是字組名稱。</li>
+<li>自己加的字沒有內建音檔，會用瀏覽器語音。</li>
+</ul>
+<h2>七、備份與換裝置</h2>
+<p>「設定與備份」→「下載備份檔」存成 JSON，到新裝置按「從檔案還原」。建議每週下載一次。手機不方便存檔可用「產生備份文字」複製。清除進度或完全重置前，先備份；那兩顆按鈕要按兩次才會執行。</p>
+<h2>八、常見問題</h2>
+<ul>
+<li><strong>休息日打開沒東西？</strong> 正常。到期的複習順延到下一個讀書日；只有前四天的新字會露臉，用選擇題幾分鐘做完。</li>
+<li><strong>發音怪？</strong> 設定裡換口音；手機裝了系統的高品質語音套件會更自然。內建 mp3 需要連線下載一次，之後有快取。</li>
+<li><strong>今天做不完？</strong> 沒做的明天自動排進來，不用補。連續天數跨休息日不會斷。</li>
+<li><strong>字卡上的「要會拼寫／看得懂就好」可以改嗎？</strong> 點卡片上的徽章即可切換；字庫也能整組切換。</li>
+</ul></section>
+</body></html>
