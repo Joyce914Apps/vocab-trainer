@@ -20,7 +20,7 @@ blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
 .foot{position:fixed;bottom:6mm;right:16mm;font-size:8pt;color:#888}
 </style></head><body>
 <div class="cover"><h1>單字練習台 v2 規格書</h1><div class="sub">Flutter Web／Android／iOS　·　學生與老師兩種角色　·　間隔重複、聽讀說寫、任務系統</div>
-<div class="meta">版本：2026-09-11　規劃階段（開發前）<br>對象：開發者、老師、審閱者<br>配套文件：v2 Wireframes（19 頁，另冊）<br>現行網頁版（v1.7.2，學測衝刺版）：https://joyce914apps.github.io/vocab-trainer/<br>Repo：https://github.com/Joyce914Apps/vocab-trainer</div></div>
+<div class="meta">版本：2026-09-11　規劃階段（開發前）<br>對象：開發者、老師、審閱者<br>配套文件：v2 Wireframes（21 頁，另冊）<br>現行網頁版（v1.7.2，學測衝刺版）：https://joyce914apps.github.io/vocab-trainer/<br>Repo：https://github.com/Joyce914Apps/vocab-trainer</div></div>
 <div class="toc"><h1>目錄</h1><ol><li><a href="#c1">第一章　產品需求（PRD）</a></li><li><a href="#c2">第二章　產品規格</a></li><li><a href="#c3">第三章　技術架構</a></li><li><a href="#c4">第四章　執行計畫</a></li><li><a href="#c5">第五章　決定紀錄</a></li><li><a href="#c6">第六章　AI 上稿模型評估</a></li><li><a href="#c7">第七章　第三方登入與服務申請</a></li><li><a href="#c8">附錄　v1.7 使用說明（現行網頁版）</a></li></ol>
 <p style="margin-top:30px;color:#555;font-size:10pt">閱讀順序建議：先看第五章的決定紀錄了解已定案的事，再看第一、二章；技術與執行計畫給開發者；第六、七章是開工前的準備。教材品牌、作者與講義原始檔一律不出現在本書。</p></div>
 <section class="chap" id="c1"><h1>第一章　產品需求（PRD）</h1><p>版本：2026-09-10 修訂 2（加入角色與登入）　｜　狀態：規劃中，預計 W2–W4 課餘時間開工　｜　v1（HTML）已上線：https://joyce914apps.github.io/vocab-trainer/</p>
@@ -133,6 +133,16 @@ blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
 <td>P0</td>
 <td>本機儲存</td>
 <td>Drift；Web 用 IndexedDB、原生用 SQLite；離線優先</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>首次使用引導</td>
+<td>三張啟動卡（可跳過）、情境式 coach mark 各出現一次、老師端三步導覽</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>直橫式與摺疊機</td>
+<td>依視窗寬度重排且不丟狀態、避開鉸鏈、iPad 分割畫面</td>
 </tr>
 <tr>
 <td>P0</td>
@@ -368,6 +378,14 @@ blockquote{border-left:3px solid #ccc;margin:8px 0;padding:2px 10px;color:#555}
 </table>
 <p>登入：<strong>不強制</strong>（App Store 5.1.1）。啟動直接進訪客的「今日」，資料存本機；加入班級、跨裝置同步、老師身分時才登入（Google／LINE／Apple，iOS 必備 Apple）。登入時把訪客的本機進度併入帳號（每張卡取 updatedAt 較新者）。首次登入選角色；同一帳號可兼老師與家長身分。訪客的「加入班級／登入同步」提示只在前三天顯示於今日卡片，之後收進設定。</p>
 <p>班級模型：<code>teachers/{uid}</code> → <code>classes/{cid}</code>（邀請碼、預設讀書日與方案）→ <code>members</code>；<code>lessons/{lid}</code>（屬於老師，發布到一或多個班級，含字組、文章、音檔路徑、上課日）；學生進度在 <code>users/{uid}/…</code>，老師對所屬班級學生有讀權限。原文 PDF 存 <code>classes/{cid}/private/</code>，永不公開。</p>
+<h2>0a. 首次使用引導（v2.0）</h2>
+<p>原則：<strong>不擋路、可跳過、只出現一次、在需要的當下出現</strong>。分三層：</p>
+<ol>
+<li><strong>啟動引導（三張卡，可跳過）</strong>：第一次打開 App 顯示。①「三段式：先認識、再回想、最後自己標 ○△×」②「每天固定量，前幾天連續出現是設計不是重複」③「讀書日與每日新字」（直接在這張卡上設定，預設二三四五、8 字）。最後一張有「有班級代碼？」與「先自己練」兩顆按鈕。</li>
+<li><strong>情境提示（coach mark，各只出現一次）</strong>：第一張預習卡（手打一次的用意）、第一次對答案（○△× 可以自己改、「矇到的請改 △」）、第一次答錯回籠（「不是重複，是剛忘掉的要馬上補」）、第一篇文章（先聽不看文字的理由）、第一次回音練習（停下來聽回音）、第一次休息日（為什麼只有幾個字）、第一次講義上課日。每個提示一句話加「知道了」，可在設定「重看所有提示」。</li>
+<li><strong>老師端引導</strong>：第一次進老師首頁：建班 → 取得邀請碼 → 套用任務表範本，三步導覽，可跳過。</li>
+</ol>
+<p>記錄：<code>onboarding.done</code>、<code>coachmarks.seen[]</code> 存在帳號（訪客存本機，登入時併入）。v1 備份匯入提示放在啟動引導最後一張。</p>
 <h2>1. 資訊架構</h2>
 <pre><code>啟動 → 今日（訪客，直接可練）
 ├── 需要時登入（加入班級／設定的帳號區／我是老師）
@@ -831,6 +849,18 @@ kindOverride(p/r/null), updatedAt(ISO, 同步用)
 <ul>
 <li>App 啟動時讀伺服器的 <code>courses.json</code> 版本與班級 <code>lessons</code> 的 <code>updatedAt</code>，比本機新就背景下載並提示「教材已更新」；已學進度不受影響</li>
 </ul>
+<h2>9d. 直式、橫式與摺疊機</h2>
+<ul>
+<li><strong>直式為主，橫式都要能用</strong>。手機橫式：練習卡改左右兩欄（左：字與例句，右：作答區與 ○△×），文章頁左內文右播放器與回音面板，行事曆改成月曆格橫排；不鎖定方向</li>
+<li><strong>平板</strong>：直橫式都支援；iPad 分割畫面與 Slide Over 依實際寬度套用手機或平板版型</li>
+<li><strong>摺疊機</strong>（Android 摺疊、雙螢幕）：</li>
+<li>依「目前視窗寬度」而不是裝置型號決定版型；展開／收摺時視窗大小改變，畫面即時重排，<strong>不重建頁面、不丟狀態</strong>（練習中的那張卡、播放進度、回音段數都保留）</li>
+<li>封面小螢幕（窄長）用手機版型；內螢幕（接近正方形、寬 ≥ 600）用平板版型的兩欄</li>
+<li>避開鉸鏈：用 <code>MediaQuery.displayFeatures</code> 取得鉸鏈位置，兩欄版型以鉸鏈為分界，文字與按鈕不落在鉸鏈上；半開（桌面模式）時上半內容、下半控制（播放器、作答區）</li>
+<li>練習卡最寬 640px 置中，避免在超寬螢幕上一行太長</li>
+<li><strong>鍵盤與外接</strong>：平板外接鍵盤時 Enter／1–4 快捷鍵同桌機；滑鼠 hover 只做輔助，不承載功能</li>
+<li>測試矩陣：手機直／橫、平板直／橫、iPad 分割畫面 1/3 與 1/2、摺疊機封面／內螢幕／半開、桌機 1024 與 1440</li>
+</ul>
 <h2>9. 無障礙與裝置</h2>
 <ul>
 <li>最小可用寬度 360px；選項按鈕高度 ≥ 44px</li>
@@ -1189,6 +1219,8 @@ CardWithProgress                      → Course.card × card_progress，practic
 <h2>階段 2：App P0（M2，W3）</h2>
 <ul>
 <li>[ ] features/auth：訪客模式、三種登入、登入時併入本機進度、角色選擇、路由守衛；Function <code>lineAuth</code></li>
+<li>[ ] features/onboarding：三張啟動卡、coach mark 元件與 seen 記錄、老師端導覽</li>
+<li>[ ] core/layout：依視窗寬度與 displayFeatures 的版型切換，狀態保留（Riverpod 狀態不隨版型重建）；直橫式與摺疊機測試矩陣</li>
 <li>[ ] features/classes：建班、邀請碼、加入（Function <code>joinClass</code>）、成員；Firestore 規則＋emulator 測試</li>
 <li>[ ] core/storage：Drift schema、web/native 分岔、migration；core/sync：登入即同步、每張卡 LWW、離線佇列</li>
 <li>[ ] 帳號刪除（含強制備份）</li>
@@ -1322,6 +1354,28 @@ CardWithProgress                      → Course.card × card_progress，practic
 <td>老師儀表板</td>
 <td>欄位維持，加「每個字的 ○△×」（推導值）</td>
 <td>線框 p14</td>
+</tr>
+</tbody>
+</table>
+<h2>2026-09-11（補 2）</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>決定</th>
+<th>落地位置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>首次使用引導</td>
+<td>三張啟動卡可跳過＋情境 coach mark 各一次＋老師端三步導覽</td>
+<td>規格書 §0a、線框 p7</td>
+</tr>
+<tr>
+<td>直橫式與摺疊機</td>
+<td>直式為主、橫式可用；依視窗寬度重排不丟狀態；摺疊機避鉸鏈、封面／內螢幕／半開三態</td>
+<td>規格書 §9d、線框 p6</td>
 </tr>
 </tbody>
 </table>
