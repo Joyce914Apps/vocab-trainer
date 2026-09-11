@@ -258,8 +258,6 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
     <button class="mbtn" data-md="auto">自動</button>
     <button class="mbtn" data-md="choice">選擇</button>
     <button class="mbtn" data-md="spell">拼寫</button>
-    <button class="mbtn" data-md="recog">只求認得</button>
-    <button class="mbtn" data-md="listen">聽寫</button>
     <span id="mdWhy" style="flex-basis:100%;margin-top:3px"></span>
   </div>
   <div class="bar"><span>今日進度</span><span class="mono" id="prog">0 / 0</span></div>
@@ -381,8 +379,7 @@ input[type=text],input[type=number]{background:var(--card);color:var(--ink);bord
     學測英文 100 分裡，只有中譯英（8 分）和作文（20 分）真的需要「拼得出來」，其餘約 72 分都只要認得。
     所以預設用<b>選擇題</b> —— 形狀跟學測詞彙題、文意選填一樣，而且仍然是主動回想，不是被動翻牌。<br>
     拼寫留給兩種字：熟到第 4 階以上要確認的，和退步兩次以上的頑固字。<br>
-    「只求認得」最快，適合跳完舞真的撐不住的日子。但不要整學期都用它 —— 認得的練習只會養出認得的能力，
-    而且很容易產生「我好像會」的錯覺。<br><br>
+
     <span id="planWhy"></span>
     後段沒有照抄那套的 7,7,7,7,7 / 10,10 —— 固定 16 遍不分難易，會把大量次數浪費在你早就會的字上。
     這裡改由每個字自己的難度係數決定。<br><br>
@@ -1368,7 +1365,7 @@ const PLANS={
  f8:  {name:'固定 6–8 遍',ladder:[1,1,1,1,7,7,30,30],               adaptive:false, who:'英檢中級、多益 700'},
  e5:  {name:'經典 5 遍',  ladder:[1,2,3,8,15],                      adaptive:false, who:'一個月一輪、每天固定量（第 2、4、7、15、30 天複習）'},
  s8:  {name:'衝刺 8 週',  ladder:[1,1,1,1,7,7,15],                  adaptive:true,  who:'剩兩到三個月'},
- s4:  {name:'衝刺 4 週',  ladder:[1,1,1,1,7],                       adaptive:true,  who:'剩一個月內，只求認得'},
+ s4:  {name:'衝刺 4 週',  ladder:[1,1,1,1,7],                       adaptive:true,  who:'剩一個月內，只求看得懂'},
 };
 function plan(){return PLANS[(S&&S.plan)||'mix']||PLANS.mix;}
 function ladder(){return plan().ladder;}
@@ -1413,9 +1410,7 @@ let repeats={},again={};
 const MODEWHY={
  auto:'自動：標「看得懂就好」的字只考選擇；標「要會拼寫」的字，爬到第 3 階起每三次考一次拼寫，退步兩次以上的一律拼寫。點卡片上的徽章可以隨時改。',
  choice:'選擇：挖空句子＋四個選項，和學測詞彙題、文意選填同一個形狀。約 20 秒一字。',
- spell:'拼寫：要自己把字打出來。最慢也最紮實，中譯英與作文靠這個。約 40 秒一字。',
- recog:'只求認得：看句子想中文，翻面自評。最快，約 10 秒一字。跳完舞太累的日子用這個，不要整學期都用。',
- listen:'聽辨：只播例句的聲音，四選一選出是哪個字。練「聽得出來」。要練「聽到就寫得出來」，到設定開「拼寫題用聲音出題」。'};
+ spell:'拼寫：要自己把字打出來。最慢也最紮實，中譯英與作文靠這個。約 40 秒一字。要練「聽到就寫得出來」，到設定開「拼寫題用聲音出題」。'};
 function quizType(r){
   const m=(S&&S.mode)||'auto';
   const ear=t=>(t==='spell'&&S&&S.spellByEar)?'dictate':t;   // 設定「拼寫題用聲音出題」：拼寫改成聽寫打字
@@ -1738,38 +1733,6 @@ function renderQuiz(){
     ?'🔁 同場回籠，剛剛沒過的再來一次'
     :(r.reps>0?`第 ${(r.reps||0)+1} 次抽查　上次 ${r.last||'—'}　熟悉度 ${lvLabel(r)}`:'趁熱馬上考一次');
 
-  if(ty==='recog'){
-    $('stage').innerHTML=`<div class="card">
-      <div class="step">② 回想 · 只求認得 · ${head}</div>
-      <div class="hw">${esc(r.en)}</div>
-      <div class="syl">${esc(r.syl&&r.syl!==r.en?r.syl:r.en)}<button class="say" id="sayB" title="唸一次">🔊</button></div>
-      <div class="meta">${esc(r.pos)}</div>
-      ${r.ex?`<p class="sent serif">${markup(r)}</p>`:''}
-      <p class="prompt">在心裡把中文說出來 —— 真的說出來，不要只覺得「好像知道」。</p>
-      <div class="row"><button class="btn" id="okB">說好了，看答案</button></div>
-    </div>`;
-    $('sayB').onclick=()=>sayWord(r);
-    $('okB').onclick=()=>{ans='';sug='';phase='res';render();};
-    return;
-  }
-
-  if(ty==='listen'){
-    choices=shuffle([r.en].concat(distract(r,3)));
-    $('stage').innerHTML=`<div class="card">
-      <div class="step">② 回想 · 聽寫 · ${head}</div>
-      <p class="prompt">只有聲音，沒有文字。聽完選出是哪一個字。</p>
-      <div class="row"><button class="btn" id="playB">🔊 再播一次</button>
-        <button class="btn ghost" id="slowB">🐢 放慢</button></div>
-      <div class="opts">${choices.map((c,i)=>
-        `<button class="opt" data-c="${esc(c)}"><span class="k">${i+1}</span>${esc(c)}</button>`).join('')}</div>
-    </div>`;
-    saySent(r);
-    $('playB').onclick=()=>saySent(r);
-    $('slowB').onclick=()=>saySent(r,{rate:0.6});
-    document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
-      ans=b.dataset.c;sug=(ans.toLowerCase()===r.en.toLowerCase())?'o':'x';phase='res';render();});
-    return;
-  }
   if(ty==='choice'){
     choices=shuffle([r.en].concat(distract(r,3)));
     $('stage').innerHTML=`<div class="card">
@@ -2144,7 +2107,7 @@ function todayCard(){
     const early=S.strictEarly!==false?all.filter(r=>r.seen&&r.due&&r.due<=t&&(r.box||0)<earlyLen()).length:0;
     return `<div class="card today-card">
     <div class="step">今天是休息日　${t}（${DAYNAME[new Date(t+'T00:00:00').getDay()]}）${bizLine()}</div>
-    ${early?`<p style="margin:8px 0 0;font-size:.92rem">🌙 只有 <b>${early}</b> 個剛學的新字要露臉（前段照日曆天，不順延）。切「只求認得」約 ${Math.max(2,Math.ceil(early/6))} 分鐘。
+    ${early?`<p style="margin:8px 0 0;font-size:.92rem">🌙 只有 <b>${early}</b> 個剛學的新字要露臉（前段照日曆天，不順延）。用選擇題約 ${Math.max(2,Math.ceil(early/6))} 分鐘。
         <br><span class="mono" style="font-size:.78rem;color:var(--soft)">已完成 ${done} / ${early}${done>=early?'　✅ 今天的業績達成':''}</span></p>`
       :`<p style="margin:8px 0 0;font-size:.92rem">🌙 今天沒有排進度。到期的字已經順延到下一個讀書日了，不用擔心欠著。</p>`}
     <p class="hint" style="margin:8px 0 0">做不到也不補。</p></div>`;}
@@ -2852,7 +2815,7 @@ function renderSheet(){
       if(r.fam===undefined)r.fam=(META[r.en]&&META[r.en][1])||[];
       if(r.kind===undefined)r.kind=(META[r.en]&&META[r.en][2])||'p';
     });
-    if(!S.mode)S.mode='auto';
+    if(!S.mode||S.mode==='recog'||S.mode==='listen')S.mode='auto';   // 只求認得、聽辨已移除
     if(!S.revCap)S.revCap=60;
     if(!S.artEvery)S.artEvery=3;
     if(!S.sources)S.sources=[];
